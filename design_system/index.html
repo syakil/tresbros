@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tres Bros Caffè - UI Cheat Sheet</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS (via CDN untuk demo) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            olive: '#4B5A3A',
+                            sage: '#7D8F6A',
+                            cream: '#F3EDE1',
+                            warm: '#A16B3D',
+                            dark: '#3A2B1F'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'], // Body Text
+                        display: ['Outfit', 'sans-serif'] // Headings
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Base Styling */
+        body {
+            background-color: #3A2B1F; /* Dark Brown Background */
+            color: #F3EDE1; /* Cream Text */
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 font-sans antialiased min-h-screen">
+
+    <div class="max-w-5xl mx-auto space-y-12">
+        
+        <!-- HEADER -->
+        <header class="border-b border-brand-sage/30 pb-6 text-center md:text-left">
+            <h1 class="font-display text-4xl md:text-5xl font-bold text-brand-cream">UI/UX Cheat Sheet</h1>
+            <p class="text-brand-sage mt-2 text-sm md:text-base">Referensi komponen "Tres Bros Caffè" untuk Frontend Developer & AI.</p>
+        </header>
+
+        <!-- 1. TYPOGRAPHY & COLORS -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Typography -->
+            <div class="bg-black/20 p-6 rounded-2xl border border-white/5 backdrop-blur-md shadow-lg">
+                <h2 class="font-display text-2xl mb-4 text-brand-warm">1. Tipografi</h2>
+                <div class="space-y-4">
+                    <div>
+                        <p class="text-xs text-brand-sage">Display Font (Outfit - 700)</p>
+                        <h3 class="font-display font-bold text-3xl">Heading Besar</h3>
+                    </div>
+                    <div>
+                        <p class="text-xs text-brand-sage">Display Font (Outfit - 600)</p>
+                        <h4 class="font-display font-semibold text-xl">Heading Sedang</h4>
+                    </div>
+                    <div>
+                        <p class="text-xs text-brand-sage">Body Font (Inter - 400)</p>
+                        <p class="font-sans text-base text-brand-cream/80">Ini adalah contoh teks paragraf atau deskripsi yang panjang. Keterbacaan sangat tinggi karena menggunakan Inter.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Colors -->
+            <div class="bg-black/20 p-6 rounded-2xl border border-white/5 backdrop-blur-md shadow-lg">
+                <h2 class="font-display text-2xl mb-4 text-brand-warm">2. Palet Warna</h2>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div class="flex flex-col items-center">
+                        <div class="w-16 h-16 rounded-full bg-brand-olive shadow-md"></div>
+                        <span class="text-xs mt-2 text-brand-sage">Olive (Done)</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-16 h-16 rounded-full bg-brand-sage shadow-md"></div>
+                        <span class="text-xs mt-2 text-brand-sage">Sage (To-Do)</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-16 h-16 rounded-full bg-brand-warm shadow-md"></div>
+                        <span class="text-xs mt-2 text-brand-sage">Warm (Proses)</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-16 h-16 rounded-full bg-brand-cream border border-gray-300 shadow-md"></div>
+                        <span class="text-xs mt-2 text-brand-sage">Cream (Text)</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-16 h-16 rounded-full bg-brand-dark border border-white/20 shadow-md"></div>
+                        <span class="text-xs mt-2 text-brand-sage">Dark (Bg)</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. BUTTONS -->
+        <section class="bg-black/20 p-6 rounded-2xl border border-white/5 backdrop-blur-md shadow-lg">
+            <h2 class="font-display text-2xl mb-4 text-brand-warm">3. Tombol (Buttons) & Interaksi</h2>
+            <div class="flex flex-col md:flex-row gap-4">
+                <!-- Primary Button -->
+                <button onclick="showAlert('Pesanan Selesai!')" class="bg-brand-olive hover:bg-[#5a6a46] text-brand-cream font-medium py-3 px-6 rounded-xl transition duration-200 transform hover:-translate-y-1 hover:shadow-[0_4px_20px_rgba(75,90,58,0.4)] shadow-sm w-full md:w-auto">
+                    Primary Action (Olive)
+                </button>
+                
+                <!-- Secondary / In-Progress Button -->
+                <button class="bg-brand-warm hover:bg-[#b87c47] text-brand-cream font-medium py-3 px-6 rounded-xl transition duration-200 transform hover:-translate-y-1 hover:shadow-[0_4px_20px_rgba(161,107,61,0.4)] shadow-sm w-full md:w-auto">
+                    Proses Pesanan (Warm)
+                </button>
+
+                <!-- Outline / Queue Button -->
+                <button class="border-2 border-brand-sage text-brand-cream hover:bg-brand-sage/20 font-medium py-3 px-6 rounded-xl transition duration-200 shadow-sm w-full md:w-auto">
+                    Antrean (Sage Outline)
+                </button>
+            </div>
+        </section>
+
+        <!-- 4. FORMS & INPUTS -->
+        <section class="bg-black/20 p-6 rounded-2xl border border-white/5 backdrop-blur-md shadow-lg">
+            <h2 class="font-display text-2xl mb-4 text-brand-warm">4. Form & Input Data</h2>
+            <form class="space-y-4 max-w-lg" onsubmit="event.preventDefault(); showAlert('Form berhasil disubmit!');">
+                <!-- Input Group -->
+                <div class="flex flex-col space-y-1">
+                    <label class="text-sm text-brand-sage font-medium">Nama Pelanggan</label>
+                    <input type="text" placeholder="Masukkan nama..." class="bg-[#2D2117] border border-brand-sage/50 text-brand-cream rounded-xl px-4 py-3 focus:outline-none focus:border-brand-warm focus:ring-1 focus:ring-brand-warm transition duration-200 w-full placeholder-brand-sage/60" required>
+                </div>
+                
+                <!-- Dropdown -->
+                <div class="flex flex-col space-y-1">
+                    <label class="text-sm text-brand-sage font-medium">Tipe Pembayaran</label>
+                    <select class="bg-[#2D2117] border border-brand-sage/50 text-brand-cream rounded-xl px-4 py-3 focus:outline-none focus:border-brand-warm focus:ring-1 focus:ring-brand-warm transition duration-200 w-full appearance-none">
+                        <option>QRIS / E-Wallet</option>
+                        <option>Cash (Tunai)</option>
+                        <option>Debit Card</option>
+                    </select>
+                </div>
+
+                <!-- Toggle / Checkbox alternative -->
+                <div class="flex items-center space-x-3 pt-2">
+                    <input type="checkbox" id="takeaway" class="w-5 h-5 rounded border-brand-sage/50 bg-[#2D2117] checked:bg-brand-warm focus:ring-brand-warm focus:ring-offset-[#3A2B1F]">
+                    <label for="takeaway" class="text-sm text-brand-cream cursor-pointer">Takeaway (Bungkus)</label>
+                </div>
+
+                <div class="pt-4">
+                    <button type="submit" class="w-full bg-brand-olive text-brand-cream py-3 rounded-xl hover:bg-[#5a6a46] transition duration-200 font-semibold shadow-md">Simpan Transaksi</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- 5. KDS CARD EXAMPLE (Glassmorphism + Responsive) -->
+        <section class="bg-black/20 p-6 rounded-2xl border border-white/5 backdrop-blur-md shadow-lg">
+            <h2 class="font-display text-2xl mb-4 text-brand-warm">5. Komponen Card (Contoh: Papan KDS)</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Card 1 -->
+                <div class="bg-gradient-to-br from-[#4B5A3A]/20 to-[#4B5A3A]/5 border border-brand-olive/40 p-5 rounded-2xl shadow-lg backdrop-blur-sm cursor-pointer hover:border-brand-olive transition duration-300">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <span class="inline-block bg-brand-olive text-brand-cream text-xs font-bold px-2 py-1 rounded-md mb-2">#ORDER-001</span>
+                            <h3 class="font-display text-lg font-bold">Meja 04</h3>
+                        </div>
+                        <span class="text-brand-sage text-sm font-medium">08:15</span>
+                    </div>
+                    <ul class="text-sm text-brand-cream/90 space-y-2 mb-4">
+                        <li class="flex justify-between border-b border-white/5 pb-1">
+                            <span>2x Caramel Macchiato</span>
+                        </li>
+                        <li class="flex justify-between border-b border-white/5 pb-1">
+                            <span>1x Butter Croissant</span>
+                            <span class="text-brand-warm text-xs ml-2 bg-brand-warm/20 px-1 rounded">Dipanaskan</span>
+                        </li>
+                    </ul>
+                    <button class="w-full border border-brand-olive text-brand-olive hover:bg-brand-olive hover:text-brand-cream py-2 rounded-lg text-sm font-semibold transition">
+                        Tandai Selesai
+                    </button>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="bg-gradient-to-br from-[#A16B3D]/20 to-[#A16B3D]/5 border border-brand-warm/40 p-5 rounded-2xl shadow-lg backdrop-blur-sm cursor-pointer hover:border-brand-warm transition duration-300">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <span class="inline-block bg-brand-warm text-brand-cream text-xs font-bold px-2 py-1 rounded-md mb-2">TAKEAWAY</span>
+                            <h3 class="font-display text-lg font-bold">Bpk. Budi</h3>
+                        </div>
+                        <span class="text-[#EF4444] animate-pulse text-sm font-medium">10 Min (Terlambat)</span>
+                    </div>
+                    <ul class="text-sm text-brand-cream/90 space-y-2 mb-4">
+                        <li class="flex justify-between border-b border-white/5 pb-1">
+                            <span>4x Kopi Susu Aren</span>
+                            <span class="text-brand-sage text-xs ml-2 bg-brand-sage/20 px-1 rounded">Less Sugar</span>
+                        </li>
+                    </ul>
+                    <button class="w-full bg-brand-warm text-brand-cream hover:bg-[#b87c47] py-2 rounded-lg text-sm font-semibold transition">
+                        Selesaikan Pembuatan
+                    </button>
+                </div>
+            </div>
+        </section>
+        
+    </div>
+
+    <!-- Script Interaktif Ringan -->
+    <script>
+        function showAlert(message) {
+            alert(message);
+        }
+    </script>
+</body>
+</html>

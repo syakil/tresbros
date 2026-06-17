@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+@theme {
+  /* Tres Bros Caffè Color Palette */
+  --color-brand-olive: #4B5A3A;
+  --color-brand-sage: #7D8F6A;
+  --color-brand-cream: #F3EDE1;
+  --color-brand-warm: #A16B3D;
+  --color-brand-dark: #3A2B1F;
+  
+  /* Tres Bros Typography */
+  --font-sans: var(--font-inter), sans-serif;
+  --font-display: var(--font-outfit), sans-serif;
+}
+
+:root {
+  --background: #3A2B1F; /* brand-dark */
+  --foreground: #F3EDE1; /* brand-cream */
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+/* Remove arrows/spinners from number inputs */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield; /* Firefox */
+}
+
+/* Thermal Printer Layout */
+@media print {
+  @page {
+    margin: 0;
+    size: 58mm 150mm; /* Fix: Chrome menolak 'auto' dan mereset ke A4 Landscape. Kita gunakan ukuran moderat 150mm. */
+  }
+  
+  body, html {
+    background: white !important;
+    color: black !important;
+  }
+}

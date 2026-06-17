@@ -1,0 +1,119 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  products Product[]
+}
+
+model Product {
+  id          Int          @id @default(autoincrement())
+  name        String
+  price       Float
+  categoryId  Int
+  orderItems  OrderItem[]
+  category    Category     @relation(fields: [categoryId], references: [id])
+  recipeItems RecipeItem[]
+}
+
+model Order {
+  id             Int         @id @default(autoincrement())
+  customerName   String?
+  totalAmount    Float
+  status         String      @default("TODO")
+  createdAt      DateTime    @default(now())
+  couponCode     String?
+  discountAmount Float       @default(0)
+  paymentMethod  String      @default("CASH")
+  items          OrderItem[]
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  productId Int
+  quantity  Int
+  price     Float
+  notes     String?
+  product   Product @relation(fields: [productId], references: [id])
+  order     Order   @relation(fields: [orderId], references: [id])
+}
+
+model Expense {
+  id          Int      @id @default(autoincrement())
+  description String
+  amount      Float
+  imageUrl    String?
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+}
+
+model Income {
+  id          Int      @id @default(autoincrement())
+  description String
+  amount      Float
+  imageUrl    String?
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+}
+
+model Material {
+  id            Int            @id @default(autoincrement())
+  name          String
+  stock         Float
+  minStock      Float
+  unit          String
+  lastUpdated   DateTime       @default(now()) @updatedAt
+  purchaseItems PurchaseItem[]
+  recipeItems   RecipeItem[]
+}
+
+model Purchase {
+  id           Int            @id @default(autoincrement())
+  purchaseNo   String         @unique
+  supplierName String
+  totalAmount  Float
+  status       String         @default("COMPLETED")
+  receiptUrl   String?
+  createdAt    DateTime       @default(now())
+  items        PurchaseItem[]
+}
+
+model PurchaseItem {
+  id         Int      @id @default(autoincrement())
+  purchaseId Int
+  materialId Int
+  quantity   Float
+  price      Float
+  material   Material @relation(fields: [materialId], references: [id])
+  purchase   Purchase @relation(fields: [purchaseId], references: [id])
+}
+
+model RecipeItem {
+  id         Int      @id @default(autoincrement())
+  productId  Int
+  materialId Int
+  quantity   Float
+  material   Material @relation(fields: [materialId], references: [id])
+  product    Product  @relation(fields: [productId], references: [id])
+}
+
+model Coupon {
+  id           Int      @id @default(autoincrement())
+  code         String   @unique
+  type         String
+  value        Float
+  minPurchase  Float    @default(0)
+  maxDiscount  Float?
+  maxUsage     Int
+  currentUsage Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+}
