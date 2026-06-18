@@ -1,0 +1,7 @@
+api-tres.syakil-dev.my.id {
+    reverse_proxy backend:8080
+}
+
+tres.syakil-dev.my.id {
+    reverse_proxy frontend:3000
+}
