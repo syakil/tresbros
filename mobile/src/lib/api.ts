@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Gunakan IP Address komputer saat menjalankan Web Next.js (bukan localhost)
-const API_URL = 'http://192.168.1.3:3000/api';
+// Gunakan URL Backend Production
+const API_URL = 'https://api-tres.syakil-dev.my.id/api';
 
 export const api = axios.create({
   baseURL: API_URL,
