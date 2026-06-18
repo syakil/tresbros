@@ -35,7 +35,7 @@ services:
     environment:
       - BACKEND_URL=http://backend:8080
     ports:
-      - "3000:3000"
+      - "3005:3000"
     depends_on:
       - backend
     restart: unless-stopped
