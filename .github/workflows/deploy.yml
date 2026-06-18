@@ -65,7 +65,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: ${{ secrets.SERVER_PORT }}
           source: "docker-compose.prod.yml"
-          target: "/opt/tresbros"
+          target: "~/tresbros"
 
       - name: Execute SSH Commands on VPS
         uses: appleboy/ssh-action@v1.0.3
@@ -78,8 +78,11 @@ jobs:
             # Menghentikan script jika ada perintah yang gagal
             set -e
             
+            # Buat direktori jika belum ada
+            mkdir -p ~/tresbros
+            
             # Pindah ke direktori proyek di server
-            cd /opt/tresbros
+            cd ~/tresbros
             
             # Rename agar dikenali oleh docker-compose
             mv docker-compose.prod.yml docker-compose.yml
