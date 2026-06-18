@@ -16,7 +16,7 @@ services:
 
   backend:
     # Ganti <DOCKER_USERNAME> dengan username Docker Hub Anda yang sebenarnya
-    image: <DOCKER_USERNAME>/tresbros-backend:latest
+    image: syakil/tresbros-backend:latest
     container_name: tresbros_backend
     environment:
       - ConnectionStrings__DefaultConnection=Host=postgres;Database=tresbros;Username=postgres;Password=password
@@ -28,7 +28,7 @@ services:
 
   frontend:
     # Ganti <DOCKER_USERNAME> dengan username Docker Hub Anda yang sebenarnya
-    image: <DOCKER_USERNAME>/tresbros-frontend:latest
+    image: syakil/tresbros-frontend:latest
     container_name: tresbros_frontend
     environment:
       - BACKEND_URL=http://backend:8080
