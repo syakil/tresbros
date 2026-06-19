@@ -89,7 +89,7 @@ namespace backend.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Ok();
+            return Ok(new { message = "Webhook processed successfully" });
         }
     }
 }
