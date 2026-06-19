@@ -30,18 +30,19 @@ namespace backend.Controllers
                 return BadRequest("Invalid payload");
             }
 
-            // Our OrderId format: TRX-{Id}-{Timestamp}
             var parts = orderIdString.Split('-');
-            if (parts.Length < 2 || !int.TryParse(parts[1], out int orderId))
+            if (parts.Length < 1)
             {
                 return BadRequest("Invalid Order ID format");
             }
+            
+            string orderNumber = parts[0];
 
             var order = await _context.Orders
                 .Include(o => o.Items)
                 .ThenInclude(i => i.Product)
                 .ThenInclude(p => p.RecipeItems)
-                .FirstOrDefaultAsync(o => o.Id == orderId);
+                .FirstOrDefaultAsync(o => o.OrderNumber == orderNumber);
 
             if (order == null)
             {
