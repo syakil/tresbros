@@ -30,6 +30,8 @@ interface Order {
   status: 'TODO' | 'IN_PROGRESS' | 'DONE' | 'TAKEN';
   createdAt: string;
   items: OrderItem[];
+  queueNumber?: string | null;
+  orderNumber?: string | null;
 }
 
 const Timer = ({ createdAt }: { createdAt: string }) => {

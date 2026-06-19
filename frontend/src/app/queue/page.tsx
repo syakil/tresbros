@@ -10,6 +10,8 @@ interface Order {
   customerName: string | null;
   status: 'TODO' | 'IN_PROGRESS' | 'DONE' | 'TAKEN';
   createdAt: string;
+  queueNumber?: string | null;
+  orderNumber?: string | null;
 }
 
 const ITEMS_PER_PAGE = 8; // Menyesuaikan agar tidak overflow ke bawah (2 kolom x 4 baris)
