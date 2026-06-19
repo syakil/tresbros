@@ -124,7 +124,7 @@ export function Pos() {
         discountAmount: getCalculatedDiscount(),
         paymentMethod: paymentMethod,
         items: items.map(item => ({
-          productId: item.id,
+          id: item.id,
           quantity: item.quantity,
           price: item.price,
           notes: item.notes
@@ -521,6 +521,7 @@ export function Pos() {
                   if (navState.url.includes('status_code=200') || navState.url.includes('transaction_status=settlement')) {
                     Alert.alert("Sukses", "Pembayaran Midtrans Berhasil!");
                     setPaymentUrl(null);
+                    fetchPendingOrders(); // Refresh daftar transaksi tertunda
                   }
                 }}
               />
