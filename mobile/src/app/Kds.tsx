@@ -3,7 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, Modal, Alert, useWindowDimens
 import axios from 'axios';
 import { Clock, ChefHat, CheckCircle2, User, X } from 'lucide-react-native';
 
-const API_URL = 'http://192.168.1.3:3000/api'; 
+import { API_URL } from '../lib/api';
 
 interface OrderItem {
   id: number;

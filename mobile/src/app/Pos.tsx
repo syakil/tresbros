@@ -6,8 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import { WebView } from 'react-native-webview';
 
-// Konfigurasi Axios ke API Next.js (Frontend Controller)
-const API_URL = 'https://tres.syakil-dev.my.id/api';
+import { API_URL } from '../lib/api';
 
 export function Pos() {
   const navigation = useNavigation<any>();
