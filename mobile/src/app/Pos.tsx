@@ -6,8 +6,8 @@ import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import { WebView } from 'react-native-webview';
 
-// Konfigurasi Axios sederhana ke localhost komputer (di Android emulator gunakan 10.0.2.2, di HP fisik gunakan IP komputer, misal 192.168.1.3)
-const API_URL = 'http://192.168.1.3:5052/api'; 
+// Konfigurasi Axios ke API Next.js (Frontend Controller)
+const API_URL = 'https://tres.syakil-dev.my.id/api';
 
 export function Pos() {
   const navigation = useNavigation<any>();

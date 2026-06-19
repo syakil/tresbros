@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
+    "name": "Tres Bros POS",
+    "slug": "tres-bros-pos",
     "version": "1.0.0",
     "orientation": "default",
     "icon": "./assets/icon.png",
