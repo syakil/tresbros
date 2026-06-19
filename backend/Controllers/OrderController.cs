@@ -24,7 +24,9 @@ namespace backend.Controllers
         {
             return await _context.Orders
                 .Include(o => o.Items)
-                .ThenInclude(i => i.Product)
+                    .ThenInclude(i => i.Product)
+                        .ThenInclude(p => p.RecipeItems)
+                            .ThenInclude(r => r.Material)
                 .OrderByDescending(o => o.CreatedAt)
                 .ToListAsync();
         }
@@ -35,7 +37,9 @@ namespace backend.Controllers
         {
             var order = await _context.Orders
                 .Include(o => o.Items)
-                .ThenInclude(i => i.Product)
+                    .ThenInclude(i => i.Product)
+                        .ThenInclude(p => p.RecipeItems)
+                            .ThenInclude(r => r.Material)
                 .FirstOrDefaultAsync(o => o.Id == id);
 
             if (order == null)
