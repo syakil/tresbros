@@ -4,11 +4,8 @@ on:
   push:
     branches:
       - main
-    # Opsional: Jika Anda hanya ingin men-trigger build saat ada perubahan di folder terkait
-    # paths:
-    #   - 'frontend/**'
-    #   - 'backend/**'
-    #   - 'docker-compose.yml'
+    paths-ignore:
+      - 'mobile/**'
 
 jobs:
   build-and-push:
