@@ -20,6 +20,38 @@ export default function PosPage() {
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'MIDTRANS'>('CASH');
   const [toast, setToast] = useState<{ message: string, type: 'error' | 'success' | 'warning' } | null>(null);
+  const [lastOrderNumber, setLastOrderNumber] = useState<string>('');
+  const [lastQueueNumber, setLastQueueNumber] = useState<string>('');
+  const [isMounted, setIsMounted] = useState(false);
+  const [showPendingOrders, setShowPendingOrders] = useState(false);
+
+  const { data: orders, refetch: refetchOrders } = useQuery({
+    queryKey: ['pos-orders'],
+    queryFn: async () => {
+      const res = await axios.get('/api/orders');
+      return res.data;
+    },
+    refetchInterval: 5000 // auto refresh setiap 5 detik
+  });
+
+  const pendingOrders = orders?.filter((o: any) => o.paymentMethod === 'MIDTRANS' && o.paymentStatus === 'pending' && o.status === 'TODO') || [];
+
+  useEffect(() => {
+    setIsMounted(true);
+    // Memuat script Snap.js secara dinamis khusus di halaman POS untuk mencegah error postMessage Next.js
+    const snapScriptUrl = "https://app.sandbox.midtrans.com/snap/snap.js";
+    const clientKey = "SB-Mid-client-3c-KuTSEjRrpPILS";
+
+    let script = document.querySelector(`script[src="${snapScriptUrl}"]`) as HTMLScriptElement;
+    
+    if (!script) {
+      script = document.createElement("script");
+      script.src = snapScriptUrl;
+      script.setAttribute("data-client-key", clientKey);
+      script.async = true;
+      document.body.appendChild(script);
+    }
+  }, []);
 
   const showToast = (message: string, type: 'error' | 'success' | 'warning') => {
     setToast({ message, type });
@@ -103,14 +135,35 @@ export default function PosPage() {
           notes: item.notes
         }))
       });
-      
-      clearCart();
-      setShowCheckout(false);
+      setLastOrderNumber(res.data.orderNumber);
+      setLastQueueNumber(res.data.queueNumber);
 
       if (paymentMethod === 'MIDTRANS') {
-        if (res.data.paymentUrl) {
-           // Redirect to Midtrans Payment Page
-           window.location.href = res.data.paymentUrl;
+        if (res.data.snapToken) {
+           // Tampilkan Midtrans Snap Popup tanpa menutup checkout modal dulu (mencegah DOM unmount yang bikin error)
+           (window as any).snap.pay(res.data.snapToken, {
+             onSuccess: function(result: any){
+               setShowCheckout(false);
+               showToast("Pembayaran Midtrans Berhasil! Pesanan dikirim ke KDS.", 'success');
+               setTimeout(() => { 
+                 window.print(); 
+                 clearCart();
+               }, 500);
+             },
+             onPending: function(result: any){
+               setShowCheckout(false);
+               showToast("Pesanan dibuat. Menunggu pembayaran Anda...", 'warning');
+               clearCart();
+             },
+             onError: function(result: any){
+               showToast("Pembayaran gagal.", 'error');
+               // Tidak menutup modal checkout agar kasir bisa coba lagi
+             },
+             onClose: function(){
+               showToast("Jendela pembayaran ditutup.", 'warning');
+               // Tidak menutup modal checkout agar kasir bisa coba lagi/ganti metode bayar
+             }
+           });
            return;
         } else {
            showToast("Gagal membuat transaksi Midtrans. Cek API Key di backend.", 'error');
@@ -118,10 +171,14 @@ export default function PosPage() {
         }
       }
 
+      // Untuk pembayaran CASH, langsung tutup modal
+      setShowCheckout(false);
+
       showToast("Pembayaran Berhasil! Pesanan dikirim ke KDS.", 'success');
       // Trigger print receipt
       setTimeout(() => {
         window.print();
+        clearCart();
       }, 500);
     } catch (error) {
       showToast("Terjadi kesalahan saat menyimpan pesanan.", 'error');
@@ -159,17 +216,27 @@ export default function PosPage() {
         
         {/* Header Kiri: Search & Kategori Filter */}
         <div className="flex flex-col gap-4 shrink-0">
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-brand-sage" />
+          <div className="flex gap-4">
+            <div className="relative flex-1">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-brand-sage" />
+              </div>
+              <input
+                type="text"
+                placeholder="Cari menu produk..."
+                className="w-full bg-black/20 border border-white/5 text-brand-cream rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:border-brand-warm focus:ring-1 focus:ring-brand-warm transition"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
-            <input
-              type="text"
-              placeholder="Cari menu produk..."
-              className="w-full bg-black/20 border border-white/5 text-brand-cream rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:border-brand-warm focus:ring-1 focus:ring-brand-warm transition"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+            {pendingOrders.length > 0 && (
+              <button 
+                onClick={() => setShowPendingOrders(true)}
+                className="bg-orange-500/20 text-orange-400 border border-orange-500/50 hover:bg-orange-500/40 px-6 rounded-xl font-bold transition-all"
+              >
+                {pendingOrders.length} Pesanan Tertunda
+              </button>
+            )}
           </div>
 
           <div className="flex gap-3 overflow-x-auto pb-2 hide-scrollbar">
@@ -391,6 +458,71 @@ export default function PosPage() {
         </div>
       </Card>
 
+      {/* Modal Pesanan Tertunda */}
+      {showPendingOrders && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
+          <Card className="w-full max-w-2xl bg-[#1A1A1A]/95 border-brand-warm/30 shadow-2xl p-6 max-h-[80vh] flex flex-col">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-display font-bold text-brand-cream">Pesanan Menunggu Pembayaran</h2>
+              <button onClick={() => setShowPendingOrders(false)} className="text-red-400 font-bold px-3 py-1 bg-red-500/20 rounded-lg hover:bg-red-500/30">Tutup</button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto space-y-4 pr-2">
+              {pendingOrders.map((order: any) => (
+                <div key={order.id} className="bg-black/40 border border-white/10 rounded-xl p-4 flex justify-between items-center">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-mono text-brand-warm font-bold">{order.orderNumber || order.id}</span>
+                      <span className="bg-orange-500/20 text-orange-400 text-xs px-2 py-0.5 rounded">MIDTRANS</span>
+                    </div>
+                    <div className="text-brand-sage text-sm">{order.customerName || 'Guest'} • {new Date(order.createdAt).toLocaleTimeString('id-ID')}</div>
+                    <div className="text-brand-cream font-bold mt-1">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(order.totalAmount)}</div>
+                  </div>
+                  <Button 
+                    variant="primary" 
+                    className="bg-brand-olive shadow-[0_0_15px_rgba(75,90,58,0.4)]"
+                    onClick={() => {
+                      if (order.snapToken) {
+                        setShowPendingOrders(false);
+                        (window as any).snap.pay(order.snapToken, {
+                          onSuccess: function(){
+                            showToast("Pembayaran Berhasil! Pesanan dikirim ke KDS.", 'success');
+                            setLastOrderNumber(order.orderNumber || order.id);
+                            setLastQueueNumber(order.queueNumber || '-');
+                            setTimeout(() => window.print(), 500);
+                            refetchOrders();
+                          },
+                          onPending: function(){
+                            showToast("Pembayaran masih tertunda...", 'warning');
+                            refetchOrders();
+                          },
+                          onError: function(){
+                            showToast("Pembayaran gagal.", 'error');
+                            refetchOrders();
+                          },
+                          onClose: function(){
+                            showToast("Jendela pembayaran ditutup.", 'warning');
+                            refetchOrders();
+                          }
+                        });
+                      } else {
+                        showToast("Token Midtrans tidak ditemukan.", 'error');
+                      }
+                    }}
+                  >
+                    Lanjut Bayar
+                  </Button>
+                </div>
+              ))}
+              
+              {pendingOrders.length === 0 && (
+                <div className="text-center text-brand-sage py-8">Tidak ada pesanan tertunda.</div>
+              )}
+            </div>
+          </Card>
+        </div>
+      )}
+
       {/* Modal Checkout (Glassmorphism Overlay) */}
       {showCheckout && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
@@ -442,7 +574,9 @@ export default function PosPage() {
       
       <div className="mb-2">
         <p>Kasir : Admin</p>
-        <p>Waktu : {new Date().toLocaleString('id-ID')}</p>
+        <p>Waktu : {isMounted ? new Date().toLocaleString('id-ID') : ''}</p>
+        {lastOrderNumber && <p>No. Order: {lastOrderNumber}</p>}
+        {lastQueueNumber && <p className="font-bold text-[14px] mt-1 mb-1">No. Antrian: {lastQueueNumber}</p>}
         {customerName && <p>Nama  : {customerName}</p>}
       </div>
       

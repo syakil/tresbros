@@ -140,7 +140,7 @@ export function Kds() {
     <View className="bg-black/40 rounded-2xl p-4 mb-4 border border-white/5 shadow-xl">
       <View className="flex-row justify-between items-center border-b border-white/10 pb-3 mb-3">
         <View className="flex-row items-center">
-          <Text className="font-bold text-brand-warm text-xl mr-2">#{order.id}</Text>
+          <Text className="font-bold text-brand-warm text-xl mr-2">Antrian: {order.queueNumber}</Text>
           {order.customerName && (
             <View className="flex-row items-center bg-black/30 px-2 py-1 rounded-lg">
               <User size={12} color="#F3EDE1" />

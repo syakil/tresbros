@@ -123,7 +123,7 @@ export default function KdsPage() {
     <Card variant="olive" className="mb-4 flex flex-col gap-3">
       <div className="flex justify-between items-center border-b border-white/10 pb-2">
         <div className="flex items-center gap-2">
-          <span className="font-display font-bold text-brand-warm text-lg">#{order.id}</span>
+          <span className="font-display font-bold text-brand-warm text-lg">Antrian: {order.queueNumber}</span>
           {order.customerName && (
             <span className="flex items-center gap-1 text-xs bg-black/30 px-2 py-1 rounded text-brand-cream">
               <User className="w-3 h-3" /> {order.customerName}

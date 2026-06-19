@@ -138,7 +138,7 @@ export default function QueuePage() {
               {visiblePreparing.map(order => (
                 <div key={`${order.id}-${prepPage}`} className="bg-brand-olive/40 border border-brand-sage/20 rounded-3xl p-8 flex flex-col items-center justify-center animate-in fade-in slide-in-from-bottom-4 duration-500 shadow-xl backdrop-blur-sm h-40">
                   <span className="text-7xl font-display font-black text-brand-sage tracking-tighter">
-                    {order.id}
+                    {order.queueNumber}
                   </span>
                 </div>
               ))}
@@ -175,7 +175,7 @@ export default function QueuePage() {
               {visibleReady.map(order => (
                 <div key={`${order.id}-${readyPage}`} className="bg-gradient-to-br from-brand-warm/20 to-brand-warm/5 border-2 border-brand-warm/40 rounded-3xl p-8 flex flex-col items-center justify-center shadow-[0_0_40px_rgba(255,200,87,0.15)] animate-in fade-in zoom-in-95 duration-500 h-40">
                   <span className="text-8xl font-display font-black text-brand-warm drop-shadow-[0_4px_12px_rgba(255,200,87,0.3)] tracking-tighter">
-                    {order.id}
+                    {order.queueNumber}
                   </span>
                   {order.customerName && (
                     <span className="text-3xl text-brand-cream font-bold mt-2 max-w-full truncate px-4">

@@ -333,7 +333,7 @@ export default function DashboardPage() {
               <tbody className="divide-y divide-white/5">
                 {data?.recentOrders?.map((order: any) => (
                   <tr key={order.id} className="hover:bg-white/5 transition-colors">
-                    <td className="px-6 py-4 font-mono text-xs">#{order.id}</td>
+                    <td className="px-6 py-4 font-mono text-xs">{order.orderNumber || order.id}</td>
                     <td className="px-6 py-4">{new Date(order.createdAt).toLocaleTimeString('id-ID')}</td>
                     <td className="px-6 py-4">{order.customerName || '-'}</td>
                     <td className="px-6 py-4 text-center">

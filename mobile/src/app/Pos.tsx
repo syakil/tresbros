@@ -4,6 +4,7 @@ import { useCartStore, Product } from '../store/useCartStore';
 import { ShoppingCart, Search, Coffee, Pizza, Plus, Minus, Trash2, User, Tag, ReceiptText } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
+import { WebView } from 'react-native-webview';
 
 // Konfigurasi Axios sederhana ke localhost komputer (di Android emulator gunakan 10.0.2.2, di HP fisik gunakan IP komputer, misal 192.168.1.3)
 const API_URL = 'http://192.168.1.3:5052/api'; 
@@ -22,6 +23,7 @@ export function Pos() {
   // Ubah tipe paymentMethod agar support MIDTRANS
   const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'MIDTRANS'>('CASH');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
 
   const categories = ['Semua', 'Kopi', 'Non-Kopi', 'Makanan'];
 
@@ -40,6 +42,9 @@ export function Pos() {
     }
   }, [items]);
 
+  const [pendingOrders, setPendingOrders] = useState<any[]>([]);
+  const [showPendingOrders, setShowPendingOrders] = useState(false);
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -53,6 +58,22 @@ export function Pos() {
       }
     };
     fetchProducts();
+  }, []);
+
+  const fetchPendingOrders = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/orders`);
+      const pending = res.data.filter((o: any) => o.paymentMethod === 'MIDTRANS' && o.paymentStatus === 'pending' && o.status === 'TODO');
+      setPendingOrders(pending);
+    } catch (error) {
+      console.error("Failed to fetch pending orders:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchPendingOrders();
+    const interval = setInterval(fetchPendingOrders, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const filteredProducts = products.filter(p => {
@@ -114,9 +135,9 @@ export function Pos() {
       setShowCheckout(false);
 
       if (paymentMethod === 'MIDTRANS' && res.data.paymentUrl) {
-        navigation.navigate('Payment', { paymentUrl: res.data.paymentUrl });
+        setPaymentUrl(res.data.paymentUrl);
       } else {
-        Alert.alert("Sukses", "Pembayaran Tunai Berhasil! Pesanan dikirim ke KDS.");
+        Alert.alert("Sukses", "Pembayaran Berhasil! Pesanan dikirim ke KDS.");
       }
 
     } catch (error) {
@@ -135,6 +156,14 @@ export function Pos() {
         
         {/* Header Kiri: Search & Kategori */}
         <View className="mb-4 space-y-3">
+          {pendingOrders.length > 0 && (
+            <TouchableOpacity 
+              onPress={() => setShowPendingOrders(true)}
+              className="bg-orange-500/20 border border-orange-500/50 p-3 rounded-xl flex-row justify-center items-center mb-3"
+            >
+              <Text className="text-orange-400 font-bold">{pendingOrders.length} Pesanan Tertunda (Midtrans)</Text>
+            </TouchableOpacity>
+          )}
           <View className="flex-row items-center bg-black/20 border border-white/5 rounded-xl px-4 py-2">
             <Search size={20} color="#7D8F6A" />
             <TextInput
@@ -418,6 +447,84 @@ export function Pos() {
                 <Text className="text-brand-cream font-bold">{isProcessing ? 'Memproses...' : 'Proses Bayar'}</Text>
               </TouchableOpacity>
             </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal Pesanan Tertunda */}
+      <Modal visible={showPendingOrders} transparent animationType="slide">
+        <View className="flex-1 bg-black/80 pt-10 pb-6 px-4">
+          <View className="flex-1 bg-[#1A1A1A]/95 rounded-2xl overflow-hidden shadow-2xl p-4 border border-white/10">
+            <View className="flex-row justify-between items-center mb-4 border-b border-white/10 pb-3">
+              <Text className="text-brand-cream font-bold text-lg">Pesanan Menunggu Pembayaran</Text>
+              <TouchableOpacity onPress={() => setShowPendingOrders(false)} className="bg-red-500/20 px-3 py-1.5 rounded-lg border border-red-500/50">
+                <Text className="text-red-400 font-bold text-sm">Tutup</Text>
+              </TouchableOpacity>
+            </View>
+            
+            <ScrollView className="flex-1 space-y-3" showsVerticalScrollIndicator={false}>
+              {pendingOrders.map((order: any) => (
+                <View key={order.id} className="bg-black/40 border border-white/10 rounded-xl p-4 mb-3">
+                  <View className="flex-row items-center gap-2 mb-2">
+                    <Text className="font-mono text-brand-warm font-bold">{order.orderNumber || order.id}</Text>
+                    <View className="bg-orange-500/20 px-2 py-0.5 rounded">
+                      <Text className="text-orange-400 text-xs font-bold">MIDTRANS</Text>
+                    </View>
+                  </View>
+                  <Text className="text-brand-sage text-sm mb-1">{order.customerName || 'Guest'}</Text>
+                  <Text className="text-brand-cream font-bold text-lg mb-3">
+                    Rp {new Intl.NumberFormat('id-ID').format(order.totalAmount)}
+                  </Text>
+                  <TouchableOpacity 
+                    className="bg-brand-olive py-3 rounded-lg items-center"
+                    onPress={() => {
+                      if (order.paymentUrl) {
+                        setShowPendingOrders(false);
+                        setPaymentUrl(order.paymentUrl);
+                      } else {
+                        Alert.alert("Error", "URL Pembayaran Midtrans tidak ditemukan.");
+                      }
+                    }}
+                  >
+                    <Text className="text-brand-cream font-bold">Lanjut Bayar</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+              
+              {pendingOrders.length === 0 && (
+                <View className="py-10 items-center justify-center">
+                  <Text className="text-brand-sage text-center">Tidak ada pesanan tertunda.</Text>
+                </View>
+              )}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal Midtrans WebView */}
+      <Modal visible={!!paymentUrl} transparent animationType="slide">
+        <View className="flex-1 bg-black/80 pt-10 pb-6 px-4">
+          <View className="flex-1 bg-white rounded-2xl overflow-hidden shadow-2xl">
+            <View className="flex-row justify-between items-center bg-[#3A2B1F] p-4">
+              <Text className="text-[#F3EDE1] font-bold text-lg">Pembayaran Midtrans</Text>
+              <TouchableOpacity onPress={() => setPaymentUrl(null)} className="bg-red-500/20 px-3 py-1.5 rounded-lg border border-red-500/50">
+                <Text className="text-red-400 font-bold text-sm">Tutup</Text>
+              </TouchableOpacity>
+            </View>
+            {paymentUrl && (
+              <WebView 
+                source={{ uri: paymentUrl }}
+                startInLoadingState={true}
+                className="flex-1"
+                onNavigationStateChange={(navState) => {
+                  // Cek apakah URL sudah mengandung indikator berhasil/selesai dari Midtrans
+                  if (navState.url.includes('status_code=200') || navState.url.includes('transaction_status=settlement')) {
+                    Alert.alert("Sukses", "Pembayaran Midtrans Berhasil!");
+                    setPaymentUrl(null);
+                  }
+                }}
+              />
+            )}
           </View>
         </View>
       </Modal>

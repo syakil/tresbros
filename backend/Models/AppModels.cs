@@ -31,6 +31,8 @@ namespace backend.Models
     {
         [Key]
         public int Id { get; set; }
+        public string OrderNumber { get; set; } = string.Empty;
+        public int QueueNumber { get; set; }
         public string? CustomerName { get; set; }
         public double TotalAmount { get; set; }
         public string Status { get; set; } = "TODO";

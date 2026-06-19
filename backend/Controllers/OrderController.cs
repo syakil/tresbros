@@ -50,14 +50,24 @@ namespace backend.Controllers
         [HttpPost]
         public async Task<ActionResult<Order>> PostOrder(Order order)
         {
-            order.CreatedAt = DateTime.UtcNow;
+            var now = DateTime.UtcNow;
+            order.CreatedAt = now;
             
-            // Generate a temporary Id for Midtrans OrderId if needed, but since it's not saved yet, 
-            // we will save it first to get the DB ID, then call Midtrans.
+            // Format queue using UTC+7 for local day boundary (WIB)
+            var localTime = now.AddHours(7);
+            var todayDate = now.Date;
+            
+            var maxQueueToday = await _context.Orders
+                .Where(o => o.CreatedAt.Date == todayDate)
+                .MaxAsync(o => (int?)o.QueueNumber) ?? 0;
+
+            order.QueueNumber = maxQueueToday + 1;
+            order.OrderNumber = $"{localTime:yyyyMMdd}{order.QueueNumber:D3}";
+
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
 
-            Console.WriteLine($"[ORDER CREATED] ID: {order.Id}, PaymentMethod: '{order.PaymentMethod}', TotalAmount: {order.TotalAmount}");
+            Console.WriteLine($"[ORDER CREATED] ID: {order.Id}, OrderNo: {order.OrderNumber}, Queue: {order.QueueNumber}, PaymentMethod: '{order.PaymentMethod}', TotalAmount: {order.TotalAmount}");
 
             // Midtrans Integration
             if (order.PaymentMethod == "MIDTRANS")
@@ -76,7 +86,7 @@ namespace backend.Controllers
                 {
                     transaction_details = new
                     {
-                        order_id = $"TRX-{order.Id}-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}",
+                        order_id = $"{order.OrderNumber}-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}",
                         gross_amount = (int)order.TotalAmount
                     },
                     customer_details = new
