@@ -10,10 +10,12 @@ namespace backend.Controllers
     public class OrderController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IConfiguration _configuration;
 
-        public OrderController(AppDbContext context)
+        public OrderController(AppDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         // GET: api/Order
@@ -50,11 +52,49 @@ namespace backend.Controllers
         {
             order.CreatedAt = DateTime.UtcNow;
             
-            // Note: In a real app, you might want to calculate TotalAmount here on the server
-            // instead of trusting the client to send the correct total.
-
+            // Generate a temporary Id for Midtrans OrderId if needed, but since it's not saved yet, 
+            // we will save it first to get the DB ID, then call Midtrans.
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
+
+            // Midtrans Integration
+            if (order.PaymentMethod == "MIDTRANS")
+            {
+                var serverKey = _configuration["Midtrans:ServerKey"];
+                var isProduction = _configuration.GetValue<bool>("Midtrans:IsProduction");
+                var snapUrl = isProduction ? "https://app.midtrans.com/snap/v1/transactions" : "https://app.sandbox.midtrans.com/snap/v1/transactions";
+
+                var authString = Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes($"{serverKey}:"));
+                
+                using var client = new HttpClient();
+                client.DefaultRequestHeaders.Add("Authorization", $"Basic {authString}");
+                client.DefaultRequestHeaders.Add("Accept", "application/json");
+
+                var payload = new
+                {
+                    transaction_details = new
+                    {
+                        order_id = $"TRX-{order.Id}-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}",
+                        gross_amount = (int)order.TotalAmount
+                    },
+                    customer_details = new
+                    {
+                        first_name = order.CustomerName ?? "Guest"
+                    }
+                };
+
+                var response = await client.PostAsJsonAsync(snapUrl, payload);
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+                    order.SnapToken = result.GetProperty("token").GetString();
+                    order.PaymentUrl = result.GetProperty("redirect_url").GetString();
+                    order.PaymentStatus = "pending";
+                    
+                    _context.Entry(order).State = EntityState.Modified;
+                    await _context.SaveChangesAsync();
+                }
+            }
 
             return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, order);
         }

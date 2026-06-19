@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, FlatList, Alert, Modal } from 'react-native';
 import { useCartStore, Product } from '../store/useCartStore';
 import { ShoppingCart, Search, Coffee, Pizza, Plus, Minus, Trash2, User, Tag, ReceiptText } from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 
 // Konfigurasi Axios sederhana ke localhost komputer (di Android emulator gunakan 10.0.2.2, di HP fisik gunakan IP komputer, misal 192.168.1.3)
 const API_URL = 'http://192.168.1.3:3000/api'; 
 
 export function Pos() {
+  const navigation = useNavigation<any>();
   const { items, customerName, setCustomerName, addItem, removeItem, updateQuantity, getSubtotal, getTax, getTotal, clearCart, discountAmount, setDiscountAmount, discountType, setDiscountType, getCalculatedDiscount, appliedCoupon, setAppliedCoupon } = useCartStore();
   const [activeCategory, setActiveCategory] = useState<string>('Semua');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -17,7 +19,8 @@ export function Pos() {
   const [couponInput, setCouponInput] = useState('');
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'QRIS' | 'DEBIT'>('CASH');
+  // Ubah tipe paymentMethod agar support MIDTRANS
+  const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'MIDTRANS'>('CASH');
   const [isProcessing, setIsProcessing] = useState(false);
 
   const categories = ['Semua', 'Kopi', 'Non-Kopi', 'Makanan'];
@@ -93,23 +96,29 @@ export function Pos() {
   const processPayment = async () => {
     try {
       setIsProcessing(true);
-      await axios.post(`${API_URL}/orders`, {
+      const res = await axios.post(`${API_URL}/orders`, {
         customerName: customerName,
         totalAmount: getTotal(),
         couponCode: appliedCoupon?.code || null,
         discountAmount: getCalculatedDiscount(),
         paymentMethod: paymentMethod,
         items: items.map(item => ({
-          id: item.id,
+          productId: item.id,
           quantity: item.quantity,
           price: item.price,
           notes: item.notes
         }))
       });
       
-      Alert.alert("Sukses", "Pembayaran Berhasil! Pesanan dikirim ke KDS.");
       clearCart();
       setShowCheckout(false);
+
+      if (paymentMethod === 'MIDTRANS' && res.data.paymentUrl) {
+        navigation.navigate('Payment', { paymentUrl: res.data.paymentUrl });
+      } else {
+        Alert.alert("Sukses", "Pembayaran Tunai Berhasil! Pesanan dikirim ke KDS.");
+      }
+
     } catch (error) {
       console.error(error);
       Alert.alert("Error", "Terjadi kesalahan saat memproses pesanan.");
@@ -387,17 +396,10 @@ export function Pos() {
               </TouchableOpacity>
               
               <TouchableOpacity 
-                className={`py-4 px-4 rounded-xl flex-row items-center justify-between border ${paymentMethod === 'QRIS' ? 'bg-brand-olive border-brand-olive' : 'border-white/10'}`}
-                onPress={() => setPaymentMethod('QRIS')}
+                className={`py-4 px-4 rounded-xl flex-row items-center justify-between border ${paymentMethod === 'MIDTRANS' ? 'bg-brand-olive border-brand-olive' : 'border-white/10'}`}
+                onPress={() => setPaymentMethod('MIDTRANS')}
               >
-                <Text className={`font-bold text-lg ${paymentMethod === 'QRIS' ? 'text-brand-cream' : 'text-white/50'}`}>📱 QRIS / E-Wallet</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                className={`py-4 px-4 rounded-xl flex-row items-center justify-between border ${paymentMethod === 'DEBIT' ? 'bg-brand-olive border-brand-olive' : 'border-white/10'}`}
-                onPress={() => setPaymentMethod('DEBIT')}
-              >
-                <Text className={`font-bold text-lg ${paymentMethod === 'DEBIT' ? 'text-brand-cream' : 'text-white/50'}`}>💳 Kartu Debit / Kredit</Text>
+                <Text className={`font-bold text-lg ${paymentMethod === 'MIDTRANS' ? 'text-brand-cream' : 'text-white/50'}`}>💳 Bayar via Midtrans (QRIS/Transfer/Kartu)</Text>
               </TouchableOpacity>
             </View>
 

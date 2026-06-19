@@ -38,6 +38,12 @@ namespace backend.Models
         public string? CouponCode { get; set; }
         public double DiscountAmount { get; set; } = 0;
         public string PaymentMethod { get; set; } = "CASH";
+        
+        // Midtrans Fields
+        public string? PaymentUrl { get; set; }
+        public string? SnapToken { get; set; }
+        public string PaymentStatus { get; set; } = "pending";
+
         public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
     }
 

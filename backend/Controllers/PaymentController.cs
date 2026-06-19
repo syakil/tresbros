@@ -1,0 +1,82 @@
+using backend.Data;
+using backend.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
+
+namespace backend.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class PaymentController : ControllerBase
+    {
+        private readonly AppDbContext _context;
+
+        public PaymentController(AppDbContext context)
+        {
+            _context = context;
+        }
+
+        [HttpPost("webhook")]
+        public async Task<IActionResult> MidtransWebhook([FromBody] JsonElement payload)
+        {
+            // Parse Midtrans payload
+            string? orderIdString = payload.GetProperty("order_id").GetString();
+            string? transactionStatus = payload.GetProperty("transaction_status").GetString();
+            string? fraudStatus = payload.TryGetProperty("fraud_status", out var fraudProp) ? fraudProp.GetString() : null;
+
+            if (string.IsNullOrEmpty(orderIdString) || string.IsNullOrEmpty(transactionStatus))
+            {
+                return BadRequest("Invalid payload");
+            }
+
+            // Our OrderId format: TRX-{Id}-{Timestamp}
+            var parts = orderIdString.Split('-');
+            if (parts.Length < 2 || !int.TryParse(parts[1], out int orderId))
+            {
+                return BadRequest("Invalid Order ID format");
+            }
+
+            var order = await _context.Orders
+                .Include(o => o.Items)
+                .ThenInclude(i => i.Product)
+                .ThenInclude(p => p.RecipeItems)
+                .FirstOrDefaultAsync(o => o.Id == orderId);
+
+            if (order == null)
+            {
+                return NotFound("Order not found");
+            }
+
+            // Determine new payment status based on Midtrans transaction_status
+            if (transactionStatus == "capture")
+            {
+                if (fraudStatus == "challenge")
+                {
+                    order.PaymentStatus = "challenge";
+                }
+                else if (fraudStatus == "accept")
+                {
+                    order.PaymentStatus = "success";
+                }
+            }
+            else if (transactionStatus == "settlement")
+            {
+                order.PaymentStatus = "success";
+            }
+            else if (transactionStatus == "cancel" || transactionStatus == "deny" || transactionStatus == "expire")
+            {
+                order.PaymentStatus = "failed";
+            }
+            else if (transactionStatus == "pending")
+            {
+                order.PaymentStatus = "pending";
+            }
+
+            _context.Entry(order).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+    }
+}

@@ -4,6 +4,7 @@ import { Home } from '../app/Home';
 import { Dashboard } from '../app/Dashboard';
 import { Pos } from '../app/Pos';
 import { Kds } from '../app/Kds';
+import { Payment } from '../app/Payment';
 import { Home as HomeIcon, BarChart3, ShoppingBag, ChefHat } from 'lucide-react-native';
 
 const Drawer = createDrawerNavigator();
@@ -63,6 +64,14 @@ export function DrawerNavigator() {
         options={{
           drawerIcon: ({ color, size }) => <BarChart3 size={size} color={color} />,
           headerTitle: 'Dashboard'
+        }}
+      />
+      <Drawer.Screen 
+        name="Payment" 
+        component={Payment} 
+        options={{
+          drawerItemStyle: { display: 'none' },
+          headerTitle: 'Pembayaran Midtrans'
         }}
       />
     </Drawer.Navigator>
