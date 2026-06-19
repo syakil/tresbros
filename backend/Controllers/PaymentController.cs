@@ -74,6 +74,18 @@ namespace backend.Controllers
             }
 
             _context.Entry(order).State = EntityState.Modified;
+
+            // Log into MidtransLog table
+            var rawPayload = payload.GetRawText();
+            var log = new MidtransLog
+            {
+                OrderId = orderIdString,
+                TransactionStatus = transactionStatus ?? "",
+                FraudStatus = fraudStatus ?? "",
+                RawPayload = rawPayload
+            };
+            _context.MidtransLogs.Add(log);
+
             await _context.SaveChangesAsync();
 
             return Ok();

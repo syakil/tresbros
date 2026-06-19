@@ -18,7 +18,7 @@ export default function PosPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [couponInput, setCouponInput] = useState('');
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'QRIS' | 'DEBIT'>('CASH');
+  const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'MIDTRANS'>('CASH');
   const [toast, setToast] = useState<{ message: string, type: 'error' | 'success' | 'warning' } | null>(null);
 
   const showToast = (message: string, type: 'error' | 'success' | 'warning') => {
@@ -90,7 +90,7 @@ export default function PosPage() {
   const processPayment = async () => {
     try {
       setIsProcessing(true);
-      await axios.post('/api/orders', {
+      const res = await axios.post('/api/orders', {
         customerName: customerName,
         totalAmount: getTotal(),
         couponCode: appliedCoupon?.code || null,
@@ -103,16 +103,31 @@ export default function PosPage() {
           notes: item.notes
         }))
       });
+      
+      clearCart();
+      setShowCheckout(false);
+
+      if (paymentMethod === 'MIDTRANS') {
+        if (res.data.paymentUrl) {
+           // Redirect to Midtrans Payment Page
+           window.location.href = res.data.paymentUrl;
+           return;
+        } else {
+           showToast("Gagal membuat transaksi Midtrans. Cek API Key di backend.", 'error');
+           return;
+        }
+      }
+
       showToast("Pembayaran Berhasil! Pesanan dikirim ke KDS.", 'success');
       // Trigger print receipt
       setTimeout(() => {
         window.print();
-        clearCart();
-        setShowCheckout(false);
       }, 500);
     } catch (error) {
       showToast("Terjadi kesalahan saat menyimpan pesanan.", 'error');
       console.error(error);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -396,20 +411,12 @@ export default function PosPage() {
                 💵 Tunai (Cash)
               </Button>
               <Button 
-                variant={paymentMethod === 'QRIS' ? 'primary' : 'outline'} 
+                variant={paymentMethod === 'MIDTRANS' ? 'primary' : 'outline'} 
                 fullWidth 
-                className={`justify-start py-4 font-semibold ${paymentMethod === 'QRIS' ? 'bg-brand-olive border-brand-olive text-brand-cream' : 'hover:border-brand-warm hover:text-brand-warm'}`}
-                onClick={() => setPaymentMethod('QRIS')}
+                className={`justify-start py-4 font-semibold ${paymentMethod === 'MIDTRANS' ? 'bg-brand-olive border-brand-olive text-brand-cream' : 'hover:border-brand-warm hover:text-brand-warm'}`}
+                onClick={() => setPaymentMethod('MIDTRANS')}
               >
-                📱 QRIS / E-Wallet
-              </Button>
-              <Button 
-                variant={paymentMethod === 'DEBIT' ? 'primary' : 'outline'} 
-                fullWidth 
-                className={`justify-start py-4 font-semibold ${paymentMethod === 'DEBIT' ? 'bg-brand-olive border-brand-olive text-brand-cream' : 'hover:border-brand-warm hover:text-brand-warm'}`}
-                onClick={() => setPaymentMethod('DEBIT')}
-              >
-                💳 Kartu Debit / Kredit
+                💳 Bayar via Midtrans (QRIS/Transfer/Kartu)
               </Button>
             </div>
             
@@ -472,7 +479,7 @@ export default function PosPage() {
       
       <div className="text-center mt-4 mb-2">
         <p className="font-bold text-[14px]">*** LUNAS ***</p>
-        <p className="mt-1">Pembayaran : {paymentMethod === 'CASH' ? 'Tunai' : paymentMethod === 'QRIS' ? 'QRIS / E-Wallet' : 'Debit / Kredit'}</p>
+        <p className="mt-1">Pembayaran : {paymentMethod === 'CASH' ? 'Tunai' : 'Midtrans'}</p>
         <p className="italic mt-2">Terima kasih atas<br/>kunjungan Anda!</p>
       </div>
     </div>

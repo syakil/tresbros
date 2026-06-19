@@ -126,6 +126,7 @@ export default function PurchasesPage() {
     if (validItems.length === 0) return showToast("Minimal 1 item belanja harus diisi dengan lengkap!", "error");
 
     createPurchase.mutate({
+      purchaseNo: "",
       supplierName: supplier,
       receiptBase64,
       receiptFileName: receiptFile?.name,

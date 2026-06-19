@@ -6,7 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 
 // Konfigurasi Axios sederhana ke localhost komputer (di Android emulator gunakan 10.0.2.2, di HP fisik gunakan IP komputer, misal 192.168.1.3)
-const API_URL = 'http://192.168.1.3:3000/api'; 
+const API_URL = 'http://192.168.1.3:5052/api'; 
 
 export function Pos() {
   const navigation = useNavigation<any>();

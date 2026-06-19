@@ -57,6 +57,8 @@ namespace backend.Controllers
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
 
+            Console.WriteLine($"[ORDER CREATED] ID: {order.Id}, PaymentMethod: '{order.PaymentMethod}', TotalAmount: {order.TotalAmount}");
+
             // Midtrans Integration
             if (order.PaymentMethod == "MIDTRANS")
             {
@@ -93,6 +95,11 @@ namespace backend.Controllers
                     
                     _context.Entry(order).State = EntityState.Modified;
                     await _context.SaveChangesAsync();
+                }
+                else
+                {
+                    var errorResponse = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"[MIDTRANS ERROR] Status Code: {response.StatusCode}, Response: {errorResponse}");
                 }
             }
 

@@ -46,6 +46,7 @@ export async function POST(req: Request) {
       purchaseNo,
       supplierName,
       totalAmount,
+      status: "COMPLETED",
       receiptUrl,
       items: items.map((item: any) => ({
         materialId: Number(item.materialId),

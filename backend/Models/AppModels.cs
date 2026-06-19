@@ -157,4 +157,15 @@ namespace backend.Models
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
+
+    public class MidtransLog
+    {
+        [Key]
+        public int Id { get; set; }
+        public string OrderId { get; set; } = string.Empty;
+        public string TransactionStatus { get; set; } = string.Empty;
+        public string FraudStatus { get; set; } = string.Empty;
+        public string RawPayload { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    }
 }

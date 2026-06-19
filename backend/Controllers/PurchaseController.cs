@@ -50,6 +50,13 @@ namespace backend.Controllers
         {
             purchase.CreatedAt = DateTime.UtcNow;
 
+            if (string.IsNullOrEmpty(purchase.PurchaseNo))
+            {
+                purchase.PurchaseNo = $"PO-{DateTime.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid().ToString().Substring(0, 4)}".ToUpper();
+            }
+
+            double totalAmount = 0;
+
             _context.Purchases.Add(purchase);
             
             // Increment material stock
@@ -57,6 +64,8 @@ namespace backend.Controllers
             {
                 foreach (var item in purchase.Items)
                 {
+                    totalAmount += item.Price;
+
                     var material = await _context.Materials.FindAsync(item.MaterialId);
                     if (material != null)
                     {
@@ -64,6 +73,11 @@ namespace backend.Controllers
                         _context.Entry(material).State = EntityState.Modified;
                     }
                 }
+            }
+
+            if (purchase.TotalAmount == 0)
+            {
+                purchase.TotalAmount = totalAmount;
             }
 
             await _context.SaveChangesAsync();
