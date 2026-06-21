@@ -1,0 +1,297 @@
+"use client";
+
+import React, { useState, useEffect } from 'react';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Eye, X, Search, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CustomSelect } from '@/components/ui/CustomSelect';
+import axios from 'axios';
+
+export default function JournalsPage() {
+  const [journals, setJournals] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedJournal, setSelectedJournal] = useState<any | null>(null);
+
+  // Filters & Pagination State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [category, setCategory] = useState('ALL');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  useEffect(() => {
+    fetchJournals();
+  }, []);
+
+  const fetchJournals = async () => {
+    try {
+      const res = await axios.get('/api/accounting/journals');
+      setJournals(res.data);
+    } catch (error) {
+      console.error("Failed to fetch Journals", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatRupiah = (num: number) => {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
+  };
+
+  // Filter Logic
+  const filteredJournals = journals.filter(j => {
+    // 1. Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      if (!j.description?.toLowerCase().includes(query) && !j.reference?.toLowerCase().includes(query)) {
+        return false;
+      }
+    }
+    
+    // 2. Date filter
+    if (startDate && new Date(j.date) < new Date(startDate)) return false;
+    if (endDate && new Date(j.date) > new Date(endDate + 'T23:59:59')) return false;
+
+    // 3. Category filter
+    if (category !== 'ALL') {
+      const desc = j.description?.toLowerCase() || '';
+      if (category === 'SALES' && !desc.includes('penjualan')) return false;
+      if (category === 'PURCHASE' && !desc.includes('pembelian')) return false;
+      if (category === 'ADJUSTMENT' && !desc.includes('penyesuaian')) return false;
+    }
+
+    return true;
+  });
+
+  // Pagination Logic
+  const totalPages = Math.ceil(filteredJournals.length / itemsPerPage) || 1;
+  // Pastikan current page tidak melebih total pages jika data berubah
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const paginatedJournals = filteredJournals.slice((safeCurrentPage - 1) * itemsPerPage, safeCurrentPage * itemsPerPage);
+
+  // Reset ke page 1 jika filter berubah
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, startDate, endDate, category]);
+
+  if (loading) return <div className="p-6 text-brand-cream">Memuat Jurnal...</div>;
+
+  return (
+    <div className="p-6 space-y-6 max-w-6xl mx-auto w-full">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-3xl font-display font-bold text-brand-cream">Jurnal Keuangan</h1>
+        <p className="text-brand-sage">Daftar histori transaksi jurnal umum</p>
+      </div>
+
+      {/* Toolbar Filter & Search */}
+      <Card variant="olive" className="p-4 bg-black/40 border-white/10 flex flex-col md:flex-row gap-4 justify-between items-end relative z-20">
+        <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto flex-wrap">
+          <div>
+            <label className="text-[10px] text-brand-sage uppercase tracking-wider font-bold mb-1.5 block">Kategori Transaksi</label>
+            <CustomSelect
+              value={category}
+              onChange={setCategory}
+              className="bg-black/60 border border-white/10 text-brand-cream rounded-xl px-4 py-2.5 min-w-[180px]"
+              options={[
+                { value: 'ALL', label: 'Semua Kategori' },
+                { value: 'SALES', label: 'Penjualan' },
+                { value: 'PURCHASE', label: 'Pembelian Stok' },
+                { value: 'ADJUSTMENT', label: 'Penyesuaian Stok' },
+              ]}
+            />
+          </div>
+          <div className="flex gap-2">
+            <div>
+              <label className="text-[10px] text-brand-sage uppercase tracking-wider font-bold mb-1.5 block">Dari Tanggal</label>
+              <input 
+                type="date" 
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                onClick={(e) => {
+                  try {
+                    if ('showPicker' in HTMLInputElement.prototype) {
+                      (e.target as HTMLInputElement).showPicker();
+                    }
+                  } catch (err) {}
+                }}
+                className="bg-black/60 border border-white/10 text-brand-cream rounded-xl px-4 py-2.5 focus:outline-none focus:border-brand-warm cursor-pointer" 
+              />
+            </div>
+            <div>
+              <label className="text-[10px] text-brand-sage uppercase tracking-wider font-bold mb-1.5 block">Sampai Tanggal</label>
+              <input 
+                type="date" 
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                onClick={(e) => {
+                  try {
+                    if ('showPicker' in HTMLInputElement.prototype) {
+                      (e.target as HTMLInputElement).showPicker();
+                    }
+                  } catch (err) {}
+                }}
+                className="bg-black/60 border border-white/10 text-brand-cream rounded-xl px-4 py-2.5 focus:outline-none focus:border-brand-warm cursor-pointer" 
+              />
+            </div>
+          </div>
+        </div>
+        
+        <div className="relative w-full md:w-72 mt-2 md:mt-0">
+          <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-brand-sage" />
+          <input 
+            type="text" 
+            placeholder="Cari keterangan / no ref..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-black/60 border border-white/10 text-brand-cream rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:border-brand-warm focus:ring-1 focus:ring-brand-warm transition"
+          />
+        </div>
+      </Card>
+
+      {/* Main Table */}
+      <Card variant="olive" className="p-0 overflow-hidden shadow-xl border-white/10">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm text-brand-sage min-w-[800px]">
+            <thead className="bg-black/40 text-brand-cream border-b border-white/10">
+              <tr>
+                <th className="px-6 py-5 font-semibold">Tanggal</th>
+                <th className="px-6 py-5 font-semibold">No. Referensi</th>
+                <th className="px-6 py-5 font-semibold">Keterangan</th>
+                <th className="px-6 py-5 font-semibold text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {paginatedJournals.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="px-6 py-12 text-center">
+                    <p className="text-brand-sage mb-2">Tidak ada jurnal yang cocok dengan filter pencarian.</p>
+                    <Button variant="outline" onClick={() => {
+                      setSearchQuery(''); setStartDate(''); setEndDate(''); setCategory('ALL');
+                    }}>Reset Filter</Button>
+                  </td>
+                </tr>
+              )}
+              {paginatedJournals.map((journal: any) => (
+                <tr key={journal.id} className="hover:bg-white/5 transition-colors">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {new Date(journal.date).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className="bg-brand-warm/20 text-brand-warm px-2 py-1 rounded font-mono text-xs font-bold border border-brand-warm/50">
+                      {journal.reference}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 font-medium text-brand-cream">{journal.description}</td>
+                  <td className="px-6 py-4 text-right">
+                    <button
+                      onClick={() => setSelectedJournal(journal)}
+                      className="inline-flex items-center text-brand-sage hover:text-brand-cream bg-black/20 hover:bg-black/40 border border-white/5 px-3 py-1.5 rounded-lg transition text-xs font-medium"
+                    >
+                      <Eye className="w-4 h-4 mr-1.5" />
+                      Detail
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        
+        {/* Pagination Footer */}
+        {totalPages > 1 && (
+          <div className="bg-black/40 border-t border-white/10 px-6 py-4 flex items-center justify-between">
+            <p className="text-xs text-brand-sage">
+              Menampilkan <span className="font-bold text-brand-cream">{((safeCurrentPage - 1) * itemsPerPage) + 1}</span> - <span className="font-bold text-brand-cream">{Math.min(safeCurrentPage * itemsPerPage, filteredJournals.length)}</span> dari <span className="font-bold text-brand-cream">{filteredJournals.length}</span> entri
+            </p>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                className="px-3 py-1.5 h-auto text-xs" 
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={safeCurrentPage === 1}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <div className="flex items-center px-4 font-medium text-sm text-brand-cream">
+                Halaman {safeCurrentPage} dari {totalPages}
+              </div>
+              <Button 
+                variant="outline" 
+                className="px-3 py-1.5 h-auto text-xs" 
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={safeCurrentPage === totalPages}
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+      </Card>
+
+      {/* Popup Detail Jurnal */}
+      {selectedJournal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <Card variant="olive" className="w-full max-w-3xl bg-brand-dark border-white/10 p-0 flex flex-col shadow-2xl overflow-hidden">
+            <div className="flex items-center justify-between p-6 border-b border-white/10 bg-black/40">
+              <div>
+                <h2 className="text-xl font-display font-bold text-brand-cream">Detail Jurnal Umum</h2>
+                <p className="text-sm text-brand-sage mt-1">Ref: {selectedJournal.reference}</p>
+              </div>
+              <button 
+                onClick={() => setSelectedJournal(null)}
+                className="text-brand-sage hover:text-brand-cream transition bg-black/20 p-2 rounded-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 bg-brand-dark">
+              <div className="mb-6 grid grid-cols-2 gap-4">
+                <div className="bg-black/20 p-4 rounded-xl border border-white/5">
+                  <p className="text-xs text-brand-sage mb-1 uppercase tracking-wider font-bold">Tanggal Transaksi</p>
+                  <p className="text-sm text-brand-cream">{new Date(selectedJournal.date).toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' })}</p>
+                </div>
+                <div className="bg-black/20 p-4 rounded-xl border border-white/5">
+                  <p className="text-xs text-brand-sage mb-1 uppercase tracking-wider font-bold">Keterangan</p>
+                  <p className="text-sm text-brand-cream">{selectedJournal.description}</p>
+                </div>
+              </div>
+
+              <div className="border border-white/10 rounded-xl overflow-hidden">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-black/40 text-brand-sage border-b border-white/10">
+                    <tr>
+                      <th className="py-3 px-4 font-medium">Kode Akun</th>
+                      <th className="py-3 px-4 font-medium">Nama Akun</th>
+                      <th className="py-3 px-4 font-medium text-right w-32">Debit</th>
+                      <th className="py-3 px-4 font-medium text-right w-32">Kredit</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-brand-cream bg-black/20">
+                    {selectedJournal.lines.map((line: any) => (
+                      <tr key={line.id} className="border-b border-white/5 last:border-0 hover:bg-white/5">
+                        <td className="py-3 px-4 font-mono text-brand-warm">{line.account?.code}</td>
+                        <td className="py-3 px-4">{line.account?.name}</td>
+                        <td className="py-3 px-4 text-right font-medium">{line.debit > 0 ? formatRupiah(line.debit) : '-'}</td>
+                        <td className="py-3 px-4 text-right font-medium text-brand-sage">{line.credit > 0 ? formatRupiah(line.credit) : '-'}</td>
+                      </tr>
+                    ))}
+                    <tr className="bg-black/40 border-t-2 border-white/10 font-bold">
+                      <td colSpan={2} className="py-4 px-4 text-right text-brand-sage uppercase tracking-wider text-xs">Total Balance:</td>
+                      <td className="py-4 px-4 text-right text-brand-warm">{formatRupiah(selectedJournal.lines.reduce((sum: number, l: any) => sum + l.debit, 0))}</td>
+                      <td className="py-4 px-4 text-right text-brand-warm">{formatRupiah(selectedJournal.lines.reduce((sum: number, l: any) => sum + l.credit, 0))}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div className="p-4 border-t border-white/10 bg-black/40 flex justify-end">
+              <Button variant="outline" onClick={() => setSelectedJournal(null)}>Tutup</Button>
+            </div>
+          </Card>
+        </div>
+      )}
+    </div>
+  );
+}

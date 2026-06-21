@@ -20,6 +20,17 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       return NextResponse.json(updatedMaterial || { success: true });
     }
 
+    if (action === 'adjust_stock') {
+      const response = await backendClient.post(`/api/Material/${id}/adjust`, {
+        adjustType,
+        quantity: Number(quantity),
+        totalPrice: Number(body.price || 0),
+        notes: body.notes || ''
+      });
+      return NextResponse.json(response || { success: true });
+    }
+
+    // Default legacy PUT logic
     let incrementValue = Number(quantity);
     if (adjustType === 'out') {
       incrementValue = -Math.abs(Number(quantity));

@@ -21,6 +21,8 @@ export default function InventoryPage() {
   // State form mutasi stok
   const [adjustType, setAdjustType] = useState('in');
   const [adjustQty, setAdjustQty] = useState('');
+  const [adjustPrice, setAdjustPrice] = useState('');
+  const [adjustNotes, setAdjustNotes] = useState('');
 
   // State filter & pencarian
   const [filterMode, setFilterMode] = useState<'all' | 'low'>('all');
@@ -52,10 +54,13 @@ export default function InventoryPage() {
   });
 
   const adjustMaterial = useMutation({
-    mutationFn: async (payload: { id: number; type: string; quantity: number }) => {
+    mutationFn: async (payload: { id: number; type: string; quantity: number, price: number, notes: string }) => {
       const { data } = await axios.put(`/api/materials/${payload.id}`, {
+        action: 'adjust_stock',
         adjustType: payload.type,
-        quantity: payload.quantity
+        quantity: payload.quantity,
+        price: payload.price,
+        notes: payload.notes
       });
       return data;
     },
@@ -63,6 +68,8 @@ export default function InventoryPage() {
       queryClient.invalidateQueries({ queryKey: ['materials'] });
       setShowAdjust(null);
       setAdjustQty('');
+      setAdjustPrice('');
+      setAdjustNotes('');
       setAdjustType('in');
     }
   });
@@ -97,7 +104,9 @@ export default function InventoryPage() {
     adjustMaterial.mutate({
       id,
       type: adjustType,
-      quantity: parseFloat(adjustQty)
+      quantity: parseFloat(adjustQty),
+      price: parseFloat(adjustPrice || '0'),
+      notes: adjustNotes
     });
   };
 
@@ -257,7 +266,7 @@ export default function InventoryPage() {
                     <h4 className="text-xs font-bold text-brand-cream border-b border-white/10 pb-1.5">Mutasi Stok</h4>
                     
                     <div className="flex gap-3">
-                      <div className="w-1/2">
+                      <div className="w-1/3">
                         <label className="text-[10px] text-brand-sage mb-1 block">Jenis</label>
                         <select
                           value={adjustType}
@@ -268,7 +277,7 @@ export default function InventoryPage() {
                           <option value="out">Keluar (-)</option>
                         </select>
                       </div>
-                      <div className="w-1/2">
+                      <div className="w-1/3">
                         <label className="text-[10px] text-brand-sage mb-1 block">Qty</label>
                         <input 
                           type="number" 
@@ -278,11 +287,27 @@ export default function InventoryPage() {
                           className="w-full bg-black/60 border border-white/10 text-brand-cream rounded-md px-2 py-2 text-xs focus:outline-none focus:border-brand-warm" 
                         />
                       </div>
+                      <div className="w-1/3">
+                        <label className="text-[10px] text-brand-sage mb-1 block">Total Harga</label>
+                        <input 
+                          type="number" 
+                          value={adjustPrice}
+                          onChange={(e) => setAdjustPrice(e.target.value)}
+                          placeholder="0" 
+                          className="w-full bg-black/60 border border-white/10 text-brand-cream rounded-md px-2 py-2 text-xs focus:outline-none focus:border-brand-warm" 
+                        />
+                      </div>
                     </div>
                     
                     <div>
                       <label className="text-[10px] text-brand-sage mb-1 block">Catatan / Alasan</label>
-                      <input type="text" placeholder="Cth: Pembelian/Tumpah" className="w-full bg-black/60 border border-white/10 text-brand-cream rounded-md px-2 py-2 text-xs focus:outline-none focus:border-brand-warm" />
+                      <input 
+                        type="text" 
+                        value={adjustNotes}
+                        onChange={(e) => setAdjustNotes(e.target.value)}
+                        placeholder="Cth: Pembelian/Tumpah" 
+                        className="w-full bg-black/60 border border-white/10 text-brand-cream rounded-md px-2 py-2 text-xs focus:outline-none focus:border-brand-warm" 
+                      />
                     </div>
                     
                     <Button 
@@ -359,7 +384,7 @@ export default function InventoryPage() {
                       <td colSpan={3} className="px-6 py-6">
                         <div className="bg-black/40 rounded-xl p-5 border border-white/5 flex flex-col gap-4">
                           <h4 className="text-sm font-semibold text-brand-cream">Mutasi Stok: {item.name}</h4>
-                          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
                             <div className="md:col-span-1">
                               <label className="text-xs text-brand-sage mb-1.5 block">Jenis Mutasi</label>
                               <CustomSelect
@@ -382,10 +407,26 @@ export default function InventoryPage() {
                                 className="w-full bg-black/60 border border-white/10 text-brand-cream rounded-lg px-4 py-3 focus:outline-none focus:border-brand-warm" 
                               />
                             </div>
+                            <div className="md:col-span-1">
+                              <label className="text-xs text-brand-sage mb-1.5 block">Total Harga (Rp)</label>
+                              <input 
+                                type="number" 
+                                value={adjustPrice}
+                                onChange={(e) => setAdjustPrice(e.target.value)}
+                                placeholder="0" 
+                                className="w-full bg-black/60 border border-white/10 text-brand-cream rounded-lg px-4 py-3 focus:outline-none focus:border-brand-warm" 
+                              />
+                            </div>
                             <div className="md:col-span-2 flex gap-4 items-end">
                               <div className="flex-1">
                                 <label className="text-xs text-brand-sage mb-1.5 block">Keterangan / Alasan</label>
-                                <input type="text" placeholder="Contoh: Pembelian / Tumpah..." className="w-full bg-black/60 border border-white/10 text-brand-cream rounded-lg px-4 py-3 focus:outline-none focus:border-brand-warm" />
+                                <input 
+                                  type="text" 
+                                  value={adjustNotes}
+                                  onChange={(e) => setAdjustNotes(e.target.value)}
+                                  placeholder="Contoh: Pembelian / Tumpah..." 
+                                  className="w-full bg-black/60 border border-white/10 text-brand-cream rounded-lg px-4 py-3 focus:outline-none focus:border-brand-warm" 
+                                />
                               </div>
                               <Button 
                                 variant="primary" 

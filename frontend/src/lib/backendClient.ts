@@ -1,14 +1,28 @@
-// frontend/src/lib/backendClient.ts
+import { cookies } from 'next/headers';
 
 // Fallback to http://localhost:5052 if not defined in .env
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:5052';
 
+const getAuthHeaders = async () => {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('tresbros_token')?.value;
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
+  } catch (error) {
+    // cookies() throws if called from Client Components without transitioning to Server Components.
+    return {};
+  }
+};
+
 export const backendClient = {
   get: async (endpoint: string, init?: RequestInit) => {
+    const authHeaders = await getAuthHeaders();
     const res = await fetch(`${BACKEND_URL}${endpoint}`, {
+      cache: 'no-store',
       ...init,
       headers: {
         'Content-Type': 'application/json',
+        ...authHeaders,
         ...init?.headers,
       },
     });
@@ -20,11 +34,13 @@ export const backendClient = {
   },
 
   post: async (endpoint: string, body: any, init?: RequestInit) => {
+    const authHeaders = await getAuthHeaders();
     const res = await fetch(`${BACKEND_URL}${endpoint}`, {
       ...init,
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...authHeaders,
         ...init?.headers,
       },
       body: JSON.stringify(body),
@@ -42,11 +58,13 @@ export const backendClient = {
   },
 
   put: async (endpoint: string, body: any, init?: RequestInit) => {
+    const authHeaders = await getAuthHeaders();
     const res = await fetch(`${BACKEND_URL}${endpoint}`, {
       ...init,
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
+        ...authHeaders,
         ...init?.headers,
       },
       body: JSON.stringify(body),
@@ -57,9 +75,14 @@ export const backendClient = {
   },
 
   delete: async (endpoint: string, init?: RequestInit) => {
+    const authHeaders = await getAuthHeaders();
     const res = await fetch(`${BACKEND_URL}${endpoint}`, {
       ...init,
       method: 'DELETE',
+      headers: {
+        ...authHeaders,
+        ...init?.headers,
+      }
     });
     if (!res.ok) throw new Error(`DELETE ${endpoint} failed: ${res.statusText}`);
     if (res.status === 204) return null;

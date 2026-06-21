@@ -145,6 +145,8 @@ namespace backend.Controllers
 
             if (isNowCompleted && !wasCompleted)
             {
+                double totalCogs = 0;
+
                 // Deduct stock
                 foreach (var item in order.Items)
                 {
@@ -152,19 +154,86 @@ namespace backend.Controllers
                     {
                         foreach (var recipe in item.Product.RecipeItems)
                         {
+                            double requiredQty = recipe.Quantity * item.Quantity;
                             var material = await _context.Materials.FindAsync(recipe.MaterialId);
+                            
                             if (material != null)
                             {
-                                material.Stock -= (recipe.Quantity * item.Quantity);
+                                material.Stock -= requiredQty;
                                 _context.Entry(material).State = EntityState.Modified;
+
+                                // FIFO deduction from MaterialBatch
+                                var batches = await _context.MaterialBatches
+                                    .Where(b => b.MaterialId == material.Id && b.RemainingQty > 0)
+                                    .OrderBy(b => b.CreatedAt)
+                                    .ToListAsync();
+
+                                double remainingNeeded = requiredQty;
+
+                                foreach (var batch in batches)
+                                {
+                                    if (remainingNeeded <= 0) break;
+
+                                    double qtyToDeduct = Math.Min(remainingNeeded, batch.RemainingQty);
+                                    batch.RemainingQty -= qtyToDeduct;
+                                    remainingNeeded -= qtyToDeduct;
+                                    
+                                    totalCogs += qtyToDeduct * batch.UnitPrice;
+                                    _context.Entry(batch).State = EntityState.Modified;
+                                }
                             }
                         }
                     }
                 }
+
+                // Create Journal for Sales, Tax, COGS
+                var cashOrReceivableCode = order.PaymentMethod == "MIDTRANS" ? "1120" : "1110";
+                var cashAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == cashOrReceivableCode) ?? new ChartOfAccount { Code = cashOrReceivableCode, Name = order.PaymentMethod == "MIDTRANS" ? "Piutang Midtrans" : "Kas Kecil", Type = "ASSET" };
+                var salesAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "4110") ?? new ChartOfAccount { Code = "4110", Name = "Pendapatan Penjualan", Type = "REVENUE" };
+                var cogsAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "5110") ?? new ChartOfAccount { Code = "5110", Name = "HPP", Type = "EXPENSE" };
+                var inventoryAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "1140") ?? new ChartOfAccount { Code = "1140", Name = "Persediaan Bahan Baku", Type = "ASSET" };
+                var taxAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "2120") ?? new ChartOfAccount { Code = "2120", Name = "Hutang Pajak (PB1)", Type = "LIABILITY" };
+
+                if (cashAccount.Id == 0) _context.ChartOfAccounts.Add(cashAccount);
+                if (salesAccount.Id == 0) _context.ChartOfAccounts.Add(salesAccount);
+                if (cogsAccount.Id == 0) _context.ChartOfAccounts.Add(cogsAccount);
+                if (inventoryAccount.Id == 0) _context.ChartOfAccounts.Add(inventoryAccount);
+                if (taxAccount.Id == 0) _context.ChartOfAccounts.Add(taxAccount);
+
+                var taxSetting = await _context.Settings.FirstOrDefaultAsync(s => s.Key == "TAX_ENABLED");
+                bool isTaxEnabled = taxSetting?.Value == "true";
+                
+                double taxAmount = isTaxEnabled ? order.TotalAmount - (order.TotalAmount / 1.11) : 0;
+                double salesRevenue = order.TotalAmount - taxAmount;
+
+                var journal = new JournalEntry 
+                {
+                    Date = DateTime.UtcNow,
+                    Reference = order.OrderNumber,
+                    Description = $"Penjualan {order.OrderNumber}"
+                };
+
+                // Sales & Cash/Receivable
+                journal.Lines.Add(new JournalEntryLine { Account = cashAccount, Debit = order.TotalAmount, Credit = 0 });
+                journal.Lines.Add(new JournalEntryLine { Account = salesAccount, Debit = 0, Credit = salesRevenue });
+                
+                if (isTaxEnabled && taxAmount > 0)
+                {
+                    journal.Lines.Add(new JournalEntryLine { Account = taxAccount, Debit = 0, Credit = taxAmount });
+                }
+
+                // COGS & Inventory
+                if (totalCogs > 0)
+                {
+                    journal.Lines.Add(new JournalEntryLine { Account = cogsAccount, Debit = totalCogs, Credit = 0 });
+                    journal.Lines.Add(new JournalEntryLine { Account = inventoryAccount, Debit = 0, Credit = totalCogs });
+                }
+
+                _context.JournalEntries.Add(journal);
             }
             else if (wasCompleted && !isNowCompleted)
             {
-                // Revert stock
+                // Revert stock (not reverting FIFO batches logic precisely for simplicity, just adding stock back. A full rollback would be more complex)
                 foreach (var item in order.Items)
                 {
                     if (item.Product?.RecipeItems != null)

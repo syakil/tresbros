@@ -59,7 +59,7 @@ namespace backend.Controllers
 
             _context.Purchases.Add(purchase);
             
-            // Increment material stock
+            // Increment material stock & Create Batch
             if (purchase.Items != null)
             {
                 foreach (var item in purchase.Items)
@@ -71,6 +71,18 @@ namespace backend.Controllers
                     {
                         material.Stock += item.Quantity;
                         _context.Entry(material).State = EntityState.Modified;
+                        
+                        // Create FIFO Batch
+                        var batch = new MaterialBatch 
+                        {
+                            MaterialId = item.MaterialId,
+                            PurchaseItem = item,
+                            OriginalQty = item.Quantity,
+                            RemainingQty = item.Quantity,
+                            UnitPrice = item.Quantity > 0 ? item.Price / item.Quantity : 0,
+                            CreatedAt = DateTime.UtcNow
+                        };
+                        _context.MaterialBatches.Add(batch);
                     }
                 }
             }
@@ -79,6 +91,25 @@ namespace backend.Controllers
             {
                 purchase.TotalAmount = totalAmount;
             }
+
+            // Create Journal Entry
+            var invAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "1140") ?? new ChartOfAccount { Code = "1140", Name = "Persediaan Bahan Baku", Type = "ASSET" };
+            var cashAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "1110") ?? new ChartOfAccount { Code = "1110", Name = "Kas Kecil", Type = "ASSET" };
+            
+            if (invAccount.Id == 0) _context.ChartOfAccounts.Add(invAccount);
+            if (cashAccount.Id == 0) _context.ChartOfAccounts.Add(cashAccount);
+
+            var journal = new JournalEntry 
+            {
+                Date = DateTime.UtcNow,
+                Reference = purchase.PurchaseNo,
+                Description = $"Pembelian Bahan Baku {purchase.PurchaseNo}"
+            };
+            
+            journal.Lines.Add(new JournalEntryLine { Account = invAccount, Debit = purchase.TotalAmount, Credit = 0 });
+            journal.Lines.Add(new JournalEntryLine { Account = cashAccount, Debit = 0, Credit = purchase.TotalAmount });
+            
+            _context.JournalEntries.Add(journal);
 
             await _context.SaveChangesAsync();
 

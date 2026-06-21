@@ -11,7 +11,7 @@ import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 
 export default function PosPage() {
-  const { items, customerName, setCustomerName, addItem, removeItem, updateQuantity, getSubtotal, getTax, getTotal, clearCart, discountAmount, setDiscountAmount, discountType, setDiscountType, getCalculatedDiscount, appliedCoupon, setAppliedCoupon } = useCartStore();
+  const { items, customerName, setCustomerName, addItem, removeItem, updateQuantity, getSubtotal, getTax, getTotal, clearCart, discountAmount, setDiscountAmount, discountType, setDiscountType, getCalculatedDiscount, appliedCoupon, setAppliedCoupon, setTaxEnabled, taxEnabled } = useCartStore();
   const [activeCategory, setActiveCategory] = useState<string>('Semua');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [showCheckout, setShowCheckout] = useState(false);
@@ -51,6 +51,12 @@ export default function PosPage() {
       script.async = true;
       document.body.appendChild(script);
     }
+    
+    // Fetch global tax setting
+    axios.get('/api/settings/TAX_ENABLED')
+      .then(res => setTaxEnabled(res.data.value === 'true'))
+      .catch(err => console.log('Tax setting not found, defaulting to true'));
+
   }, []);
 
   const showToast = (message: string, type: 'error' | 'success' | 'warning') => {
@@ -436,10 +442,12 @@ export default function PosPage() {
                 <span className="font-medium">-{formatRupiah(getCalculatedDiscount())}</span>
               </div>
             )}
-            <div className="flex justify-between text-sm text-brand-sage">
-              <span>Pajak (11%)</span>
-              <span className="font-medium text-brand-cream">{formatRupiah(getTax())}</span>
-            </div>
+            {taxEnabled && (
+              <div className="flex justify-between text-sm text-brand-sage">
+                <span>Pajak (11%)</span>
+                <span className="font-medium text-brand-cream">{formatRupiah(getTax())}</span>
+              </div>
+            )}
           </div>
           <div className="flex justify-between items-end pb-4 border-b border-white/5 mb-4">
             <span className="text-brand-sage font-medium">Total Bayar</span>
@@ -599,7 +607,7 @@ export default function PosPage() {
       <div className="mb-2">
         <div className="flex justify-between"><span>Subtotal</span><span>{getSubtotal()}</span></div>
         {discountAmount > 0 && <div className="flex justify-between"><span>Diskon {appliedCoupon ? `[${appliedCoupon.code}]` : (discountType === 'percentage' ? `(${discountAmount}%)` : '')}</span><span>-{getCalculatedDiscount()}</span></div>}
-        <div className="flex justify-between"><span>PB1 (11%)</span><span>{getTax()}</span></div>
+        {taxEnabled && <div className="flex justify-between"><span>PB1 (11%)</span><span>{getTax()}</span></div>}
       </div>
       
       <div className="border-b border-black border-dashed mb-2"></div>

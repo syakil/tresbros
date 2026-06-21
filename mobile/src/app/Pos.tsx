@@ -10,7 +10,7 @@ import { API_URL } from '../lib/api';
 
 export function Pos() {
   const navigation = useNavigation<any>();
-  const { items, customerName, setCustomerName, addItem, removeItem, updateQuantity, getSubtotal, getTax, getTotal, clearCart, discountAmount, setDiscountAmount, discountType, setDiscountType, getCalculatedDiscount, appliedCoupon, setAppliedCoupon } = useCartStore();
+  const { items, customerName, setCustomerName, addItem, removeItem, updateQuantity, getSubtotal, getTax, getTotal, clearCart, discountAmount, setDiscountAmount, discountType, setDiscountType, getCalculatedDiscount, appliedCoupon, setAppliedCoupon, setTaxEnabled, taxEnabled } = useCartStore();
   const [activeCategory, setActiveCategory] = useState<string>('Semua');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [products, setProducts] = useState<Product[]>([]);
@@ -49,6 +49,14 @@ export function Pos() {
       try {
         const res = await axios.get(`${API_URL}/products`);
         setProducts(res.data);
+        
+        try {
+          const taxRes = await axios.get(`${API_URL}/settings/TAX_ENABLED`);
+          setTaxEnabled(taxRes.data.value === 'true');
+        } catch(e) {
+          console.log('Tax setting not found, defaulting to true');
+        }
+
       } catch (error) {
         console.error("Failed to fetch products:", error);
         Alert.alert("Error", "Gagal memuat produk dari server. Pastikan server Next.js jalan dan IP benar.");
@@ -382,10 +390,12 @@ export function Pos() {
             </View>
           )}
 
-          <View className="flex-row justify-between mb-4">
-            <Text className="text-brand-sage text-sm">Pajak (11%)</Text>
-            <Text className="text-brand-cream font-medium">{formatRupiah(getTax())}</Text>
-          </View>
+          {taxEnabled && (
+            <View className="flex-row justify-between mb-4">
+              <Text className="text-brand-sage text-sm">Pajak (11%)</Text>
+              <Text className="text-brand-cream font-medium">{formatRupiah(getTax())}</Text>
+            </View>
+          )}
           
           <View className="flex-row justify-between items-end border-b border-white/5 pb-4 mb-4">
             <Text className="text-brand-sage font-medium">Total Bayar</Text>

@@ -26,6 +26,8 @@ interface CartState {
   discountType: 'nominal' | 'percentage';
   discountAmount: number;
   appliedCoupon: any | null;
+  taxEnabled: boolean;
+  setTaxEnabled: (enabled: boolean) => void;
   setDiscountType: (type: 'nominal' | 'percentage') => void;
   setDiscountAmount: (amount: number) => void;
   setAppliedCoupon: (coupon: any | null, discountAmount: number) => void;
@@ -42,6 +44,10 @@ export const useCartStore = create<CartState>((set, get) => ({
   discountType: 'nominal',
   discountAmount: 0,
   appliedCoupon: null,
+  
+  taxEnabled: true,
+  
+  setTaxEnabled: (enabled) => set({ taxEnabled: enabled }),
   
   setDiscountType: (type) => set({ discountType: type, discountAmount: 0, appliedCoupon: null }),
   setDiscountAmount: (amount) => set({ discountAmount: Math.max(0, amount), appliedCoupon: null }),
@@ -101,7 +107,9 @@ export const useCartStore = create<CartState>((set, get) => ({
   },
   
   getTax: () => {
-    const taxableAmount = Math.max(0, get().getSubtotal() - get().getCalculatedDiscount());
+    const state = get();
+    if (!state.taxEnabled) return 0;
+    const taxableAmount = Math.max(0, state.getSubtotal() - state.getCalculatedDiscount());
     return taxableAmount * 0.11; // 11% PB1 (Pajak Restoran)
   },
   

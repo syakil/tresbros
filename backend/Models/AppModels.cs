@@ -170,4 +170,92 @@ namespace backend.Models
         public string RawPayload { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
+    public class Setting
+    {
+        [Key]
+        public string Key { get; set; } = string.Empty;
+        public string Value { get; set; } = string.Empty;
+        public string DataType { get; set; } = "string"; // bool, string, int, float
+    }
+
+    public class ChartOfAccount
+    {
+        [Key]
+        public int Id { get; set; }
+        public string Code { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Type { get; set; } = string.Empty; // ASSET, LIABILITY, EQUITY, REVENUE, EXPENSE
+        public double Balance { get; set; } = 0;
+        public bool IsActive { get; set; } = true;
+    }
+
+    public class JournalEntry
+    {
+        [Key]
+        public int Id { get; set; }
+        public DateTime Date { get; set; } = DateTime.UtcNow;
+        public string Reference { get; set; } = string.Empty; // e.g. OrderNo or PurchaseNo
+        public string Description { get; set; } = string.Empty;
+        
+        public ICollection<JournalEntryLine> Lines { get; set; } = new List<JournalEntryLine>();
+    }
+
+    public class JournalEntryLine
+    {
+        [Key]
+        public int Id { get; set; }
+        public int JournalEntryId { get; set; }
+        public int AccountId { get; set; }
+        public double Debit { get; set; } = 0;
+        public double Credit { get; set; } = 0;
+
+        [ForeignKey("JournalEntryId")]
+        public JournalEntry? JournalEntry { get; set; }
+
+        [ForeignKey("AccountId")]
+        public ChartOfAccount? Account { get; set; }
+    }
+
+    public class MaterialBatch
+    {
+        [Key]
+        public int Id { get; set; }
+        public int MaterialId { get; set; }
+        public int? PurchaseItemId { get; set; } // Can be null if it's the initial/legacy stock
+        public double OriginalQty { get; set; }
+        public double RemainingQty { get; set; }
+        public double UnitPrice { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        [ForeignKey("MaterialId")]
+        public Material? Material { get; set; }
+
+        [ForeignKey("PurchaseItemId")]
+        public PurchaseItem? PurchaseItem { get; set; }
+    }
+
+    public class Role
+    {
+        [Key]
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Permissions { get; set; } = "[]"; // JSON array of allowed modules
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    }
+
+    public class User
+    {
+        [Key]
+        public int Id { get; set; }
+        public string Username { get; set; } = string.Empty;
+        public string FullName { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        
+        public int RoleId { get; set; }
+        [ForeignKey("RoleId")]
+        public Role? Role { get; set; }
+        public bool IsActive { get; set; } = true;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    }
 }

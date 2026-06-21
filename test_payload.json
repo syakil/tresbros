@@ -1,0 +1,12 @@
+{
+  "customerName": "Test",
+  "totalAmount": 10000,
+  "paymentMethod": "CASH",
+  "items": [
+    {
+      "productId": 1,
+      "quantity": 1,
+      "price": 10000
+    }
+  ]
+}
