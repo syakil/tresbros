@@ -17,14 +17,14 @@ const getAuthHeaders = async () => {
 export const backendClient = {
   get: async (endpoint: string, init?: RequestInit) => {
     const authHeaders = await getAuthHeaders();
+    const headers = new Headers(init?.headers);
+    headers.set('Content-Type', 'application/json');
+    if (authHeaders.Authorization) headers.set('Authorization', authHeaders.Authorization);
+
     const res = await fetch(`${BACKEND_URL}${endpoint}`, {
       cache: 'no-store',
       ...init,
-      headers: {
-        'Content-Type': 'application/json',
-        ...authHeaders,
-        ...init?.headers,
-      },
+      headers
     });
     if (!res.ok) throw new Error(`GET ${endpoint} failed: ${res.statusText}`);
     
@@ -35,14 +35,14 @@ export const backendClient = {
 
   post: async (endpoint: string, body: any, init?: RequestInit) => {
     const authHeaders = await getAuthHeaders();
+    const headers = new Headers(init?.headers);
+    headers.set('Content-Type', 'application/json');
+    if (authHeaders.Authorization) headers.set('Authorization', authHeaders.Authorization);
+
     const res = await fetch(`${BACKEND_URL}${endpoint}`, {
       ...init,
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...authHeaders,
-        ...init?.headers,
-      },
+      headers,
       body: JSON.stringify(body),
     });
     if (!res.ok) {
@@ -59,14 +59,14 @@ export const backendClient = {
 
   put: async (endpoint: string, body: any, init?: RequestInit) => {
     const authHeaders = await getAuthHeaders();
+    const headers = new Headers(init?.headers);
+    headers.set('Content-Type', 'application/json');
+    if (authHeaders.Authorization) headers.set('Authorization', authHeaders.Authorization);
+
     const res = await fetch(`${BACKEND_URL}${endpoint}`, {
       ...init,
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        ...authHeaders,
-        ...init?.headers,
-      },
+      headers,
       body: JSON.stringify(body),
     });
     if (!res.ok) throw new Error(`PUT ${endpoint} failed: ${res.statusText}`);
@@ -76,13 +76,14 @@ export const backendClient = {
 
   delete: async (endpoint: string, init?: RequestInit) => {
     const authHeaders = await getAuthHeaders();
+    const headers = new Headers(init?.headers);
+    headers.set('Content-Type', 'application/json');
+    if (authHeaders.Authorization) headers.set('Authorization', authHeaders.Authorization);
+
     const res = await fetch(`${BACKEND_URL}${endpoint}`, {
       ...init,
       method: 'DELETE',
-      headers: {
-        ...authHeaders,
-        ...init?.headers,
-      }
+      headers,
     });
     if (!res.ok) throw new Error(`DELETE ${endpoint} failed: ${res.statusText}`);
     if (res.status === 204) return null;
