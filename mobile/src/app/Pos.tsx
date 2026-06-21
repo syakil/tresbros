@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, FlatList, Alert, Modal } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, FlatList, Alert, Modal, useWindowDimensions } from 'react-native';
 import { useCartStore, Product } from '../store/useCartStore';
 import { ShoppingCart, Search, Coffee, Pizza, Plus, Minus, Trash2, User, Tag, ReceiptText } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -23,6 +23,11 @@ export function Pos() {
   const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'MIDTRANS'>('CASH');
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
+  
+  const { width, height } = useWindowDimensions();
+  const isLandscape = width > height;
+  const isDesktop = width >= 1024; // lg breakpoint in Tailwind
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const categories = ['Semua', 'Kopi', 'Non-Kopi', 'Makanan'];
 
@@ -121,7 +126,7 @@ export function Pos() {
     setShowCheckout(true);
   };
 
-  const processPayment = async () => {
+  const processPayment = async (method: 'CASH' | 'MIDTRANS' = paymentMethod) => {
     try {
       setIsProcessing(true);
       const res = await axios.post(`${API_URL}/orders`, {
@@ -129,7 +134,7 @@ export function Pos() {
         totalAmount: getTotal(),
         couponCode: appliedCoupon?.code || null,
         discountAmount: getCalculatedDiscount(),
-        paymentMethod: paymentMethod,
+        paymentMethod: method,
         items: items.map(item => ({
           id: item.id,
           quantity: item.quantity,
@@ -140,8 +145,9 @@ export function Pos() {
       
       clearCart();
       setShowCheckout(false);
+      setIsCartOpen(false);
 
-      if (paymentMethod === 'MIDTRANS' && res.data.paymentUrl) {
+      if (method === 'MIDTRANS' && res.data.paymentUrl) {
         setPaymentUrl(res.data.paymentUrl);
       } else {
         Alert.alert("Sukses", "Pembayaran Berhasil! Pesanan dikirim ke KDS.");
@@ -155,11 +161,115 @@ export function Pos() {
     }
   };
 
+  // Helper function for Cart Items Content (reused in desktop right panel and mobile modal)
+  const renderCartItems = () => (
+    <ScrollView className="flex-1 px-4" showsVerticalScrollIndicator={false}>
+      {items.length === 0 ? (
+        <View className="flex-1 items-center justify-center mt-10 opacity-50">
+          <ShoppingCart size={48} color="#7D8F6A" className="mb-4" />
+          <Text className="text-brand-sage font-medium">Belum ada pesanan</Text>
+          <Text className="text-brand-sage/60 text-xs mt-1">Pilih menu untuk mulai menambahkan</Text>
+        </View>
+      ) : (
+        items.map((item) => (
+          <View key={item.cartItemId} className="bg-white/5 border border-white/5 rounded-2xl p-3 mb-3">
+            <View className="flex-row justify-between items-start">
+              <Text className="flex-1 text-brand-cream text-sm font-medium mr-2" numberOfLines={2}>
+                {item.name}
+              </Text>
+              <Text className="text-brand-warm text-sm font-bold">
+                {formatRupiah(item.price * item.quantity)}
+              </Text>
+            </View>
+
+            <View className="flex-row justify-between items-center mt-3">
+              <TouchableOpacity onPress={() => removeItem(item.cartItemId)} className="p-1.5 bg-red-500/10 rounded-lg">
+                <Trash2 size={16} color="#EF4444" />
+              </TouchableOpacity>
+
+              <View className="flex-row items-center bg-black/40 rounded-xl border border-white/5 p-1">
+                <TouchableOpacity onPress={() => updateQuantity(item.cartItemId, item.quantity - 1)} className="w-8 h-8 items-center justify-center rounded-lg">
+                  <Minus size={16} color="#7D8F6A" />
+                </TouchableOpacity>
+                <Text className="text-brand-cream font-bold w-6 text-center">{item.quantity}</Text>
+                <TouchableOpacity onPress={() => updateQuantity(item.cartItemId, item.quantity + 1)} className="w-8 h-8 bg-brand-warm/20 items-center justify-center rounded-lg">
+                  <Plus size={16} color="#D4A373" />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        ))
+      )}
+    </ScrollView>
+  );
+
+  const renderCheckoutFooter = () => (
+    <View className="p-4 bg-black/40 border-t border-white/5">
+      <View className="flex-row justify-between mb-2">
+        <Text className="text-brand-sage text-sm">Subtotal</Text>
+        <Text className="text-brand-cream font-medium">{formatRupiah(getSubtotal())}</Text>
+      </View>
+      
+      {discountAmount > 0 && (
+        <View className="flex-row justify-between mb-2">
+          <Text className="text-red-400 text-sm">Diskon {appliedCoupon ? `[${appliedCoupon.code}]` : (discountType === 'percentage' ? `(${discountAmount}%)` : '')}</Text>
+          <Text className="text-red-400 font-medium">-{formatRupiah(getCalculatedDiscount())}</Text>
+        </View>
+      )}
+
+      {taxEnabled && (
+        <View className="flex-row justify-between mb-2">
+          <Text className="text-brand-sage text-sm">Pajak (11%)</Text>
+          <Text className="text-brand-cream font-medium">{formatRupiah(getTax())}</Text>
+        </View>
+      )}
+      
+      <View className="border-t border-white/10 border-dashed my-2" />
+
+      <View className="flex-row justify-between items-center mb-4">
+        <Text className="text-brand-cream font-bold text-lg">Total Bayar</Text>
+        <Text className="text-brand-warm font-bold text-2xl">{formatRupiah(getTotal())}</Text>
+      </View>
+
+      <View className="flex-row gap-3">
+        <TouchableOpacity 
+          disabled={items.length === 0 || isProcessing}
+          onPress={() => processPayment('MIDTRANS')}
+          className={`flex-1 py-4 border border-brand-warm/30 rounded-2xl items-center flex-row justify-center ${items.length === 0 ? 'opacity-50' : 'active:bg-brand-warm/10'}`}
+        >
+          <Text className="text-brand-warm font-bold ml-2">QRIS</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          disabled={items.length === 0 || isProcessing}
+          onPress={() => processPayment('CASH')}
+          className={`flex-1 py-4 bg-brand-warm rounded-2xl items-center flex-row justify-center ${items.length === 0 ? 'opacity-50' : 'active:scale-95'}`}
+        >
+          <Text className="text-brand-dark font-bold ml-2">Tunai</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
   return (
     <>
-    <View className="flex-1 flex-row bg-brand-dark">
+    <View className="flex-1 flex-col lg:flex-row bg-brand-dark">
+      {/* Top Bar (Mobile Only) */}
+      {!isDesktop && (
+        <View className="flex-row items-center justify-between px-4 py-3 bg-brand-dark z-20 border-b border-white/5">
+          <View className="flex-row items-center gap-3">
+            <View className="w-10 h-10 rounded-full bg-brand-warm/20 items-center justify-center border border-brand-warm/30">
+              <Coffee size={20} color="#D4A373" />
+            </View>
+            <View>
+              <Text className="font-bold text-lg text-brand-cream leading-tight">Tresbros</Text>
+              <Text className="text-xs text-brand-sage/70">Kasir Utama</Text>
+            </View>
+          </View>
+        </View>
+      )}
+
       {/* KIRI: Grid Menu Produk */}
-      <View className="flex-1 flex-col p-4 border-r border-white/5">
+      <View className="flex-1 flex-col p-4 border-r border-white/5 pb-24">
         
         {/* Header Kiri: Search & Kategori */}
         <View className="mb-4 space-y-3">
@@ -171,7 +281,7 @@ export function Pos() {
               <Text className="text-orange-400 font-bold">{pendingOrders.length} Pesanan Tertunda (Midtrans)</Text>
             </TouchableOpacity>
           )}
-          <View className="flex-row items-center bg-black/20 border border-white/5 rounded-xl px-4 py-2">
+          <View className="flex-row items-center bg-white/5 border border-white/10 rounded-xl px-4 py-2">
             <Search size={20} color="#7D8F6A" />
             <TextInput
               placeholder="Cari menu produk..."
@@ -188,11 +298,11 @@ export function Pos() {
               <TouchableOpacity
                 key={cat}
                 onPress={() => setActiveCategory(cat)}
-                className={`px-5 py-2 mr-3 rounded-full border border-white/5 justify-center items-center ${
-                  activeCategory === cat ? 'bg-brand-sage' : 'bg-black/20'
+                className={`px-5 py-2 mr-3 rounded-xl justify-center items-center ${
+                  activeCategory === cat ? 'bg-brand-warm shadow-md' : 'bg-white/5 border border-white/5'
                 }`}
               >
-                <Text className={`font-medium ${activeCategory === cat ? 'text-brand-dark' : 'text-brand-sage'}`}>
+                <Text className={`font-bold text-sm ${activeCategory === cat ? 'text-brand-dark' : 'text-brand-sage'}`}>
                   {cat}
                 </Text>
               </TouchableOpacity>
@@ -209,26 +319,30 @@ export function Pos() {
           <FlatList
             data={filteredProducts}
             keyExtractor={item => item.id.toString()}
-            numColumns={2}
+            numColumns={isLandscape && !isDesktop ? 3 : 2}
+            key={isLandscape && !isDesktop ? 'landscape' : 'portrait'}
             columnWrapperStyle={{ justifyContent: 'space-between', marginBottom: 16 }}
             showsVerticalScrollIndicator={false}
             renderItem={({ item }) => (
               <TouchableOpacity 
                 activeOpacity={0.7}
                 onPress={() => addItem(item)}
-                className="w-[48%] bg-[#4B5A3A] rounded-2xl p-4 min-h-[140px] justify-between border border-white/5"
+                className={`bg-brand-olive/5 border border-brand-olive/20 rounded-2xl p-4 justify-between shadow-sm active:bg-brand-olive/10 ${isLandscape && !isDesktop ? 'w-[31%]' : 'w-[48%]'}`}
               >
-                <View>
-                  <View className="w-10 h-10 bg-black/20 rounded-full items-center justify-center mb-3">
-                    {getCategoryIcon(item.category)}
-                  </View>
-                  <Text className="font-medium text-brand-cream text-sm leading-tight" numberOfLines={2}>
-                    {item.name}
-                  </Text>
+                <View className="w-10 h-10 bg-black/30 rounded-full items-center justify-center mb-4">
+                  {getCategoryIcon(item.category, 20, "#FAEDCD")}
                 </View>
-                <Text className="font-bold text-brand-warm mt-2 text-base">
-                  {formatRupiah(item.price)}
+                <Text className="font-medium text-brand-cream text-[15px] leading-tight" numberOfLines={2}>
+                  {item.name}
                 </Text>
+                <View className="mt-4 flex-row items-center justify-between">
+                  <Text className="font-bold text-brand-warm text-lg">
+                    {formatRupiah(item.price)}
+                  </Text>
+                  <View className="w-7 h-7 rounded-full bg-brand-warm/10 items-center justify-center border border-brand-warm/30">
+                    <Plus size={16} color="#D4A373" />
+                  </View>
+                </View>
               </TouchableOpacity>
             )}
             ListEmptyComponent={
@@ -241,179 +355,125 @@ export function Pos() {
         )}
       </View>
 
-      {/* KANAN: Keranjang / Cart */}
-      <View className="w-[340px] bg-black/20 flex-col">
-        {/* Header Cart */}
-        <View className="p-4 border-b border-white/10 bg-black/20 gap-3">
-          <View className="flex-row items-center justify-between">
-            <View className="flex-row items-center gap-2">
-              <ShoppingCart size={24} color="#A16B3D" />
-              <Text className="font-bold text-lg text-brand-cream ml-2">Pesanan Aktif</Text>
-            </View>
-            <View className="bg-brand-warm px-2 py-1 rounded-md">
-              <Text className="text-brand-cream font-bold text-xs">{items.length} item</Text>
-            </View>
-          </View>
-
-          <View className="flex-row items-center bg-black/40 border border-white/10 rounded-lg px-3 py-1">
-            <User size={16} color="#7D8F6A" />
-            <TextInput
-              placeholder="Nama Customer (Opsional)"
-              placeholderTextColor="#7D8F6A"
-              className="flex-1 text-brand-cream text-sm ml-2 h-10 py-0"
-              underlineColorAndroid="transparent"
-              value={customerName}
-              onChangeText={setCustomerName}
-            />
-          </View>
-        </View>
-
-        {/* Daftar Item Cart */}
-        <ScrollView className="flex-1 p-4" showsVerticalScrollIndicator={false}>
-          {items.length === 0 ? (
-            <View className="flex-1 items-center justify-center mt-20">
-              <ShoppingCart size={48} color="#7D8F6A" opacity={0.2} className="mb-4" />
-              <Text className="text-brand-sage text-sm">Keranjang belum terisi</Text>
-            </View>
-          ) : (
-            items.map((item) => (
-              <View key={item.cartItemId} className="bg-black/40 rounded-xl p-3 mb-3 border border-white/5">
-                <View className="flex-row justify-between items-start">
-                  <Text className="flex-1 text-brand-cream text-sm font-medium mr-2" numberOfLines={2}>
-                    {item.name}
-                  </Text>
-                  <Text className="text-brand-warm text-sm font-bold">
-                    {formatRupiah(item.price * item.quantity)}
-                  </Text>
-                </View>
-
-                <View className="flex-row justify-between items-center mt-3">
-                  <TouchableOpacity 
-                    onPress={() => removeItem(item.cartItemId)} 
-                    className="p-1.5 bg-red-500/10 rounded-lg"
-                  >
-                    <Trash2 size={16} color="#EF4444" />
-                  </TouchableOpacity>
-
-                  <View className="flex-row items-center bg-black/40 rounded-lg border border-white/5 px-2 py-1">
-                    <TouchableOpacity onPress={() => updateQuantity(item.cartItemId, item.quantity - 1)} className="p-1">
-                      <Minus size={16} color="#7D8F6A" />
-                    </TouchableOpacity>
-                    <Text className="text-brand-cream font-bold w-6 text-center">{item.quantity}</Text>
-                    <TouchableOpacity onPress={() => updateQuantity(item.cartItemId, item.quantity + 1)} className="p-1">
-                      <Plus size={16} color="#7D8F6A" />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-            ))
-          )}
-        </ScrollView>
-
-        {/* Input Kupon & Diskon Manual */}
-        <View className="px-4 pb-4">
-          <View className="flex-row gap-2 mb-3">
-            <TextInput 
-              placeholder="Kode Kupon"
-              placeholderTextColor="#7D8F6A"
-              className="flex-1 bg-black/40 border border-white/10 rounded-xl px-3 h-10 py-0 text-brand-cream text-sm uppercase"
-              underlineColorAndroid="transparent"
-              value={couponInput}
-              onChangeText={(t) => setCouponInput(t.toUpperCase())}
-            />
-            <TouchableOpacity 
-              onPress={handleValidateCoupon}
-              disabled={isValidatingCoupon || !couponInput || items.length === 0}
-              className="bg-brand-sage px-4 justify-center rounded-xl"
-              style={{ opacity: (isValidatingCoupon || !couponInput || items.length === 0) ? 0.5 : 1 }}
-            >
-              <Text className="font-bold text-brand-dark">Cek</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View className={`flex-row justify-between items-center bg-black/40 border border-white/10 rounded-xl p-2 pl-4 ${appliedCoupon ? 'opacity-50' : ''}`}>
-            <Text className="text-sm font-medium text-brand-sage">
-              {appliedCoupon ? `Kupon: ${appliedCoupon.code}` : 'Diskon Manual'}
-            </Text>
-            
-            {!appliedCoupon && (
-              <View className="flex-row items-center w-[60%] justify-end">
-                <View className="flex-row bg-black/50 rounded-lg p-0.5 border border-white/5 mr-2">
-                  <TouchableOpacity 
-                    className={`px-3 py-1 rounded-md ${discountType === 'nominal' ? 'bg-brand-sage' : ''}`}
-                    onPress={() => setDiscountType('nominal')}
-                  >
-                    <Text className={`text-xs font-bold ${discountType === 'nominal' ? 'text-brand-dark' : 'text-brand-sage'}`}>Rp</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    className={`px-3 py-1 rounded-md ${discountType === 'percentage' ? 'bg-brand-sage' : ''}`}
-                    onPress={() => setDiscountType('percentage')}
-                  >
-                    <Text className={`text-xs font-bold ${discountType === 'percentage' ? 'text-brand-dark' : 'text-brand-sage'}`}>%</Text>
-                  </TouchableOpacity>
-                </View>
-                <TextInput 
-                  placeholder="0"
-                  placeholderTextColor="#7D8F6A"
-                  keyboardType="numeric"
-                  className="text-right text-brand-cream font-bold w-16 h-8 py-0"
-                  underlineColorAndroid="transparent"
-                  value={discountType === 'nominal' ? (discountAmount ? discountAmount.toString() : '') : (discountAmount ? discountAmount.toString() : '')}
-                  onChangeText={(val) => {
-                    let num = parseInt(val.replace(/\D/g, ''), 10) || 0;
-                    if (discountType === 'percentage' && num > 100) num = 100;
-                    setDiscountAmount(num);
-                  }}
-                />
-              </View>
-            )}
-            
-            {appliedCoupon && (
-              <TouchableOpacity onPress={() => setAppliedCoupon(null, 0)}>
-                <Text className="text-xs text-red-400 font-bold mr-2">Hapus</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-
-        {/* Ringkasan & Checkout */}
-        <View className="p-4 border-t border-white/10 bg-black/20">
-          <View className="flex-row justify-between mb-2">
-            <Text className="text-brand-sage text-sm">Subtotal</Text>
-            <Text className="text-brand-cream font-medium">{formatRupiah(getSubtotal())}</Text>
-          </View>
-          
-          {discountAmount > 0 && (
-            <View className="flex-row justify-between mb-2">
-              <Text className="text-red-400 text-sm">Diskon {appliedCoupon ? `[${appliedCoupon.code}]` : (discountType === 'percentage' ? `(${discountAmount}%)` : '')}</Text>
-              <Text className="text-red-400 font-medium">-{formatRupiah(getCalculatedDiscount())}</Text>
-            </View>
-          )}
-
-          {taxEnabled && (
-            <View className="flex-row justify-between mb-4">
-              <Text className="text-brand-sage text-sm">Pajak (11%)</Text>
-              <Text className="text-brand-cream font-medium">{formatRupiah(getTax())}</Text>
-            </View>
-          )}
-          
-          <View className="flex-row justify-between items-end border-b border-white/5 pb-4 mb-4">
-            <Text className="text-brand-sage font-medium">Total Bayar</Text>
-            <Text className="text-brand-warm font-bold text-2xl">{formatRupiah(getTotal())}</Text>
-          </View>
-
+      {/* Floating Bottom Bar (Mobile Only) */}
+      {!isDesktop && (
+        <View className="absolute bottom-0 left-0 right-0 p-4 pb-6 z-30 bg-black/60 border-t border-white/10 rounded-t-[32px]">
           <TouchableOpacity 
-            disabled={items.length === 0}
-            onPress={handleCheckout}
-            className={`py-4 rounded-xl items-center ${items.length === 0 ? 'bg-brand-olive/30' : 'bg-brand-olive'}`}
+            onPress={() => setIsCartOpen(true)}
+            className="w-full flex-row items-center justify-between bg-brand-warm p-4 rounded-2xl active:scale-[0.98]"
           >
-            <Text className={`font-bold text-lg ${items.length === 0 ? 'text-brand-cream/50' : 'text-brand-cream'}`}>
-              Selesaikan Pesanan
-            </Text>
+            <View className="flex-row items-center gap-3">
+              <View className="relative">
+                <ShoppingCart size={24} color="#1c140d" />
+                {items.length > 0 && (
+                  <View className="absolute -top-2 -right-2 bg-red-500 w-5 h-5 items-center justify-center rounded-full border-2 border-brand-warm">
+                    <Text className="text-white text-[10px] font-bold">{items.length}</Text>
+                  </View>
+                )}
+              </View>
+              <View>
+                <Text className="text-xs font-bold text-brand-dark opacity-80">Total Pesanan</Text>
+                <Text className="font-bold text-lg text-brand-dark leading-none mt-0.5">{formatRupiah(getSubtotal())}</Text>
+              </View>
+            </View>
+            <View className="bg-brand-dark/10 px-4 py-2 rounded-xl">
+              <Text className="font-bold uppercase tracking-wider text-sm text-brand-dark">Lanjut &rarr;</Text>
+            </View>
           </TouchableOpacity>
         </View>
-      </View>
+      )}
+
+      {/* KANAN: Keranjang / Cart (Desktop Only) */}
+      {isDesktop && (
+        <View className="w-[340px] bg-black/20 flex-col">
+          <View className="p-4 border-b border-white/10 bg-black/20 gap-3">
+            <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center gap-2">
+                <ShoppingCart size={24} color="#A16B3D" />
+                <Text className="font-bold text-lg text-brand-cream ml-2">Pesanan Aktif</Text>
+              </View>
+              <View className="bg-brand-warm px-2 py-1 rounded-md">
+                <Text className="text-brand-cream font-bold text-xs">{items.length} item</Text>
+              </View>
+            </View>
+
+            <View className="flex-row items-center bg-black/40 border border-white/10 rounded-lg px-3 py-1">
+              <User size={16} color="#7D8F6A" />
+              <TextInput
+                placeholder="Nama Customer (Opsional)"
+                placeholderTextColor="#7D8F6A"
+                className="flex-1 text-brand-cream text-sm ml-2 h-10 py-0"
+                underlineColorAndroid="transparent"
+                value={customerName}
+                onChangeText={setCustomerName}
+              />
+            </View>
+          </View>
+          
+          {renderCartItems()}
+          {renderCheckoutFooter()}
+        </View>
+      )}
     </View>
+
+    {/* Cart Bottom Sheet Modal (Mobile Only) */}
+    <Modal visible={isCartOpen && !isDesktop} transparent animationType="slide">
+      <View className="flex-1 flex-col justify-end">
+        {/* Overlay */}
+        <TouchableOpacity 
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.6)' }} 
+          onPress={() => setIsCartOpen(false)} 
+          activeOpacity={1}
+        />
+        
+        {/* Sheet Content */}
+        <View className={`bg-brand-dark border-t border-white/10 rounded-t-[32px] w-full overflow-hidden ${isLandscape ? 'flex-row h-[95%]' : 'flex-col h-[85%]'}`}>
+          
+          {/* Left Side (Header & Items) */}
+          <View className="flex-1 flex-col pt-4">
+            {/* Header */}
+            <View className="px-6 pb-4 flex-row items-center justify-between border-b border-white/5">
+              <View>
+                <Text className="font-bold text-xl text-brand-cream">Keranjang Anda</Text>
+                <Text className="text-xs text-brand-sage/60 mt-1">Order Baru</Text>
+              </View>
+              <View className="flex-row items-center gap-2">
+                <TouchableOpacity onPress={clearCart} className="bg-white/5 px-3 py-1.5 rounded-lg flex-row items-center gap-1">
+                  <Trash2 size={16} color="#ef4444" />
+                  <Text className="text-sm font-medium text-red-400 ml-1">Kosongkan</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => setIsCartOpen(false)} className="bg-white/10 p-2 rounded-lg ml-2">
+                  <Text className="text-white font-bold text-sm">X</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Input Nama & Kupon in Modal */}
+            <View className="px-4 py-3 border-b border-white/5 gap-3">
+              <View className="flex-row items-center bg-black/40 border border-white/10 rounded-lg px-3 py-1">
+                <User size={16} color="#7D8F6A" />
+                <TextInput
+                  placeholder="Nama Customer (Opsional)"
+                  placeholderTextColor="#7D8F6A"
+                  className="flex-1 text-brand-cream text-sm ml-2 h-10 py-0"
+                  underlineColorAndroid="transparent"
+                  value={customerName}
+                  onChangeText={setCustomerName}
+                />
+              </View>
+            </View>
+
+            {/* Items */}
+            {renderCartItems()}
+          </View>
+
+          {/* Right/Bottom Side (Footer Checkout) */}
+          <View className={`${isLandscape ? 'w-[320px] border-l border-white/5' : ''}`}>
+            {renderCheckoutFooter()}
+          </View>
+        </View>
+      </View>
+    </Modal>
 
       {/* Modal Checkout */}
       <Modal visible={showCheckout} transparent animationType="fade">
