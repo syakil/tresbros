@@ -35,7 +35,7 @@ Berikan tanda:
 - [ ] Tulis *unit test* untuk fungsi *Zustand Store* (Manajemen state keranjang kasir).
 
 ## 5. Dokumentasi & README
-- [ ] Buat file `README.md` utama di *root directory*.
-- [ ] Dokumentasikan Diagram Arsitektur Sistem (Next.js -> .NET -> Postgres, Redis, RabbitMQ).
-- [ ] Dokumentasikan *Prerequisites* instalasi dan daftar *Environment Variables* yang dibutuhkan.
-- [ ] Dokumentasikan panduan lengkap cara *deploy* / menjalankan aplikasi via Docker Compose.
+- [x] Buat file `README.md` utama di *root directory*.
+- [x] Dokumentasikan Diagram Arsitektur Sistem (Next.js -> .NET -> Postgres, Redis, RabbitMQ).
+- [x] Dokumentasikan *Prerequisites* instalasi dan daftar *Environment Variables* yang dibutuhkan.
+- [x] Dokumentasikan panduan lengkap cara *deploy* / menjalankan aplikasi via Docker Compose.

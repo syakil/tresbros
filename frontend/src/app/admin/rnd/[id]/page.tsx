@@ -140,8 +140,8 @@ export default function RnDDetailPage({ params }: { params: { id: string } }) {
           <h2 className="text-lg font-bold mb-4">Informasi Dasar</h2>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-zinc-700 mb-1">Nama Resep</label>
               <Input 
+                label="Nama Resep"
                 value={recipe.name} 
                 onChange={(e) => setRecipe({...recipe, name: e.target.value})}
               />
@@ -170,8 +170,8 @@ export default function RnDDetailPage({ params }: { params: { id: string } }) {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-zinc-700 mb-1">Target HPP (Rp)</label>
                 <Input 
+                  label="Target HPP (Rp)"
                   type="number"
                   value={recipe.targetCost} 
                   onChange={(e) => setRecipe({...recipe, targetCost: parseFloat(e.target.value) || 0})}
@@ -226,7 +226,8 @@ export default function RnDDetailPage({ params }: { params: { id: string } }) {
                   </select>
                 </td>
                 <td className="px-3 py-2">
-                  <Input 
+                  <input 
+                    className="w-full border border-zinc-200 rounded-md p-1.5 text-sm"
                     type="number" 
                     value={ing.quantity}
                     onChange={(e) => updateIngredient(idx, 'quantity', parseFloat(e.target.value) || 0)}
