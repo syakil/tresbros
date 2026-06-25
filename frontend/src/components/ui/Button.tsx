@@ -15,13 +15,13 @@ export function Button({
   ...props 
 }: ButtonProps) {
   
-  const baseStyles = "font-medium py-3 px-6 rounded-xl transition duration-200 transform hover:-translate-y-1 shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:pointer-events-none";
+  const baseStyles = "font-medium py-2.5 px-5 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]";
   
   const variants = {
-    primary: "bg-brand-olive hover:bg-[#5a6a46] text-brand-cream hover:shadow-[0_4px_20px_rgba(75,90,58,0.4)]",
-    secondary: "bg-brand-sage hover:bg-[#8da379] text-brand-cream hover:shadow-[0_4px_20px_rgba(125,143,106,0.4)]",
-    accent: "bg-brand-warm hover:bg-[#b87c47] text-brand-cream hover:shadow-[0_4px_20px_rgba(161,107,61,0.4)]",
-    outline: "border-2 border-brand-sage text-brand-cream hover:bg-brand-sage/20",
+    primary: "bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow-md border border-transparent",
+    secondary: "bg-zinc-800 hover:bg-zinc-900 text-white shadow-sm hover:shadow-md border border-transparent",
+    accent: "bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm hover:shadow-md border border-transparent",
+    outline: "bg-transparent border border-zinc-200 text-zinc-800 hover:bg-zinc-50 hover:border-zinc-300",
   };
 
   const widthClass = fullWidth ? "w-full" : "w-auto";

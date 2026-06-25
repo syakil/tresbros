@@ -5,7 +5,7 @@ import { useCartStore, Product } from '@/store/useCartStore';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Plus, Minus, Trash2, ShoppingCart, Coffee, Search, Pizza, User } from 'lucide-react';
+import { Plus, Minus, Trash2, ShoppingCart, Coffee, Search, Pizza, User, Tag } from 'lucide-react';
 
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
@@ -195,42 +195,46 @@ export default function PosPage() {
   };
 
   const getCategoryIcon = (cat: string) => {
-    if (cat === 'Makanan') return <Pizza className="w-5 h-5 text-brand-cream" />;
-    return <Coffee className="w-5 h-5 text-brand-cream" />;
+    if (cat === 'Makanan') return <Pizza className="w-5 h-5 text-zinc-600" />;
+    return <Coffee className="w-5 h-5 text-zinc-600" />;
   };
 
   return (
     <>
     {/* Custom Toast Notification */}
     {toast && (
-      <div className={`fixed top-8 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-2xl shadow-xl border backdrop-blur-md animate-in fade-in slide-in-from-top-4 flex items-center gap-3 print:hidden transition-all
-        ${toast.type === 'success' ? 'bg-brand-sage/95 text-brand-dark border-brand-sage' : 
-          toast.type === 'error' ? 'bg-red-500/95 text-white border-red-400' : 
-          'bg-orange-500/95 text-white border-orange-400'}`}
+      <div className={`fixed top-8 left-1/2 -translate-x-1/2 z-50 px-6 py-4 rounded-xl shadow-xl border backdrop-blur-md animate-in fade-in slide-in-from-top-4 flex items-center gap-3 print:hidden transition-all
+        ${toast.type === 'success' ? 'bg-white text-zinc-900 border-emerald-200' : 
+          toast.type === 'error' ? 'bg-white text-zinc-900 border-red-200' : 
+          'bg-white text-zinc-900 border-orange-200'}`}
       >
-        <span className="text-xl">
-          {toast.type === 'success' ? '✅' : toast.type === 'error' ? '❌' : '⚠️'}
+        <span className={`flex items-center justify-center w-6 h-6 rounded-full text-white text-sm
+          ${toast.type === 'success' ? 'bg-emerald-500' : 
+            toast.type === 'error' ? 'bg-red-500' : 
+            'bg-orange-500'}`}
+        >
+          {toast.type === 'success' ? '✓' : toast.type === 'error' ? '✕' : '!'}
         </span>
-        <p className="font-medium">{toast.message}</p>
+        <p className="font-medium text-sm">{toast.message}</p>
       </div>
     )}
 
-    <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-8rem)] print:hidden">
+    <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 lg:h-[calc(100vh-8rem)] print:hidden">
       
       {/* KIRI: Grid Menu Produk */}
-      <div className="flex-1 flex flex-col gap-6 overflow-hidden">
+      <div className="flex-1 flex flex-col gap-4 lg:gap-6 overflow-hidden min-h-[50vh] lg:min-h-0">
         
         {/* Header Kiri: Search & Kategori Filter */}
         <div className="flex flex-col gap-4 shrink-0">
           <div className="flex gap-4">
             <div className="relative flex-1">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-brand-sage" />
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-zinc-400" />
               </div>
               <input
                 type="text"
                 placeholder="Cari menu produk..."
-                className="w-full bg-black/20 border border-white/5 text-brand-cream rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:border-brand-warm focus:ring-1 focus:ring-brand-warm transition"
+                className="w-full bg-white border border-zinc-200 text-zinc-900 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition shadow-sm"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -238,8 +242,9 @@ export default function PosPage() {
             {pendingOrders.length > 0 && (
               <button 
                 onClick={() => setShowPendingOrders(true)}
-                className="bg-orange-500/20 text-orange-400 border border-orange-500/50 hover:bg-orange-500/40 px-6 rounded-xl font-bold transition-all"
+                className="bg-orange-50 text-orange-600 border border-orange-200 hover:bg-orange-100 px-6 rounded-xl font-semibold transition-all text-sm flex items-center gap-2 shadow-sm"
               >
+                <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
                 {pendingOrders.length} Pesanan Tertunda
               </button>
             )}
@@ -250,10 +255,10 @@ export default function PosPage() {
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`px-5 py-2.5 rounded-full font-medium transition whitespace-nowrap text-sm ${
+                className={`px-5 py-2.5 rounded-full font-medium transition whitespace-nowrap text-sm border ${
                   activeCategory === cat 
-                    ? 'bg-brand-sage text-brand-cream shadow-md' 
-                    : 'bg-black/20 text-brand-sage border border-white/5 hover:bg-black/40'
+                    ? 'bg-zinc-900 text-white border-zinc-900 shadow-md' 
+                    : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50 hover:text-zinc-900'
                 }`}
               >
                 {cat}
@@ -263,34 +268,35 @@ export default function PosPage() {
         </div>
 
         {/* Grid Produk */}
-        <div className="flex-1 overflow-y-auto pr-2 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 pb-10">
+        <div className="flex-1 overflow-y-auto pr-2 grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-4 pb-10 custom-scrollbar-light">
           {filteredProducts.length === 0 ? (
-            <div className="col-span-full flex flex-col items-center justify-center text-brand-sage/50 mt-10">
-              <Search className="w-12 h-12 mb-4 opacity-20" />
-              <p>Produk tidak ditemukan</p>
+            <div className="col-span-full flex flex-col items-center justify-center text-zinc-400 mt-10">
+              <div className="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mb-4">
+                <Search className="w-8 h-8 text-zinc-300" />
+              </div>
+              <p className="font-medium">Produk tidak ditemukan</p>
             </div>
           ) : (
             filteredProducts.map((product) => (
             <Card 
               key={product.id} 
-              variant="olive" 
-              className="flex flex-col justify-between h-44 active:scale-95 transition-transform group relative"
+              className="flex flex-col justify-between h-44 active:scale-95 hover:border-blue-300 hover:shadow-md transition-all group relative p-5 bg-white cursor-pointer"
               onClick={() => addItem(product)}
             >
               {typeof product.availableCount === 'number' && product.availableCount <= 0 && (
-                <div className="absolute inset-0 bg-red-900/40 rounded-2xl z-10 flex items-center justify-center backdrop-blur-[2px]">
-                  <div className="bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg border border-red-400">
+                <div className="absolute inset-0 bg-white/80 rounded-2xl z-10 flex items-center justify-center backdrop-blur-[2px]">
+                  <div className="bg-red-50 text-red-600 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm border border-red-200">
                     Habis / Stok Kurang
                   </div>
                 </div>
               )}
               <div className="relative z-0">
-                <div className="w-10 h-10 bg-black/20 group-hover:bg-brand-olive rounded-full flex items-center justify-center mb-4 transition-colors">
+                <div className="w-10 h-10 bg-zinc-100 group-hover:bg-blue-50 group-hover:text-blue-600 rounded-xl flex items-center justify-center mb-4 transition-colors">
                   {getCategoryIcon(product.category)}
                 </div>
-                <h3 className="font-medium text-brand-cream text-[15px] leading-tight line-clamp-2">{product.name}</h3>
+                <h3 className="font-medium text-zinc-900 text-[15px] leading-tight line-clamp-2">{product.name}</h3>
               </div>
-              <p className="font-display font-semibold text-brand-warm mt-2 text-lg">{formatRupiah(product.price)}</p>
+              <p className="font-display font-bold text-blue-600 mt-2 text-lg">{formatRupiah(product.price)}</p>
             </Card>
             ))
           )}
@@ -298,22 +304,24 @@ export default function PosPage() {
       </div>
 
       {/* KANAN: Keranjang / Cart */}
-      <Card className="w-full lg:w-[400px] flex flex-col shrink-0 h-full border-brand-warm/20 bg-gradient-to-b from-black/40 to-black/20 p-0 overflow-hidden">
-        <div className="flex flex-col p-5 border-b border-white/10 shrink-0 bg-black/20 gap-4">
-          <div className="flex items-center gap-2">
-            <ShoppingCart className="text-brand-warm w-6 h-6" />
-            <h2 className="font-display text-xl font-semibold text-brand-cream">Pesanan Aktif</h2>
-            <span className="ml-auto bg-brand-warm text-brand-cream text-xs font-bold px-2 py-1 rounded-md">{items.length} item</span>
+      <div className="w-full lg:w-[420px] flex flex-col shrink-0 h-[600px] lg:h-full bg-white rounded-2xl shadow-sm border border-zinc-200 overflow-hidden">
+        <div className="flex flex-col p-5 border-b border-zinc-200 shrink-0 bg-zinc-50/50 gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
+              <ShoppingCart className="w-5 h-5" />
+            </div>
+            <h2 className="font-display text-lg font-bold text-zinc-900">Pesanan Aktif</h2>
+            <span className="ml-auto bg-zinc-200 text-zinc-700 text-xs font-bold px-2.5 py-1 rounded-full">{items.length} item</span>
           </div>
 
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <User className="h-4 w-4 text-brand-sage" />
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+              <User className="h-4 w-4 text-zinc-400" />
             </div>
             <input
               type="text"
               placeholder="Nama Customer (Opsional)"
-              className="w-full bg-black/40 border border-white/10 text-brand-cream text-sm rounded-lg pl-9 pr-3 py-2.5 focus:outline-none focus:border-brand-warm transition"
+              className="w-full bg-white border border-zinc-200 text-zinc-900 text-sm rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition shadow-sm"
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
             />
@@ -321,42 +329,45 @@ export default function PosPage() {
         </div>
 
         {/* Daftar Item Cart */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-3">
+        <div className="flex-1 overflow-y-auto p-5 space-y-3 bg-zinc-50/30 custom-scrollbar-light">
           {items.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-brand-sage/40">
-              <ShoppingCart className="w-16 h-16 mb-4 opacity-20" />
+            <div className="h-full flex flex-col items-center justify-center text-zinc-400">
+              <div className="w-20 h-20 bg-zinc-100 rounded-full flex items-center justify-center mb-4">
+                <ShoppingCart className="w-10 h-10 text-zinc-300" />
+              </div>
               <p className="text-sm font-medium">Keranjang belum terisi</p>
             </div>
           ) : (
             items.map((item) => (
-              <div key={item.cartItemId} className="flex flex-col gap-2 p-3 bg-black/40 hover:bg-black/60 transition-colors rounded-xl border border-white/5 relative">
+              <div key={item.cartItemId} className="flex flex-col gap-2 p-3.5 bg-white hover:border-blue-200 transition-colors rounded-xl border border-zinc-200 shadow-sm relative group">
                 <div className="flex justify-between items-start gap-2">
-                  <div className="flex-1">
-                    <p className="font-medium text-brand-cream text-sm leading-tight">{item.name}</p>
+                  <div className="flex-1 pr-2">
+                    <p className="font-semibold text-zinc-900 text-sm leading-tight">{item.name}</p>
+                    <p className="font-medium text-blue-600 text-sm whitespace-nowrap mt-1">{formatRupiah(item.price * item.quantity)}</p>
+                    
                     {typeof item.availableCount === 'number' && item.quantity > item.availableCount && (
-                      <div className="flex flex-col mt-1.5 bg-red-500/10 border border-red-500/20 p-2 rounded-lg">
-                        <span className="text-[11px] font-semibold text-red-400 flex items-center gap-1">
+                      <div className="flex flex-col mt-2 bg-red-50 border border-red-100 p-2 rounded-lg">
+                        <span className="text-[11px] font-semibold text-red-600 flex items-center gap-1.5">
                           <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>
-                          Stok Bahan Baku Kurang
+                          Stok Bahan Kurang
                         </span>
                         {item.missingMaterials && item.missingMaterials.length > 0 && (
-                          <span className="text-[10px] text-red-400/80 mt-1 pl-2 border-l border-red-500/30">Butuh: {item.missingMaterials.join(', ')}</span>
+                          <span className="text-[10px] text-red-500 mt-1 pl-2 border-l-2 border-red-200">Butuh: {item.missingMaterials.join(', ')}</span>
                         )}
                       </div>
                     )}
                   </div>
-                  <p className="font-semibold text-brand-warm text-sm whitespace-nowrap mt-0.5">{formatRupiah(item.price * item.quantity)}</p>
                 </div>
-                <div className="flex justify-between items-center mt-2">
-                  <button onClick={() => removeItem(item.cartItemId)} className="text-red-400/60 hover:text-red-400 hover:bg-red-400/10 p-1.5 rounded-lg transition-colors">
+                <div className="flex justify-between items-center mt-2 pt-2 border-t border-zinc-100">
+                  <button onClick={() => removeItem(item.cartItemId)} className="text-zinc-400 hover:text-red-500 hover:bg-red-50 p-1.5 rounded-lg transition-colors">
                     <Trash2 className="w-4 h-4" />
                   </button>
-                  <div className="flex items-center gap-3 bg-black/40 rounded-lg px-2 py-1 border border-white/5">
-                    <button onClick={() => updateQuantity(item.cartItemId, item.quantity - 1)} className="text-brand-sage hover:text-brand-cream p-1">
+                  <div className="flex items-center gap-3 bg-zinc-100 rounded-lg px-2 py-1 border border-zinc-200">
+                    <button onClick={() => updateQuantity(item.cartItemId, item.quantity - 1)} className="text-zinc-500 hover:text-zinc-900 p-1">
                       <Minus className="w-4 h-4" />
                     </button>
-                    <span className="text-brand-cream font-medium w-4 text-center text-sm">{item.quantity}</span>
-                    <button onClick={() => updateQuantity(item.cartItemId, item.quantity + 1)} className="text-brand-sage hover:text-brand-cream p-1">
+                    <span className="text-zinc-900 font-semibold w-5 text-center text-sm">{item.quantity}</span>
+                    <button onClick={() => updateQuantity(item.cartItemId, item.quantity + 1)} className="text-zinc-500 hover:text-zinc-900 p-1">
                       <Plus className="w-4 h-4" />
                     </button>
                   </div>
@@ -366,129 +377,137 @@ export default function PosPage() {
           )}
         </div>
 
-        {/* Input Kupon */}
-        <div className="px-5 mb-2 shrink-0">
-          <div className="flex gap-2">
-            <input 
-              type="text"
-              placeholder="Masukkan Kode Kupon"
-              className="flex-1 bg-black/40 border border-white/10 rounded-xl p-2.5 text-sm text-brand-cream focus:outline-none focus:border-brand-warm uppercase"
-              value={couponInput}
-              onChange={e => setCouponInput(e.target.value.toUpperCase())}
-            />
-            <button 
-              onClick={handleValidateCoupon}
-              disabled={isValidatingCoupon || !couponInput || items.length === 0}
-              className="bg-brand-sage hover:bg-brand-sage/80 disabled:opacity-50 text-brand-dark px-4 rounded-xl text-sm font-bold transition-colors"
-            >
-              Cek
-            </button>
-          </div>
-        </div>
-
-        {/* Input Diskon Manual */}
-        <div className="px-5 mb-2 shrink-0">
-          <div className={`flex justify-between items-center bg-black/40 border border-white/10 rounded-xl p-2 pl-4 transition-colors ${appliedCoupon ? 'opacity-50 pointer-events-none' : 'focus-within:border-brand-warm'}`}>
-            <span className="text-sm font-medium text-brand-sage">
-              {appliedCoupon ? `Kupon: ${appliedCoupon.code}` : 'Diskon Manual'}
-            </span>
-            
-            {!appliedCoupon && (
-              <div className="flex items-center gap-2 w-2/3">
-                <div className="flex bg-black/50 rounded-lg p-0.5 shrink-0 border border-white/5">
-                  <button 
-                    className={`px-3 py-1 rounded-md text-xs font-bold transition-colors ${discountType === 'nominal' ? 'bg-brand-sage text-brand-cream' : 'text-brand-sage/60 hover:text-brand-cream'}`}
-                    onClick={() => setDiscountType('nominal')}
-                  >Rp</button>
-                  <button 
-                    className={`px-3 py-1 rounded-md text-xs font-bold transition-colors ${discountType === 'percentage' ? 'bg-brand-sage text-brand-cream' : 'text-brand-sage/60 hover:text-brand-cream'}`}
-                    onClick={() => setDiscountType('percentage')}
-                  >%</button>
+        {/* Actions & Summary */}
+        <div className="mt-auto bg-white border-t border-zinc-200 shadow-[0_-4px_10px_rgba(0,0,0,0.02)] z-10">
+          
+          <div className="px-5 pt-5 pb-3">
+            {/* Input Kupon */}
+            <div className="flex gap-2 mb-3">
+              <div className="relative flex-1">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Tag className="h-4 w-4 text-zinc-400" />
                 </div>
                 <input 
                   type="text"
-                  placeholder="0"
-                  className="bg-transparent text-right text-brand-cream font-display font-bold focus:outline-none w-full min-w-0"
-                  value={discountType === 'nominal' ? (discountAmount ? new Intl.NumberFormat('id-ID').format(discountAmount) : '') : (discountAmount || '')}
-                  onChange={(e) => {
-                    const rawValue = e.target.value.replace(/\D/g, '');
-                    let val = rawValue ? parseInt(rawValue, 10) : 0;
-                    if (discountType === 'percentage' && val > 100) val = 100;
-                    setDiscountAmount(val);
-                  }}
+                  placeholder="Kode Kupon"
+                  className="w-full bg-zinc-50 border border-zinc-200 rounded-xl pl-9 pr-3 py-2.5 text-sm text-zinc-900 focus:outline-none focus:border-blue-500 focus:bg-white uppercase transition-colors"
+                  value={couponInput}
+                  onChange={e => setCouponInput(e.target.value.toUpperCase())}
                 />
               </div>
-            )}
-            
-            {appliedCoupon && (
               <button 
-                onClick={() => setAppliedCoupon(null, 0)}
-                className="text-xs text-red-400 font-bold hover:underline"
-              >Hapus</button>
-            )}
-          </div>
-        </div>
-
-        {/* Ringkasan Biaya */}
-        <div className="p-5 border-t border-white/10 shrink-0 bg-black/20">
-          <div className="space-y-2 mb-4">
-            <div className="flex justify-between text-sm text-brand-sage">
-              <span>Subtotal</span>
-              <span className="font-medium text-brand-cream">{formatRupiah(getSubtotal())}</span>
+                onClick={handleValidateCoupon}
+                disabled={isValidatingCoupon || !couponInput || items.length === 0}
+                className="bg-zinc-900 hover:bg-zinc-800 disabled:bg-zinc-200 disabled:text-zinc-400 text-white px-5 rounded-xl text-sm font-semibold transition-colors"
+              >
+                Cek
+              </button>
             </div>
-            {discountAmount > 0 && (
-              <div className="flex justify-between text-sm text-red-400">
-                <span>Diskon {appliedCoupon ? `[${appliedCoupon.code}]` : (discountType === 'percentage' ? `(${discountAmount}%)` : '')}</span>
-                <span className="font-medium">-{formatRupiah(getCalculatedDiscount())}</span>
-              </div>
-            )}
-            {taxEnabled && (
-              <div className="flex justify-between text-sm text-brand-sage">
-                <span>Pajak (11%)</span>
-                <span className="font-medium text-brand-cream">{formatRupiah(getTax())}</span>
-              </div>
-            )}
+
+            {/* Input Diskon Manual */}
+            <div className={`flex justify-between items-center bg-zinc-50 border border-zinc-200 rounded-xl p-2.5 pl-4 transition-colors ${appliedCoupon ? 'opacity-70 pointer-events-none bg-zinc-100' : 'focus-within:border-blue-500 focus-within:bg-white'}`}>
+              <span className="text-sm font-semibold text-zinc-600">
+                {appliedCoupon ? `Kupon: ${appliedCoupon.code}` : 'Diskon Manual'}
+              </span>
+              
+              {!appliedCoupon && (
+                <div className="flex items-center gap-2 w-1/2">
+                  <div className="flex bg-zinc-200/50 rounded-lg p-0.5 shrink-0 border border-zinc-200">
+                    <button 
+                      className={`px-2.5 py-1 rounded-md text-xs font-bold transition-colors ${discountType === 'nominal' ? 'bg-white text-zinc-900 shadow-sm ring-1 ring-black/5' : 'text-zinc-500 hover:text-zinc-900'}`}
+                      onClick={() => setDiscountType('nominal')}
+                    >Rp</button>
+                    <button 
+                      className={`px-2.5 py-1 rounded-md text-xs font-bold transition-colors ${discountType === 'percentage' ? 'bg-white text-zinc-900 shadow-sm ring-1 ring-black/5' : 'text-zinc-500 hover:text-zinc-900'}`}
+                      onClick={() => setDiscountType('percentage')}
+                    >%</button>
+                  </div>
+                  <input 
+                    type="text"
+                    placeholder="0"
+                    className="bg-transparent text-right text-zinc-900 font-display font-bold focus:outline-none w-full min-w-0"
+                    value={discountType === 'nominal' ? (discountAmount ? new Intl.NumberFormat('id-ID').format(discountAmount) : '') : (discountAmount || '')}
+                    onChange={(e) => {
+                      const rawValue = e.target.value.replace(/\D/g, '');
+                      let val = rawValue ? parseInt(rawValue, 10) : 0;
+                      if (discountType === 'percentage' && val > 100) val = 100;
+                      setDiscountAmount(val);
+                    }}
+                  />
+                </div>
+              )}
+              
+              {appliedCoupon && (
+                <button 
+                  onClick={() => setAppliedCoupon(null, 0)}
+                  className="text-xs text-red-500 font-bold bg-red-50 px-2 py-1 rounded-md"
+                >Hapus</button>
+              )}
+            </div>
           </div>
-          <div className="flex justify-between items-end pb-4 border-b border-white/5 mb-4">
-            <span className="text-brand-sage font-medium">Total Bayar</span>
-            <span className="text-3xl font-display font-bold text-brand-warm leading-none">{formatRupiah(getTotal())}</span>
+
+          {/* Ringkasan Biaya */}
+          <div className="px-5 pb-5">
+            <div className="space-y-2 mb-4 bg-zinc-50 rounded-xl p-4 border border-zinc-100">
+              <div className="flex justify-between text-sm text-zinc-500 font-medium">
+                <span>Subtotal</span>
+                <span className="text-zinc-900">{formatRupiah(getSubtotal())}</span>
+              </div>
+              {discountAmount > 0 && (
+                <div className="flex justify-between text-sm text-red-500 font-medium">
+                  <span>Diskon {appliedCoupon ? `[${appliedCoupon.code}]` : (discountType === 'percentage' ? `(${discountAmount}%)` : '')}</span>
+                  <span>-{formatRupiah(getCalculatedDiscount())}</span>
+                </div>
+              )}
+              {taxEnabled && (
+                <div className="flex justify-between text-sm text-zinc-500 font-medium">
+                  <span>Pajak (11%)</span>
+                  <span className="text-zinc-900">{formatRupiah(getTax())}</span>
+                </div>
+              )}
+              <div className="pt-3 mt-3 border-t border-zinc-200 flex justify-between items-end">
+                <span className="text-zinc-900 font-bold">Total Bayar</span>
+                <span className="text-3xl font-display font-bold text-blue-600 leading-none tracking-tight">{formatRupiah(getTotal())}</span>
+              </div>
+            </div>
+            
+            <Button 
+              variant="primary" 
+              fullWidth 
+              className="py-4 text-base font-bold shadow-md shadow-blue-500/20 disabled:shadow-none"
+              disabled={items.length === 0}
+              onClick={handleCheckout}
+            >
+              Selesaikan Pesanan
+            </Button>
           </div>
-          
-          <Button 
-            variant="primary" 
-            fullWidth 
-            className="text-lg py-4 shadow-[0_0_20px_rgba(75,90,58,0.3)] disabled:opacity-30 disabled:shadow-none"
-            disabled={items.length === 0}
-            onClick={handleCheckout}
-          >
-            Selesaikan Pesanan
-          </Button>
         </div>
-      </Card>
+      </div>
 
       {/* Modal Pesanan Tertunda */}
       {showPendingOrders && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
-          <Card className="w-full max-w-2xl bg-[#1A1A1A]/95 border-brand-warm/30 shadow-2xl p-6 max-h-[80vh] flex flex-col">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-display font-bold text-brand-cream">Pesanan Menunggu Pembayaran</h2>
-              <button onClick={() => setShowPendingOrders(false)} className="text-red-400 font-bold px-3 py-1 bg-red-500/20 rounded-lg hover:bg-red-500/30">Tutup</button>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-zinc-900/40 backdrop-blur-sm p-4">
+          <Card className="w-full max-w-2xl bg-white border-zinc-200 shadow-2xl p-0 max-h-[80vh] flex flex-col overflow-hidden">
+            <div className="flex justify-between items-center p-6 border-b border-zinc-100">
+              <h2 className="text-xl font-display font-bold text-zinc-900">Pesanan Menunggu Pembayaran</h2>
+              <button onClick={() => setShowPendingOrders(false)} className="text-zinc-400 hover:text-zinc-700 bg-zinc-100 hover:bg-zinc-200 p-2 rounded-lg transition-colors">
+                <X className="w-5 h-5" />
+              </button>
             </div>
             
-            <div className="flex-1 overflow-y-auto space-y-4 pr-2">
+            <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-zinc-50/50 custom-scrollbar-light">
               {pendingOrders.map((order: any) => (
-                <div key={order.id} className="bg-black/40 border border-white/10 rounded-xl p-4 flex justify-between items-center">
+                <div key={order.id} className="bg-white border border-zinc-200 rounded-xl p-4 flex justify-between items-center shadow-sm">
                   <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-mono text-brand-warm font-bold">{order.orderNumber || order.id}</span>
-                      <span className="bg-orange-500/20 text-orange-400 text-xs px-2 py-0.5 rounded">MIDTRANS</span>
+                    <div className="flex items-center gap-3 mb-1">
+                      <span className="font-mono text-zinc-900 font-bold text-lg">{order.orderNumber || order.id}</span>
+                      <span className="bg-orange-50 text-orange-600 border border-orange-200 text-xs px-2.5 py-1 rounded-md font-semibold">MIDTRANS</span>
                     </div>
-                    <div className="text-brand-sage text-sm">{order.customerName || 'Guest'} • {new Date(order.createdAt).toLocaleTimeString('id-ID')}</div>
-                    <div className="text-brand-cream font-bold mt-1">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(order.totalAmount)}</div>
+                    <div className="text-zinc-500 text-sm font-medium">{order.customerName || 'Guest'} • {new Date(order.createdAt).toLocaleTimeString('id-ID')}</div>
+                    <div className="text-blue-600 font-bold mt-2 text-lg">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(order.totalAmount)}</div>
                   </div>
                   <Button 
                     variant="primary" 
-                    className="bg-brand-olive shadow-[0_0_15px_rgba(75,90,58,0.4)]"
                     onClick={() => {
                       if (order.snapToken) {
                         setShowPendingOrders(false);
@@ -524,7 +543,7 @@ export default function PosPage() {
               ))}
               
               {pendingOrders.length === 0 && (
-                <div className="text-center text-brand-sage py-8">Tidak ada pesanan tertunda.</div>
+                <div className="text-center text-zinc-500 font-medium py-12 bg-white rounded-xl border border-zinc-200 border-dashed">Tidak ada pesanan tertunda.</div>
               )}
             </div>
           </Card>
@@ -533,36 +552,50 @@ export default function PosPage() {
 
       {/* Modal Checkout (Glassmorphism Overlay) */}
       {showCheckout && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
-          <Card className="w-full max-w-md bg-[#1A1A1A]/90 border-brand-warm/30 shadow-2xl p-6">
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-display font-bold text-brand-cream mb-2">Pilih Pembayaran</h2>
-              <p className="text-brand-sage text-sm">Total tagihan yang harus dibayar</p>
-              <p className="text-4xl font-display font-bold text-brand-warm mt-2">{formatRupiah(getTotal())}</p>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-zinc-900/40 backdrop-blur-sm p-4 animate-in fade-in">
+          <Card className="w-full max-w-md bg-white border-zinc-200 shadow-2xl p-8 rounded-2xl">
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <ShoppingCart className="w-8 h-8" />
+              </div>
+              <h2 className="text-2xl font-display font-bold text-zinc-900 mb-2">Pilih Pembayaran</h2>
+              <p className="text-zinc-500 text-sm font-medium">Total tagihan yang harus dibayar</p>
+              <p className="text-4xl font-display font-bold text-blue-600 mt-2 tracking-tight">{formatRupiah(getTotal())}</p>
             </div>
             
             <div className="space-y-3 mb-8">
-              <Button 
-                variant={paymentMethod === 'CASH' ? 'primary' : 'outline'} 
-                fullWidth 
-                className={`justify-start py-4 font-semibold ${paymentMethod === 'CASH' ? 'bg-brand-olive border-brand-olive text-brand-cream' : 'hover:border-brand-warm hover:text-brand-warm'}`}
+              <button 
+                className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all ${paymentMethod === 'CASH' ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-zinc-200 bg-white text-zinc-700 hover:border-blue-300 hover:bg-zinc-50'}`}
                 onClick={() => setPaymentMethod('CASH')}
               >
-                💵 Tunai (Cash)
-              </Button>
-              <Button 
-                variant={paymentMethod === 'MIDTRANS' ? 'primary' : 'outline'} 
-                fullWidth 
-                className={`justify-start py-4 font-semibold ${paymentMethod === 'MIDTRANS' ? 'bg-brand-olive border-brand-olive text-brand-cream' : 'hover:border-brand-warm hover:text-brand-warm'}`}
+                <div className="flex items-center gap-3 font-semibold">
+                  <span className="text-xl">💵</span> Tunai (Cash)
+                </div>
+                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'CASH' ? 'border-blue-600' : 'border-zinc-300'}`}>
+                  {paymentMethod === 'CASH' && <div className="w-2.5 h-2.5 rounded-full bg-blue-600"></div>}
+                </div>
+              </button>
+              
+              <button 
+                className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all ${paymentMethod === 'MIDTRANS' ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-zinc-200 bg-white text-zinc-700 hover:border-blue-300 hover:bg-zinc-50'}`}
                 onClick={() => setPaymentMethod('MIDTRANS')}
               >
-                💳 Bayar via Midtrans (QRIS/Transfer/Kartu)
-              </Button>
+                <div className="flex items-center gap-3 font-semibold text-left">
+                  <span className="text-xl">💳</span> 
+                  <span>
+                    Midtrans <br/>
+                    <span className="text-xs font-normal opacity-80">(QRIS / Transfer / Kartu)</span>
+                  </span>
+                </div>
+                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${paymentMethod === 'MIDTRANS' ? 'border-blue-600' : 'border-zinc-300'}`}>
+                  {paymentMethod === 'MIDTRANS' && <div className="w-2.5 h-2.5 rounded-full bg-blue-600"></div>}
+                </div>
+              </button>
             </div>
             
-            <div className="flex gap-3 pt-4 border-t border-white/10">
-              <Button variant="secondary" className="flex-1" onClick={() => setShowCheckout(false)}>Kembali</Button>
-              <Button variant="primary" className="flex-1 bg-brand-olive" onClick={processPayment}>Proses Bayar</Button>
+            <div className="flex gap-3 pt-6 border-t border-zinc-100">
+              <Button variant="outline" className="flex-1 py-3" onClick={() => setShowCheckout(false)}>Batal</Button>
+              <Button variant="primary" className="flex-1 py-3" onClick={processPayment}>Proses Bayar</Button>
             </div>
           </Card>
         </div>

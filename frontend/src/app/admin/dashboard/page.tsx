@@ -106,13 +106,13 @@ export default function DashboardPage() {
     <div className="flex flex-col gap-6 max-w-6xl mx-auto w-full pb-10">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-display font-bold text-brand-cream">Laporan Penjualan & Laba Rugi</h1>
-          <p className="text-brand-sage">Ringkasan performa finansial Tresbros Coffee</p>
+          <h1 className="text-3xl font-display font-bold text-zinc-900">Laporan Penjualan & Laba Rugi</h1>
+          <p className="text-zinc-500 mt-1">Ringkasan performa finansial bisnis Anda</p>
         </div>
 
         <div className="flex flex-col sm:flex-row items-center gap-3">
-          {/* Custom Tabs instead of Dropdown */}
-          <div className="flex bg-black/40 border border-white/10 rounded-lg p-1">
+          {/* Custom Tabs */}
+          <div className="flex bg-zinc-200/50 p-1 rounded-lg border border-zinc-200/80">
             {[
               { id: 'today', label: 'Hari Ini' },
               { id: 'yesterday', label: 'Kemarin' },
@@ -122,7 +122,7 @@ export default function DashboardPage() {
               <button
                 key={tab.id}
                 onClick={() => setFilter(tab.id)}
-                className={`px-4 py-1.5 text-sm rounded-md transition-all font-medium whitespace-nowrap ${filter === tab.id ? 'bg-brand-olive text-brand-cream shadow-sm' : 'text-brand-sage hover:text-brand-cream hover:bg-white/5'}`}
+                className={`px-4 py-1.5 text-sm rounded-md transition-all font-medium whitespace-nowrap ${filter === tab.id ? 'bg-white text-blue-600 shadow-sm ring-1 ring-black/5' : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-200/50'}`}
               >
                 {tab.label}
               </button>
@@ -131,7 +131,7 @@ export default function DashboardPage() {
           
           <button 
             onClick={handleExportCSV}
-            className="flex items-center gap-2 bg-brand-olive text-brand-cream px-4 py-2 rounded-lg hover:bg-brand-sage transition font-medium"
+            className="flex items-center gap-2 bg-white border border-zinc-200 text-zinc-700 px-4 py-2 rounded-lg hover:bg-zinc-50 hover:text-blue-600 transition font-medium shadow-sm"
           >
             <Download className="w-4 h-4" />
             Export CSV
@@ -140,47 +140,50 @@ export default function DashboardPage() {
       </div>
 
       {isLoading ? (
-        <div className="text-brand-sage animate-pulse mt-10">Memuat laporan analitik...</div>
+        <div className="text-zinc-500 animate-pulse mt-10 flex items-center gap-2">
+          <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          Memuat laporan analitik...
+        </div>
       ) : (
         <>
           {/* Top Metrics: P&L */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card variant="olive" onClick={() => openModal('revenue')} className="cursor-pointer hover:bg-white/5 transition-colors flex flex-col justify-between p-6 shadow-xl border-l-4 border-l-green-500">
-              <div className="flex justify-between items-start mb-4">
-                <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
-                  <TrendingUp className="w-5 h-5 text-green-500" />
+            <Card onClick={() => openModal('revenue')} className="cursor-pointer hover:border-blue-300 hover:shadow-md transition-all flex flex-col justify-between p-6">
+              <div className="flex justify-between items-start mb-6">
+                <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center border border-blue-100">
+                  <TrendingUp className="w-6 h-6 text-blue-600" />
                 </div>
-                <span className="bg-black/20 text-xs px-2 py-1 rounded text-brand-sage">Pemasukan</span>
+                <span className="bg-zinc-100 border border-zinc-200 text-xs font-semibold px-2.5 py-1 rounded-full text-zinc-600">Pemasukan</span>
               </div>
               <div>
-                <p className="text-brand-sage text-sm font-medium">Total Pendapatan Kotor</p>
-                <h3 className="text-3xl font-display font-bold text-white">{formatRupiah(data?.revenue)}</h3>
+                <p className="text-zinc-500 text-sm font-medium mb-1">Total Pendapatan Kotor</p>
+                <h3 className="text-3xl font-display font-bold text-zinc-900 tracking-tight">{formatRupiah(data?.revenue)}</h3>
               </div>
             </Card>
 
-            <Card variant="olive" onClick={() => openModal('expense')} className="cursor-pointer hover:bg-white/5 transition-colors flex flex-col justify-between p-6 shadow-xl border-l-4 border-l-red-500">
-              <div className="flex justify-between items-start mb-4">
-                <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
-                  <TrendingDown className="w-5 h-5 text-red-500" />
+            <Card onClick={() => openModal('expense')} className="cursor-pointer hover:border-red-300 hover:shadow-md transition-all flex flex-col justify-between p-6">
+              <div className="flex justify-between items-start mb-6">
+                <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center border border-red-100">
+                  <TrendingDown className="w-6 h-6 text-red-600" />
                 </div>
-                <span className="bg-black/20 text-xs px-2 py-1 rounded text-brand-sage">Pengeluaran</span>
+                <span className="bg-zinc-100 border border-zinc-200 text-xs font-semibold px-2.5 py-1 rounded-full text-zinc-600">Pengeluaran</span>
               </div>
               <div>
-                <p className="text-brand-sage text-sm font-medium">Total Pengeluaran Ops.</p>
-                <h3 className="text-3xl font-display font-bold text-white">{formatRupiah(data?.expenses)}</h3>
+                <p className="text-zinc-500 text-sm font-medium mb-1">Total Pengeluaran Ops.</p>
+                <h3 className="text-3xl font-display font-bold text-zinc-900 tracking-tight">{formatRupiah(data?.expenses)}</h3>
               </div>
             </Card>
 
-            <Card variant="olive" onClick={() => openModal('profit')} className={`cursor-pointer hover:bg-white/5 transition-colors flex flex-col justify-between p-6 shadow-xl border-l-4 ${data?.netProfit >= 0 ? 'border-l-blue-400' : 'border-l-orange-500'}`}>
-              <div className="flex justify-between items-start mb-4">
-                <div className="w-10 h-10 rounded-full bg-blue-400/20 flex items-center justify-center">
-                  <DollarSign className="w-5 h-5 text-blue-400" />
+            <Card onClick={() => openModal('profit')} className={`cursor-pointer hover:shadow-md transition-all flex flex-col justify-between p-6 ${data?.netProfit >= 0 ? 'hover:border-emerald-300' : 'hover:border-orange-300'}`}>
+              <div className="flex justify-between items-start mb-6">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center border ${data?.netProfit >= 0 ? 'bg-emerald-50 border-emerald-100' : 'bg-orange-50 border-orange-100'}`}>
+                  <DollarSign className={`w-6 h-6 ${data?.netProfit >= 0 ? 'text-emerald-600' : 'text-orange-600'}`} />
                 </div>
-                <span className="bg-black/20 text-xs px-2 py-1 rounded text-brand-sage">Laba/Rugi</span>
+                <span className="bg-zinc-100 border border-zinc-200 text-xs font-semibold px-2.5 py-1 rounded-full text-zinc-600">Laba/Rugi</span>
               </div>
               <div>
-                <p className="text-brand-sage text-sm font-medium">Laba Bersih (Net Profit)</p>
-                <h3 className={`text-3xl font-display font-bold ${data?.netProfit >= 0 ? 'text-blue-400' : 'text-orange-500'}`}>
+                <p className="text-zinc-500 text-sm font-medium mb-1">Laba Bersih (Net Profit)</p>
+                <h3 className={`text-3xl font-display font-bold tracking-tight ${data?.netProfit >= 0 ? 'text-emerald-600' : 'text-orange-600'}`}>
                   {formatRupiah(data?.netProfit)}
                 </h3>
               </div>
@@ -191,34 +194,35 @@ export default function DashboardPage() {
             
             {/* Charts Area: Single Combined Chart */}
             <div className="lg:col-span-2 flex flex-col gap-6">
-              
-              <Card variant="olive" className="p-6 flex flex-col h-[400px]">
-                <div className="mb-4">
-                  <h2 className="text-xl font-display font-bold text-brand-cream">Pemasukan, Pengeluaran, dan Laba</h2>
-                  <p className="text-brand-sage text-sm mt-1">Pemantauan kesehatan bisnis secara menyeluruh.</p>
+              <Card className="p-6 flex flex-col h-[420px]">
+                <div className="mb-6 flex justify-between items-center">
+                  <div>
+                    <h2 className="text-lg font-display font-bold text-zinc-900">Grafik Pemasukan, Pengeluaran, dan Laba</h2>
+                    <p className="text-zinc-500 text-sm mt-1">Pemantauan kesehatan bisnis secara menyeluruh.</p>
+                  </div>
                 </div>
                 <div className="flex-1 w-full mt-2">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={chartDataWithProfit} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
-                      <XAxis dataKey={filter === '7days' || filter === 'thismonth' ? 'date' : 'time'} stroke="#A16B3D" fontSize={11} tickMargin={10} minTickGap={20} axisLine={false} tickLine={false} />
-                      <YAxis stroke="#A16B3D" fontSize={11} tickFormatter={(val) => `Rp${val/1000}k`} width={60} axisLine={false} tickLine={false} />
-                      <Tooltip contentStyle={{ backgroundColor: '#1C1F1D', borderColor: '#ffffff10', borderRadius: '8px' }} itemStyle={{ color: '#F3EDE1' }} formatter={(v: any) => formatRupiah(v as number)} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e4e4e7" vertical={false} />
+                      <XAxis dataKey={filter === '7days' || filter === 'thismonth' ? 'date' : 'time'} stroke="#71717a" fontSize={12} tickMargin={12} minTickGap={20} axisLine={false} tickLine={false} />
+                      <YAxis stroke="#71717a" fontSize={12} tickFormatter={(val) => `Rp${val/1000}k`} width={60} axisLine={false} tickLine={false} />
+                      <Tooltip contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e4e4e7', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} itemStyle={{ color: '#18181b', fontWeight: 500 }} formatter={(v: any) => formatRupiah(v as number)} />
                       <Legend 
                         verticalAlign="bottom" 
                         content={(props) => {
                           const { payload } = props;
                           return (
-                            <ul className="flex justify-center gap-6 pt-5">
+                            <ul className="flex justify-center gap-8 pt-6">
                               {payload?.map((entry: any, index: number) => (
                                 <li 
                                   key={`item-${index}`} 
-                                  className="flex items-center gap-2 cursor-pointer transition-opacity hover:opacity-80 select-none"
+                                  className="flex items-center gap-2 cursor-pointer transition-opacity hover:opacity-70 select-none"
                                   onClick={() => handleLegendClick(entry)}
                                   style={{ opacity: hiddenLines[entry.dataKey as keyof typeof hiddenLines] ? 0.4 : 1 }}
                                 >
-                                  <span className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }}></span>
-                                  <span className="text-[#F3EDE1] text-[13px]">{entry.value}</span>
+                                  <span className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: entry.color }}></span>
+                                  <span className="text-zinc-600 font-medium text-sm">{entry.value}</span>
                                 </li>
                               ))}
                             </ul>
@@ -226,89 +230,92 @@ export default function DashboardPage() {
                         }} 
                       />
                       
-                      <Line hide={hiddenLines.revenue} type="monotone" name="Pemasukan" dataKey="revenue" stroke="#3b82f6" strokeWidth={3} dot={false} activeDot={{ r: 6, fill: '#3b82f6', stroke: '#1C1F1D', strokeWidth: 2 }} />
-                      <Line hide={hiddenLines.expense} type="monotone" name="Pengeluaran" dataKey="expense" stroke="#22c55e" strokeWidth={3} dot={false} activeDot={{ r: 6, fill: '#22c55e', stroke: '#1C1F1D', strokeWidth: 2 }} />
-                      <Line hide={hiddenLines.profit} type="monotone" name="Laba" dataKey="profit" stroke="#ea580c" strokeWidth={3} dot={false} activeDot={{ r: 6, fill: '#ea580c', stroke: '#1C1F1D', strokeWidth: 2 }} />
+                      <Line hide={hiddenLines.revenue} type="monotone" name="Pemasukan" dataKey="revenue" stroke="#2563eb" strokeWidth={3} dot={false} activeDot={{ r: 6, fill: '#2563eb', stroke: '#ffffff', strokeWidth: 2 }} />
+                      <Line hide={hiddenLines.expense} type="monotone" name="Pengeluaran" dataKey="expense" stroke="#ef4444" strokeWidth={3} dot={false} activeDot={{ r: 6, fill: '#ef4444', stroke: '#ffffff', strokeWidth: 2 }} />
+                      <Line hide={hiddenLines.profit} type="monotone" name="Laba" dataKey="profit" stroke="#10b981" strokeWidth={3} dot={false} activeDot={{ r: 6, fill: '#10b981', stroke: '#ffffff', strokeWidth: 2 }} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
               </Card>
-
             </div>
 
             {/* Breakdown & Best Sellers */}
             <div className="flex flex-col gap-6">
               
-              <Card variant="olive" className="p-6">
-                <h2 className="text-lg font-display font-semibold mb-4 border-b border-white/10 pb-2 flex items-center gap-2">
-                  <Receipt className="w-5 h-5 text-brand-warm" />
+              <Card className="p-6">
+                <h2 className="text-base font-display font-bold text-zinc-900 mb-5 flex items-center gap-2">
+                  <div className="bg-zinc-100 p-1.5 rounded-lg border border-zinc-200">
+                    <Receipt className="w-4 h-4 text-zinc-600" />
+                  </div>
                   Sumber Pembayaran
                 </h2>
-                <div className="space-y-5 mt-4">
+                <div className="space-y-5 mt-2">
                   <div>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-brand-cream">Tunai (Cash)</span>
-                      <span className="font-bold">{formatRupiah(data?.paymentBreakdown?.CASH)}</span>
+                    <div className="flex justify-between text-sm mb-2">
+                      <span className="text-zinc-600 font-medium">Tunai (Cash)</span>
+                      <span className="font-bold text-zinc-900">{formatRupiah(data?.paymentBreakdown?.CASH)}</span>
                     </div>
-                    <div className="w-full bg-black/40 rounded-full h-2">
-                      <div className="bg-brand-warm h-2 rounded-full" style={{ width: `${(data?.paymentBreakdown?.CASH / (data?.revenue||1)) * 100}%` }}></div>
+                    <div className="w-full bg-zinc-100 rounded-full h-2.5 overflow-hidden">
+                      <div className="bg-zinc-800 h-full rounded-full" style={{ width: `${(data?.paymentBreakdown?.CASH / (data?.revenue||1)) * 100}%` }}></div>
                     </div>
                   </div>
                   <div>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-brand-cream">QRIS / E-Wallet</span>
-                      <span className="font-bold">{formatRupiah(data?.paymentBreakdown?.QRIS)}</span>
+                    <div className="flex justify-between text-sm mb-2">
+                      <span className="text-zinc-600 font-medium">QRIS / E-Wallet</span>
+                      <span className="font-bold text-zinc-900">{formatRupiah(data?.paymentBreakdown?.QRIS)}</span>
                     </div>
-                    <div className="w-full bg-black/40 rounded-full h-2">
-                      <div className="bg-blue-400 h-2 rounded-full" style={{ width: `${(data?.paymentBreakdown?.QRIS / (data?.revenue||1)) * 100}%` }}></div>
+                    <div className="w-full bg-zinc-100 rounded-full h-2.5 overflow-hidden">
+                      <div className="bg-blue-500 h-full rounded-full" style={{ width: `${(data?.paymentBreakdown?.QRIS / (data?.revenue||1)) * 100}%` }}></div>
                     </div>
                   </div>
                   <div>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-brand-cream">Kartu Debit/Kredit</span>
-                      <span className="font-bold">{formatRupiah(data?.paymentBreakdown?.DEBIT)}</span>
+                    <div className="flex justify-between text-sm mb-2">
+                      <span className="text-zinc-600 font-medium">Kartu Debit/Kredit</span>
+                      <span className="font-bold text-zinc-900">{formatRupiah(data?.paymentBreakdown?.DEBIT)}</span>
                     </div>
-                    <div className="w-full bg-black/40 rounded-full h-2">
-                      <div className="bg-purple-400 h-2 rounded-full" style={{ width: `${(data?.paymentBreakdown?.DEBIT / (data?.revenue||1)) * 100}%` }}></div>
+                    <div className="w-full bg-zinc-100 rounded-full h-2.5 overflow-hidden">
+                      <div className="bg-purple-500 h-full rounded-full" style={{ width: `${(data?.paymentBreakdown?.DEBIT / (data?.revenue||1)) * 100}%` }}></div>
                     </div>
                   </div>
                 </div>
               </Card>
 
               {/* Donut Chart for Best Sellers */}
-              <Card variant="olive" className="p-6 flex flex-col">
-                <h2 className="text-lg font-display font-semibold mb-4 border-b border-white/10 pb-2 flex items-center gap-2">
-                  <Package className="w-5 h-5 text-brand-warm" />
+              <Card className="p-6 flex flex-col flex-1">
+                <h2 className="text-base font-display font-bold text-zinc-900 mb-2 flex items-center gap-2">
+                  <div className="bg-zinc-100 p-1.5 rounded-lg border border-zinc-200">
+                    <Package className="w-4 h-4 text-zinc-600" />
+                  </div>
                   Produk Terlaris
                 </h2>
                 {data?.topProducts?.length === 0 ? (
-                  <p className="text-brand-sage text-sm text-center py-10 flex-1 flex items-center justify-center">Belum ada data penjualan.</p>
+                  <p className="text-zinc-500 text-sm text-center py-10 flex-1 flex items-center justify-center bg-zinc-50 rounded-xl mt-4 border border-zinc-100 border-dashed">Belum ada data penjualan.</p>
                 ) : (
-                  <div className="w-full mt-2 h-[220px]">
+                  <div className="w-full mt-4 h-[200px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                         <Pie
                           data={data?.topProducts}
                           cx="50%"
                           cy="45%"
-                          innerRadius={60}
-                          outerRadius={80}
-                          paddingAngle={3}
+                          innerRadius={65}
+                          outerRadius={85}
+                          paddingAngle={2}
                           dataKey="qty"
                           nameKey="name"
                           stroke="none"
                         >
                           {data?.topProducts?.map((entry: any, index: number) => {
-                            const colors = ['#D4A373', '#A16B3D', '#6A4A2F', '#4A3424', '#2D2016'];
+                            const colors = ['#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe'];
                             return <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />;
                           })}
                         </Pie>
                         <Tooltip 
-                          contentStyle={{ backgroundColor: '#3A2B1F', borderColor: '#ffffff20', borderRadius: '8px' }}
-                          itemStyle={{ color: '#F3EDE1' }}
+                          contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e4e4e7', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                          itemStyle={{ color: '#18181b', fontWeight: 500 }}
                           formatter={(value: any, name: any) => [`${value} Porsi`, name]}
                         />
-                        <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '11px', color: '#F3EDE1' }} />
+                        <Legend verticalAlign="bottom" height={24} iconType="circle" wrapperStyle={{ fontSize: '12px', color: '#52525b', fontWeight: 500 }} />
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
@@ -318,80 +325,84 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <h2 className="text-xl font-display font-semibold mt-6 mb-2">Riwayat Pesanan Terakhir</h2>
-          <Card variant="olive" className="p-0 overflow-hidden shadow-xl border-white/10">
-            <table className="w-full text-left text-sm text-brand-sage">
-              <thead className="bg-black/40 text-brand-cream border-b border-white/10">
-                <tr>
-                  <th className="px-6 py-5 font-semibold">ID Pesanan</th>
-                  <th className="px-6 py-5 font-semibold">Waktu Selesai</th>
-                  <th className="px-6 py-5 font-semibold">Customer</th>
-                  <th className="px-6 py-5 font-semibold text-center">Metode</th>
-                  <th className="px-6 py-5 font-semibold text-right">Total Tagihan</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {data?.recentOrders?.map((order: any) => (
-                  <tr key={order.id} className="hover:bg-white/5 transition-colors">
-                    <td className="px-6 py-4 font-mono text-xs">{order.orderNumber || order.id}</td>
-                    <td className="px-6 py-4">{new Date(order.createdAt).toLocaleTimeString('id-ID')}</td>
-                    <td className="px-6 py-4">{order.customerName || '-'}</td>
-                    <td className="px-6 py-4 text-center">
-                      <span className="bg-black/30 px-2 py-1 rounded text-xs">
-                        {order.paymentMethod === 'CASH' ? 'Tunai' : order.paymentMethod}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 font-medium text-brand-warm text-right text-base">{formatRupiah(order.totalAmount)}</td>
-                  </tr>
-                ))}
-                {(!data?.recentOrders || data.recentOrders.length === 0) && (
-                  <tr>
-                    <td colSpan={5} className="text-center py-10 text-brand-sage/50">Belum ada transaksi di rentang waktu ini.</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </Card>
+          <div className="mt-8">
+            <h2 className="text-lg font-display font-bold text-zinc-900 mb-4">Riwayat Pesanan Terakhir</h2>
+            <Card className="p-0 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm whitespace-nowrap">
+                  <thead className="bg-zinc-50 text-zinc-500 border-b border-zinc-200">
+                    <tr>
+                      <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">ID Pesanan</th>
+                      <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Waktu Selesai</th>
+                      <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Customer</th>
+                      <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs text-center">Metode</th>
+                      <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs text-right">Total Tagihan</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-100">
+                    {data?.recentOrders?.map((order: any) => (
+                      <tr key={order.id} className="hover:bg-zinc-50/80 transition-colors">
+                        <td className="px-6 py-4 font-mono text-xs text-zinc-500">{order.orderNumber || order.id}</td>
+                        <td className="px-6 py-4 text-zinc-700 font-medium">{new Date(order.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</td>
+                        <td className="px-6 py-4 text-zinc-700">{order.customerName || '-'}</td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="bg-zinc-100 border border-zinc-200 text-zinc-600 px-2.5 py-1 rounded-md text-xs font-medium">
+                            {order.paymentMethod === 'CASH' ? 'Tunai' : order.paymentMethod}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 font-semibold text-zinc-900 text-right">{formatRupiah(order.totalAmount)}</td>
+                      </tr>
+                    ))}
+                    {(!data?.recentOrders || data.recentOrders.length === 0) && (
+                      <tr>
+                        <td colSpan={5} className="text-center py-12 text-zinc-400 bg-zinc-50/50">Belum ada transaksi di rentang waktu ini.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          </div>
         </>
       )}
 
       {/* Transaction Detail Modal */}
       {modalData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in" onClick={() => setModalData(null)}>
-          <Card variant="olive" onClick={e => e.stopPropagation()} className="max-w-3xl w-full flex flex-col shadow-2xl border-white/10 max-h-[80vh] p-0">
-            <div className="flex justify-between items-center p-5 border-b border-white/10">
-              <h2 className="text-xl font-bold text-white">{modalData.title}</h2>
-              <button onClick={() => setModalData(null)} className="text-brand-sage hover:text-white p-1">
-                <X className="w-6 h-6" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 backdrop-blur-sm p-4 animate-in fade-in" onClick={() => setModalData(null)}>
+          <Card onClick={e => e.stopPropagation()} className="max-w-3xl w-full flex flex-col max-h-[85vh] p-0 overflow-hidden shadow-2xl border-zinc-200/60 ring-1 ring-black/5">
+            <div className="flex justify-between items-center px-6 py-5 border-b border-zinc-100 bg-white">
+              <h2 className="text-lg font-bold text-zinc-900">{modalData.title}</h2>
+              <button onClick={() => setModalData(null)} className="text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 p-1.5 rounded-lg transition-colors">
+                <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="flex-1 overflow-auto p-0">
-              <table className="w-full text-left text-sm text-brand-sage">
-                <thead className="bg-black/40 text-brand-cream sticky top-0 border-b border-white/10 shadow-sm">
+            <div className="flex-1 overflow-auto p-0 bg-white custom-scrollbar">
+              <table className="w-full text-left text-sm whitespace-nowrap">
+                <thead className="bg-zinc-50 text-zinc-500 sticky top-0 border-b border-zinc-200 z-10">
                   <tr>
-                    <th className="px-5 py-3 font-semibold">Tanggal & Waktu</th>
-                    <th className="px-5 py-3 font-semibold">ID / Referensi</th>
-                    <th className="px-5 py-3 font-semibold">Keterangan</th>
-                    <th className="px-5 py-3 font-semibold text-right">Nominal</th>
+                    <th className="px-6 py-3.5 font-semibold uppercase tracking-wider text-xs">Tanggal & Waktu</th>
+                    <th className="px-6 py-3.5 font-semibold uppercase tracking-wider text-xs">ID / Referensi</th>
+                    <th className="px-6 py-3.5 font-semibold uppercase tracking-wider text-xs">Keterangan</th>
+                    <th className="px-6 py-3.5 font-semibold uppercase tracking-wider text-xs text-right">Nominal</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5">
+                <tbody className="divide-y divide-zinc-100">
                   {modalData.transactions.map((t, idx) => (
-                    <tr key={idx} className="hover:bg-white/5 transition-colors">
-                      <td className="px-5 py-3 whitespace-nowrap">
-                        {new Date(t.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}<br/>
-                        <span className="text-xs">{new Date(t.date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
+                    <tr key={idx} className="hover:bg-zinc-50/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <span className="font-medium text-zinc-900">{new Date(t.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span><br/>
+                        <span className="text-xs text-zinc-500">{new Date(t.date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
                       </td>
-                      <td className="px-5 py-3 font-mono text-xs">{t.id}</td>
-                      <td className="px-5 py-3">{t.description}</td>
-                      <td className={`px-5 py-3 font-bold text-right ${t.type === 'IN' ? 'text-blue-400' : 'text-red-400'}`}>
+                      <td className="px-6 py-4 font-mono text-xs text-zinc-500">{t.id}</td>
+                      <td className="px-6 py-4 text-zinc-700">{t.description}</td>
+                      <td className={`px-6 py-4 font-semibold text-right ${t.type === 'IN' ? 'text-blue-600' : 'text-red-600'}`}>
                         {t.type === 'IN' ? '+' : '-'}{formatRupiah(t.amount)}
                       </td>
                     </tr>
                   ))}
                   {modalData.transactions.length === 0 && (
                     <tr>
-                      <td colSpan={4} className="text-center py-10 text-brand-sage/50">Tidak ada data transaksi.</td>
+                      <td colSpan={4} className="text-center py-12 text-zinc-400">Tidak ada data transaksi.</td>
                     </tr>
                   )}
                 </tbody>

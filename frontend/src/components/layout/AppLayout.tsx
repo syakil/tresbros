@@ -43,12 +43,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   const getActiveStyle = (path: string) => {
     return pathname === path 
-      ? "bg-brand-sage/30 text-brand-cream font-semibold border-l-4 border-brand-warm" 
-      : "text-brand-cream/80 hover:text-brand-cream hover:bg-brand-sage/20 border-l-4 border-transparent";
+      ? "bg-blue-600 text-white font-semibold" 
+      : "text-zinc-400 hover:text-white hover:bg-zinc-800";
   };
 
   return (
-    <div className="flex h-screen bg-brand-dark overflow-hidden font-sans text-brand-cream relative print:h-auto print:block print:bg-white print:text-black">
+    <div className="flex h-screen bg-zinc-100 overflow-hidden font-sans text-zinc-900 relative print:h-auto print:block print:bg-white print:text-black">
       
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
@@ -59,14 +59,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed md:relative inset-y-0 left-0 z-50 w-64 bg-brand-dark/95 md:bg-black/20 backdrop-blur-md border-r border-white/5 flex flex-col justify-between shrink-0 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} print:hidden`}>
+      <aside className={`fixed md:relative inset-y-0 left-0 z-50 w-64 bg-zinc-900 text-zinc-400 border-r border-zinc-800 flex flex-col justify-between shrink-0 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} print:hidden`}>
         <div className="p-4 flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar">
           <div className="flex items-center justify-between gap-3 mb-10 mt-2 px-2">
             <div className="flex items-center gap-3">
-              <Coffee className="text-brand-warm w-8 h-8" />
-              <h1 className="font-display font-bold text-2xl tracking-tight">Tres Bros</h1>
+              <Coffee className="text-blue-500 w-8 h-8" />
+              <h1 className="font-display font-bold text-2xl tracking-tight text-white">Tres<span className="text-blue-500">bros</span></h1>
             </div>
-            <button className="md:hidden text-brand-sage hover:text-brand-cream" onClick={() => setIsSidebarOpen(false)}>
+            <button className="md:hidden text-zinc-400 hover:text-white" onClick={() => setIsSidebarOpen(false)}>
               <X className="w-6 h-6" />
             </button>
           </div>
@@ -188,8 +188,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </nav>
         </div>
         
-        <div className="p-6 border-t border-white/5">
-          <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 w-full text-[#EF4444] hover:bg-[#EF4444]/10 rounded-xl transition font-medium">
+        <div className="p-6 border-t border-zinc-800">
+          <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 w-full text-red-500 hover:bg-red-500/10 rounded-xl transition font-medium">
             <LogOut className="w-5 h-5" />
             <span>Sign Out</span>
           </button>
@@ -199,31 +199,31 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden print:overflow-visible">
         {/* Topbar */}
-        <header className="h-20 shrink-0 border-b border-white/5 bg-black/10 backdrop-blur-sm flex items-center justify-between px-4 md:px-8 print:hidden">
+        <header className="h-20 shrink-0 border-b border-zinc-200 bg-white flex items-center justify-between px-4 md:px-8 print:hidden">
           <div className="flex items-center gap-3">
             <button 
-              className="md:hidden p-2 text-brand-sage hover:text-brand-cream bg-black/20 rounded-lg"
+              className="md:hidden p-2 text-zinc-500 hover:text-zinc-900 bg-zinc-100 rounded-lg"
               onClick={() => setIsSidebarOpen(true)}
             >
               <Menu className="w-5 h-5" />
             </button>
-            <h2 className="font-display text-xl font-semibold capitalize">
+            <h2 className="font-display text-xl font-semibold capitalize text-zinc-900">
               {pathname === '/' ? 'Dashboard' : pathname.replace('/admin/', '').replace('/', '')}
             </h2>
           </div>
           <div className="flex items-center gap-4">
             <div className="text-right hidden md:block">
-              <p className="text-sm font-medium">{user ? user.fullName : 'Loading...'}</p>
-              <p className="text-xs text-brand-sage">{user && user.role ? user.role.name : ''}</p>
+              <p className="text-sm font-medium text-zinc-900">{user ? user.fullName : 'Loading...'}</p>
+              <p className="text-xs text-zinc-500">{user && user.role ? user.role.name : ''}</p>
             </div>
-            <div className="w-10 h-10 rounded-full bg-brand-olive flex items-center justify-center font-bold shadow-md uppercase">
+            <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold shadow-sm uppercase">
               {user ? user.username.substring(0, 1) : 'U'}
             </div>
           </div>
         </header>
         
         {/* Content Scrollable */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 print:p-0 print:overflow-visible">
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 print:p-0 print:overflow-visible custom-scrollbar-light">
           {children}
         </div>
       </main>

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -11,15 +11,17 @@ namespace backend.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.InsertData(
-                table: "Roles",
-                columns: new[] { "Id", "CreatedAt", "Description", "Name", "Permissions" },
-                values: new object[] { 1, new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Akses Penuh", "Super Admin", "[\"dashboard\",\"pos\",\"kds\",\"inventory\",\"purchases\",\"accounting\",\"settings\"]" });
+            migrationBuilder.Sql(@"
+                INSERT INTO ""Roles"" (""Id"", ""CreatedAt"", ""Description"", ""Name"", ""Permissions"")
+                VALUES (1, '2026-01-01T00:00:00Z', 'Akses Penuh', 'Super Admin', '[""dashboard"",""pos"",""kds"",""inventory"",""purchases"",""accounting"",""settings""]')
+                ON CONFLICT (""Id"") DO NOTHING;
+            ");
 
-            migrationBuilder.InsertData(
-                table: "Users",
-                columns: new[] { "Id", "CreatedAt", "FullName", "IsActive", "Password", "RoleId", "Username" },
-                values: new object[] { 1, new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Administrator", true, "password", 1, "admin" });
+            migrationBuilder.Sql(@"
+                INSERT INTO ""Users"" (""Id"", ""CreatedAt"", ""FullName"", ""IsActive"", ""Password"", ""RoleId"", ""Username"")
+                VALUES (1, '2026-01-01T00:00:00Z', 'Administrator', true, 'password', 1, 'admin')
+                ON CONFLICT (""Id"") DO NOTHING;
+            ");
         }
 
         /// <inheritdoc />

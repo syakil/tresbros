@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tresbros - Modern Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons for modern minimalist icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        :root {
+            /* Colors - Premium Modern Palette */
+            --bg-body: #F4F4F5; /* Zinc 100 */
+            --bg-surface: #FFFFFF;
+            --sidebar-bg: #18181B; /* Zinc 900 */
+            --sidebar-hover: #27272A; /* Zinc 800 */
+            
+            /* Typography Colors */
+            --text-primary: #09090B; /* Zinc 950 */
+            --text-secondary: #71717A; /* Zinc 500 */
+            --text-sidebar: #A1A1AA; /* Zinc 400 */
+            --text-sidebar-active: #FFFFFF;
+            
+            /* Accent Colors - Eye-catching but classy */
+            --accent-primary: #2563EB; /* Blue 600 */
+            --accent-hover: #1D4ED8; /* Blue 700 */
+            --success: #10B981; /* Emerald 500 */
+            --warning: #F59E0B; /* Amber 500 */
+            --danger: #EF4444; /* Red 500 */
+            
+            /* UI Elements */
+            --border-color: #E4E4E7; /* Zinc 200 */
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-full: 9999px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+            
+            /* Font */
+            --font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            color: var(--text-sidebar);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+
+        .brand {
+            height: 80px;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-sidebar-active);
+            letter-spacing: -0.5px;
+        }
+
+        .brand span {
+            color: var(--accent-primary);
+        }
+
+        .nav-menu {
+            flex: 1;
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            color: var(--text-sidebar);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 15px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item i {
+            font-size: 20px;
+        }
+
+        .nav-item:hover {
+            background-color: var(--sidebar-hover);
+            color: var(--text-sidebar-active);
+        }
+
+        .nav-item.active {
+            background-color: var(--accent-primary);
+            color: #ffffff;
+        }
+
+        .user-profile-sidebar {
+            padding: 24px 16px;
+            border-top: 1px solid var(--sidebar-hover);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-full);
+            background-color: var(--sidebar-hover);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-sidebar-active);
+            font-weight: 600;
+            overflow: hidden;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            color: var(--text-sidebar-active);
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .user-role {
+            font-size: 12px;
+            color: var(--text-sidebar);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            height: 80px;
+            background-color: var(--bg-surface);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+        }
+
+        .page-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background-color: var(--bg-body);
+            border-radius: var(--radius-full);
+            padding: 8px 16px;
+            width: 300px;
+            border: 1px solid transparent;
+            transition: border-color 0.2s ease;
+        }
+
+        .search-bar:focus-within {
+            border-color: var(--accent-primary);
+            background-color: var(--bg-surface);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .search-bar i {
+            color: var(--text-secondary);
+            font-size: 18px;
+        }
+
+        .search-bar input {
+            border: none;
+            background: transparent;
+            padding: 4px 8px;
+            width: 100%;
+            outline: none;
+            font-family: inherit;
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        .search-bar input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 24px;
+            cursor: pointer;
+            position: relative;
+            transition: color 0.2s;
+        }
+
+        .icon-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background-color: var(--danger);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            width: 16px;
+            height: 16px;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--bg-surface);
+        }
+
+        /* Dashboard Content */
+        .content-area {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background-color: var(--bg-surface);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-title {
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .icon-blue { background-color: rgba(37, 99, 235, 0.1); color: var(--accent-primary); }
+        .icon-green { background-color: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .icon-orange { background-color: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .icon-purple { background-color: rgba(139, 92, 246, 0.1); color: #8B5CF6; }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -1px;
+        }
+
+        .stat-change {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .change-positive { color: var(--success); }
+        .change-negative { color: var(--danger); }
+
+        /* Tables & Sections */
+        .section-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+
+        .card {
+            background-color: var(--bg-surface);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .btn-outline:hover {
+            background-color: var(--bg-body);
+            border-color: var(--text-secondary);
+        }
+
+        /* Modern Table */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 16px 24px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background-color: #FAFAFA;
+        }
+
+        td {
+            padding: 16px 24px;
+            font-size: 14px;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 500;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: #FAFAFA;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: var(--radius-full);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-completed { background-color: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .status-processing { background-color: rgba(245, 158, 11, 0.1); color: var(--warning); }
+
+        /* Top Items List */
+        .items-list {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .item-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .item-img {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            background-color: var(--bg-body);
+            object-fit: cover;
+        }
+
+        .item-details {
+            flex: 1;
+        }
+
+        .item-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .item-category {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .item-sales {
+            font-weight: 600;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="brand">
+            Tres<span>bros</span>
+        </div>
+        <nav class="nav-menu">
+            <a href="#" class="nav-item active">
+                <i class="ph ph-squares-four"></i>
+                Dashboard
+            </a>
+            <a href="#" class="nav-item">
+                <i class="ph ph-cash-register"></i>
+                Point of Sale
+            </a>
+            <a href="#" class="nav-item">
+                <i class="ph ph-receipt"></i>
+                Pesanan
+            </a>
+            <a href="#" class="nav-item">
+                <i class="ph ph-cooking-pot"></i>
+                Dapur
+            </a>
+            <a href="#" class="nav-item">
+                <i class="ph ph-package"></i>
+                Inventaris
+            </a>
+            <a href="#" class="nav-item">
+                <i class="ph ph-chart-line-up"></i>
+                Laporan
+            </a>
+            <a href="#" class="nav-item">
+                <i class="ph ph-users"></i>
+                Pelanggan
+            </a>
+            <a href="#" class="nav-item" style="margin-top: auto;">
+                <i class="ph ph-gear"></i>
+                Pengaturan
+            </a>
+        </nav>
+        <div class="user-profile-sidebar">
+            <div class="avatar">
+                AD
+            </div>
+            <div class="user-info">
+                <span class="user-name">Admin Utama</span>
+                <span class="user-role">Pusat / Headquarter</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <div class="page-title">Ringkasan Hari Ini</div>
+            <div class="header-actions">
+                <div class="search-bar">
+                    <i class="ph ph-magnifying-glass"></i>
+                    <input type="text" placeholder="Cari pesanan, menu...">
+                </div>
+                <button class="icon-btn">
+                    <i class="ph ph-bell"></i>
+                    <span class="badge">3</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <div class="content-area">
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Pendapatan Kotor</span>
+                        <div class="stat-icon icon-blue">
+                            <i class="ph ph-wallet"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value">Rp 8.450.000</div>
+                    <div class="stat-change change-positive">
+                        <i class="ph ph-trend-up"></i>
+                        <span>+12.5% dari kemarin</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Total Pesanan</span>
+                        <div class="stat-icon icon-purple">
+                            <i class="ph ph-receipt"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value">142</div>
+                    <div class="stat-change change-positive">
+                        <i class="ph ph-trend-up"></i>
+                        <span>+5.2% dari kemarin</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Pelanggan Aktif</span>
+                        <div class="stat-icon icon-orange">
+                            <i class="ph ph-users"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value">84</div>
+                    <div class="stat-change change-negative">
+                        <i class="ph ph-trend-down"></i>
+                        <span>-2.1% dari kemarin</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Menu Terjual</span>
+                        <div class="stat-icon icon-green">
+                            <i class="ph ph-coffee"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value">315</div>
+                    <div class="stat-change change-positive">
+                        <i class="ph ph-trend-up"></i>
+                        <span>+18.4% dari kemarin</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tables and Lists -->
+            <div class="section-grid">
+                <!-- Recent Orders -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Pesanan Terakhir</h2>
+                        <button class="btn-outline">Lihat Semua</button>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID Pesanan</th>
+                                    <th>Waktu</th>
+                                    <th>Pelanggan</th>
+                                    <th>Status</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>#TRB-0921</td>
+                                    <td>10:42 AM</td>
+                                    <td>Budi Santoso</td>
+                                    <td><span class="status-pill status-completed">Selesai</span></td>
+                                    <td>Rp 125.000</td>
+                                </tr>
+                                <tr>
+                                    <td>#TRB-0922</td>
+                                    <td>10:45 AM</td>
+                                    <td>Dina Melati</td>
+                                    <td><span class="status-pill status-processing">Diproses</span></td>
+                                    <td>Rp 84.000</td>
+                                </tr>
+                                <tr>
+                                    <td>#TRB-0923</td>
+                                    <td>10:51 AM</td>
+                                    <td>Meja 04</td>
+                                    <td><span class="status-pill status-processing">Diproses</span></td>
+                                    <td>Rp 210.000</td>
+                                </tr>
+                                <tr>
+                                    <td>#TRB-0924</td>
+                                    <td>11:02 AM</td>
+                                    <td>GrabFood - Arya</td>
+                                    <td><span class="status-pill status-completed">Selesai</span></td>
+                                    <td>Rp 150.000</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Top Items -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Menu Terlaris</h2>
+                    </div>
+                    <div class="items-list">
+                        <div class="item-row">
+                            <div class="item-img" style="background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);"></div>
+                            <div class="item-details">
+                                <div class="item-name">Es Kopi Susu Aren</div>
+                                <div class="item-category">Minuman</div>
+                            </div>
+                            <div class="item-sales">45 porsi</div>
+                        </div>
+                        <div class="item-row">
+                            <div class="item-img" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);"></div>
+                            <div class="item-details">
+                                <div class="item-name">Nasi Goreng Spesial</div>
+                                <div class="item-category">Makanan</div>
+                            </div>
+                            <div class="item-sales">32 porsi</div>
+                        </div>
+                        <div class="item-row">
+                            <div class="item-img" style="background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);"></div>
+                            <div class="item-details">
+                                <div class="item-name">Chicken Cordon Bleu</div>
+                                <div class="item-category">Makanan</div>
+                            </div>
+                            <div class="item-sales">28 porsi</div>
+                        </div>
+                        <div class="item-row">
+                            <div class="item-img" style="background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);"></div>
+                            <div class="item-details">
+                                <div class="item-name">Matcha Latte</div>
+                                <div class="item-category">Minuman</div>
+                            </div>
+                            <div class="item-sales">24 porsi</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

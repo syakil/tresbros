@@ -38,23 +38,23 @@ export function CustomSelect({ value, onChange, options, className = '', placeho
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full text-left flex items-center justify-between focus:outline-none transition-all duration-200 ${className} ${isOpen ? 'ring-1 ring-brand-warm border-brand-warm' : ''}`}
+        className={`w-full text-left flex items-center justify-between focus:outline-none transition-all duration-200 ${className} ${isOpen ? 'ring-1 ring-blue-600 border-blue-600' : ''}`}
       >
         <span className="block truncate">
           {selectedOption ? selectedOption.label : placeholder}
         </span>
-        <ArrowDownToLine className={`w-4 h-4 text-brand-sage transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
+        <ArrowDownToLine className={`w-4 h-4 text-zinc-400 transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute z-50 w-full mt-2 bg-[#251b12] border border-white/10 rounded-xl shadow-2xl py-2 overflow-hidden backdrop-blur-md animate-in fade-in zoom-in-95 duration-100">
+        <div className="absolute z-50 w-full mt-2 bg-white border border-zinc-200 rounded-xl shadow-lg py-2 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
           <ul className="max-h-60 overflow-y-auto">
             {options.map((option) => (
               <li
                 key={option.value}
-                className={`relative cursor-pointer select-none py-2.5 pl-4 pr-10 text-brand-cream hover:bg-brand-warm/20 transition-colors ${
-                  value === option.value ? 'bg-brand-warm/10 font-medium text-brand-warm' : ''
+                className={`relative cursor-pointer select-none py-2.5 pl-4 pr-10 text-zinc-700 hover:bg-zinc-50 transition-colors ${
+                  value === option.value ? 'bg-blue-50/50 font-medium text-blue-600' : ''
                 }`}
                 onClick={() => {
                   onChange(option.value);
@@ -63,7 +63,7 @@ export function CustomSelect({ value, onChange, options, className = '', placeho
               >
                 <span className="block truncate">{option.label}</span>
                 {value === option.value && (
-                  <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-brand-warm">
+                  <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-blue-600">
                     <Check className="h-4 w-4" />
                   </span>
                 )}
