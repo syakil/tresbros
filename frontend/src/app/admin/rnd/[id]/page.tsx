@@ -29,14 +29,14 @@ export default function RnDDetailPage({ params }: { params: { id: string } }) {
         const res = await axios.get(`/api/rnd/${params.id}`);
         setRecipe(res.data);
       } catch (e) {
-        alert("Resep tidak ditemukan");
+        alert("Recipe not found");
         router.push('/admin/rnd');
       }
     };
     fetchRecipe();
   }, [params.id, router]);
 
-  if (!recipe) return <div className="p-6">Memuat data...</div>;
+  if (!recipe) return <div className="p-6">Loading data...</div>;
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -47,22 +47,22 @@ export default function RnDDetailPage({ params }: { params: { id: string } }) {
 
       await axios.put(`/api/rnd/${recipe.id}`, updatedRecipe);
       setRecipe(updatedRecipe);
-      alert('Tersimpan!');
+      alert('Saved!');
     } catch(e) {
-      alert('Gagal menyimpan');
+      alert('Failed to save');
     } finally {
       setIsSaving(false);
     }
   };
 
   const handlePromote = async () => {
-    if (confirm("Jadikan resep ini produk asli? Harga dan kategori akan perlu diatur nanti di halaman Produk.")) {
+    if (confirm("Promote this recipe to a real product? Price and category will need to be configured later on the Products page.")) {
       try {
         await axios.post(`/api/rnd/${recipe.id}/promote`, { price: 0, categoryId: 1 }); // Default category 1
-        alert('Resep berhasil dipromosikan jadi Produk!');
+        alert('Recipe promoted to Product successfully!');
         router.push('/admin/items');
       } catch(e) {
-        alert('Gagal mempromosikan');
+        alert('Failed to promote');
       }
     }
   };
@@ -115,12 +115,12 @@ export default function RnDDetailPage({ params }: { params: { id: string } }) {
           <Link href="/admin/rnd" className="p-2 bg-white border border-zinc-200 rounded-lg hover:bg-zinc-50 text-zinc-500">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <h1 className="text-2xl font-display font-bold text-zinc-900">Detail R&D</h1>
+          <h1 className="text-2xl font-display font-bold text-zinc-900">R&D Details</h1>
         </div>
         <div className="flex gap-2">
           {recipe.status === 'Approved' ? (
             <div className="px-4 py-2 bg-green-100 text-green-700 font-medium rounded-lg flex items-center gap-2">
-              <CheckCircle className="w-5 h-5" /> Sudah Jadi Produk
+              <CheckCircle className="w-5 h-5" /> Already a Product
             </div>
           ) : (
             <Button onClick={handlePromote} variant="secondary" className="bg-blue-50 text-blue-600 hover:bg-blue-100 border-none">
@@ -130,14 +130,14 @@ export default function RnDDetailPage({ params }: { params: { id: string } }) {
           )}
           <Button onClick={handleSave} disabled={isSaving}>
             <Save className="w-4 h-4 mr-2" />
-            {isSaving ? 'Menyimpan...' : 'Simpan'}
+            {isSaving ? 'Saving...' : 'Save'}
           </Button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <Card className="p-6">
-          <h2 className="text-lg font-bold mb-4">Informasi Dasar</h2>
+          <h2 className="text-lg font-bold mb-4">Basic Information</h2>
           <div className="space-y-4">
             <div>
               <Input 
@@ -147,7 +147,7 @@ export default function RnDDetailPage({ params }: { params: { id: string } }) {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-700 mb-1">Deskripsi & Tujuan Eksperimen</label>
+              <label className="block text-sm font-medium text-zinc-700 mb-1">Description & Experiment Goal</label>
               <textarea 
                 className="w-full border border-zinc-200 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-sage/50"
                 rows={3}
@@ -164,14 +164,14 @@ export default function RnDDetailPage({ params }: { params: { id: string } }) {
                   onChange={(e) => setRecipe({...recipe, status: e.target.value})}
                 >
                   <option value="Draft">Draft</option>
-                  <option value="Tested">Tested (Sudah Dicoba)</option>
+                  <option value="Tested">Tested</option>
                   <option value="Approved">Approved</option>
                   <option value="Rejected">Rejected</option>
                 </select>
               </div>
               <div>
                 <Input 
-                  label="Target HPP (Rp)"
+                  label="Target COGS (Rp)"
                   type="number"
                   value={recipe.targetCost} 
                   onChange={(e) => setRecipe({...recipe, targetCost: parseFloat(e.target.value) || 0})}
@@ -182,10 +182,10 @@ export default function RnDDetailPage({ params }: { params: { id: string } }) {
         </Card>
 
         <Card className="p-6">
-          <h2 className="text-lg font-bold mb-4">Catatan / Tasting Notes</h2>
+          <h2 className="text-lg font-bold mb-4">Notes / Tasting Notes</h2>
           <textarea 
             className="w-full border border-zinc-200 rounded-lg p-3 text-sm h-[200px] focus:outline-none focus:ring-2 focus:ring-brand-sage/50"
-            placeholder="Tuliskan hasil percobaan di sini (contoh: 'Rasa kurang manis, perlu tambah 5g gula')"
+            placeholder="Write experiment results here (e.g., 'Not sweet enough, add 5g sugar')"
             value={recipe.notes || ''}
             onChange={(e) => setRecipe({...recipe, notes: e.target.value})}
           />
@@ -194,19 +194,19 @@ export default function RnDDetailPage({ params }: { params: { id: string } }) {
 
       <Card className="p-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-bold">Simulasi Bahan Baku (COGS)</h2>
+          <h2 className="text-lg font-bold">Raw Material Simulation (COGS)</h2>
           <Button onClick={addIngredient} variant="secondary" className="py-1.5 px-3 text-sm">
-            <Plus className="w-4 h-4 mr-1" /> Tambah Bahan
+            <Plus className="w-4 h-4 mr-1" /> Add Material
           </Button>
         </div>
 
         <table className="w-full text-sm text-left mb-4">
           <thead className="bg-zinc-50 border-b border-zinc-200">
             <tr>
-              <th className="px-3 py-2">Bahan Baku</th>
-              <th className="px-3 py-2 w-32">Kuantitas</th>
-              <th className="px-3 py-2">Satuan</th>
-              <th className="px-3 py-2 text-right">Harga / Satuan</th>
+              <th className="px-3 py-2">Raw Material</th>
+              <th className="px-3 py-2 w-32">Quantity</th>
+              <th className="px-3 py-2">Unit</th>
+              <th className="px-3 py-2 text-right">Price / Unit</th>
               <th className="px-3 py-2 text-right">Subtotal</th>
               <th className="px-3 py-2"></th>
             </tr>
@@ -252,7 +252,7 @@ export default function RnDDetailPage({ params }: { params: { id: string } }) {
           </tbody>
           <tfoot>
             <tr className="bg-zinc-50/50">
-              <td colSpan={4} className="px-3 py-3 font-bold text-right">Total Actual HPP:</td>
+              <td colSpan={4} className="px-3 py-3 font-bold text-right">Total Actual COGS:</td>
               <td className="px-3 py-3 font-bold text-right text-brand-sage">
                 Rp {(recipe.ingredients?.reduce((acc: number, ing: any) => acc + (ing.quantity * ing.costPerUnit), 0) || 0).toLocaleString('id-ID')}
               </td>

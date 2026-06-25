@@ -36,31 +36,31 @@ export default function SettingsPage() {
         value: taxEnabled ? 'true' : 'false',
         dataType: 'bool'
       });
-      alert('Pengaturan berhasil disimpan!');
+      alert('Settings saved successfully!');
     } catch (error) {
       console.error("Failed to save settings", error);
-      alert('Gagal menyimpan pengaturan');
+      alert('Failed to save settings');
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading) return <div className="p-6 text-brand-cream">Memuat pengaturan...</div>;
+  if (loading) return <div className="p-6 text-brand-cream">Loading settings...</div>;
 
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-display font-bold text-brand-cream">Pengaturan Sistem</h1>
-        <p className="text-brand-sage">Konfigurasi operasional dan pajak restoran</p>
+        <h1 className="text-3xl font-display font-bold text-brand-cream">System Settings</h1>
+        <p className="text-brand-sage">Restaurant operations and tax configuration</p>
       </div>
 
       <Card className="p-6 max-w-2xl">
-        <h2 className="text-xl font-bold text-brand-cream mb-4">Pengaturan Pajak (PB1)</h2>
+        <h2 className="text-xl font-bold text-brand-cream mb-4">Tax Settings (PB1)</h2>
         <div className="flex items-center justify-between p-4 bg-black/20 rounded-xl border border-white/5">
           <div>
-            <h3 className="font-semibold text-brand-cream">Aktifkan Pajak 11%</h3>
+            <h3 className="font-semibold text-brand-cream">Enable 11% Tax</h3>
             <p className="text-sm text-brand-sage mt-1">
-              Jika aktif, sistem akan otomatis menghitung pajak 11% (PB1) pada setiap transaksi penjualan di POS dan Mobile.
+              If enabled, the system will automatically calculate an 11% tax (PB1) on every sales transaction in POS and Mobile.
             </p>
           </div>
           <label className="relative inline-flex items-center cursor-pointer ml-4">
@@ -77,7 +77,7 @@ export default function SettingsPage() {
         <div className="mt-6 flex justify-end">
           <Button onClick={handleSave} disabled={saving} variant="primary">
             <Save className="w-4 h-4 mr-2" />
-            {saving ? 'Menyimpan...' : 'Simpan Pengaturan'}
+            {saving ? 'Saving...' : 'Save Settings'}
           </Button>
         </div>
       </Card>

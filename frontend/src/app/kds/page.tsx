@@ -97,13 +97,13 @@ export default function KdsPage() {
             className="text-[10px] uppercase font-bold tracking-wider bg-black/30 border border-white/5 hover:bg-brand-warm hover:text-brand-dark text-brand-sage px-2 py-1 rounded transition-colors whitespace-nowrap ml-2"
             onClick={() => setSelectedRecipeItem(item)}
           >
-            Lihat Resep
+            View Recipe
           </button>
         </div>
-        {item.notes && <p className="text-xs text-brand-warm/80 bg-brand-warm/10 p-1 rounded mt-1">Catatan: {item.notes}</p>}
+        {item.notes && <p className="text-xs text-brand-warm/80 bg-brand-warm/10 p-1 rounded mt-1">Notes: {item.notes}</p>}
         {showRecipe && item.product.recipeItems && item.product.recipeItems.length > 0 && (
           <div className="bg-black/30 p-2 rounded-md mt-1 text-xs text-brand-sage animate-in slide-in-from-top-1 fade-in">
-            <p className="font-semibold mb-1 text-brand-cream/80 border-b border-white/10 pb-1">Bahan (Total {item.quantity} Porsi):</p>
+            <p className="font-semibold mb-1 text-brand-cream/80 border-b border-white/10 pb-1">Ingredients (Total {item.quantity} Portions):</p>
             <ul className="flex flex-col gap-1">
               {item.product.recipeItems.map(ri => (
                 <li key={ri.id} className="flex justify-between">
@@ -115,7 +115,7 @@ export default function KdsPage() {
           </div>
         )}
         {showRecipe && (!item.product.recipeItems || item.product.recipeItems.length === 0) && (
-          <div className="text-xs text-brand-sage/50 italic px-2 mt-1">Tidak ada resep</div>
+          <div className="text-xs text-brand-sage/50 italic px-2 mt-1">No recipe</div>
         )}
       </div>
     );
@@ -125,7 +125,7 @@ export default function KdsPage() {
     <Card variant="olive" className="mb-4 flex flex-col gap-3">
       <div className="flex justify-between items-center border-b border-white/10 pb-2">
         <div className="flex items-center gap-2">
-          <span className="font-display font-bold text-brand-warm text-lg">Antrian: {order.queueNumber}</span>
+          <span className="font-display font-bold text-brand-warm text-lg">Queue: {order.queueNumber}</span>
           {order.customerName && (
             <span className="flex items-center gap-1 text-xs bg-black/30 px-2 py-1 rounded text-brand-cream">
               <User className="w-3 h-3" /> {order.customerName}
@@ -152,7 +152,7 @@ export default function KdsPage() {
             className="text-sm shadow-md"
             onClick={() => updateStatus.mutate({ id: order.id, status: 'IN_PROGRESS' })}
           >
-            <ChefHat className="w-4 h-4 mr-2" /> Mulai Masak
+            <ChefHat className="w-4 h-4 mr-2" /> Start Cooking
           </Button>
         )}
         {order.status === 'IN_PROGRESS' && (
@@ -162,7 +162,7 @@ export default function KdsPage() {
             className="text-sm shadow-md bg-brand-warm hover:bg-brand-warm/80 text-brand-dark"
             onClick={() => updateStatus.mutate({ id: order.id, status: 'DONE' })}
           >
-            <CheckCircle2 className="w-4 h-4 mr-2" /> Selesai Masak
+            <CheckCircle2 className="w-4 h-4 mr-2" /> Finish Cooking
           </Button>
         )}
         {order.status === 'DONE' && (
@@ -172,7 +172,7 @@ export default function KdsPage() {
             className="text-sm shadow-md border-brand-sage text-brand-sage hover:bg-brand-sage/20 hover:text-brand-cream"
             onClick={() => updateStatus.mutate({ id: order.id, status: 'TAKEN' })}
           >
-            <CheckCircle2 className="w-4 h-4 mr-2" /> Sudah Diambil
+            <CheckCircle2 className="w-4 h-4 mr-2" /> Taken
           </Button>
         )}
       </div>
@@ -184,7 +184,7 @@ export default function KdsPage() {
       <div className="mb-6 flex justify-between items-end">
         <div>
           <h1 className="text-3xl font-display font-bold text-brand-cream">Kitchen Display System</h1>
-          <p className="text-brand-sage">Manajemen Pesanan Dapur secara Real-time</p>
+          <p className="text-brand-sage">Real-time Kitchen Order Management</p>
         </div>
         <div className="text-brand-warm text-sm animate-pulse flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-brand-warm"></div> Live Sync
@@ -198,13 +198,13 @@ export default function KdsPage() {
           <div className="flex items-center justify-between mb-4 px-2">
             <h2 className="font-semibold text-brand-cream flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-red-400"></span>
-              Antrean
+              Queue
             </h2>
             <span className="bg-black/40 text-brand-sage text-xs px-2 py-1 rounded">{todoOrders.length}</span>
           </div>
           <div className="flex-1 overflow-y-auto pr-2 hide-scrollbar">
             {todoOrders.map(order => <OrderCard key={order.id} order={order} />)}
-            {todoOrders.length === 0 && <p className="text-center text-brand-sage/40 text-sm mt-10">Tidak ada antrean</p>}
+            {todoOrders.length === 0 && <p className="text-center text-brand-sage/40 text-sm mt-10">No queue</p>}
           </div>
         </div>
 
@@ -213,13 +213,13 @@ export default function KdsPage() {
           <div className="flex items-center justify-between mb-4 px-2">
             <h2 className="font-semibold text-brand-cream flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-yellow-400"></span>
-              Diproses
+              In Progress
             </h2>
             <span className="bg-black/40 text-brand-sage text-xs px-2 py-1 rounded">{inProgressOrders.length}</span>
           </div>
           <div className="flex-1 overflow-y-auto pr-2 hide-scrollbar">
             {inProgressOrders.map(order => <OrderCard key={order.id} order={order} />)}
-            {inProgressOrders.length === 0 && <p className="text-center text-brand-sage/40 text-sm mt-10">Tidak ada pesanan diproses</p>}
+            {inProgressOrders.length === 0 && <p className="text-center text-brand-sage/40 text-sm mt-10">No orders in progress</p>}
           </div>
         </div>
 
@@ -228,13 +228,13 @@ export default function KdsPage() {
           <div className="flex items-center justify-between mb-4 px-2">
             <h2 className="font-semibold text-brand-cream flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-green-400"></span>
-              Selesai (Hari ini)
+              Done (Today)
             </h2>
             <span className="bg-black/40 text-brand-sage text-xs px-2 py-1 rounded">{doneOrders.length}</span>
           </div>
           <div className="flex-1 overflow-y-auto pr-2 hide-scrollbar">
             {doneOrders.map(order => <OrderCard key={order.id} order={order} />)}
-            {doneOrders.length === 0 && <p className="text-center text-brand-sage/40 text-sm mt-10">Belum ada pesanan selesai</p>}
+            {doneOrders.length === 0 && <p className="text-center text-brand-sage/40 text-sm mt-10">No finished orders yet</p>}
           </div>
         </div>
 
@@ -245,7 +245,7 @@ export default function KdsPage() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-[#2A2A2A] border border-white/10 rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl animate-in zoom-in-95">
             <div className="flex justify-between items-center p-4 border-b border-white/5 bg-black/20">
-              <h3 className="font-display font-bold text-lg text-brand-cream">Resep Masakan</h3>
+              <h3 className="font-display font-bold text-lg text-brand-cream">Cooking Recipe</h3>
               <button 
                 onClick={() => setSelectedRecipeItem(null)}
                 className="text-brand-sage hover:text-white transition-colors"
@@ -258,12 +258,12 @@ export default function KdsPage() {
                 <p className="text-sm text-brand-sage mb-1">Menu:</p>
                 <p className="font-bold text-brand-warm text-xl">{selectedRecipeItem.product.name}</p>
                 <p className="text-xs bg-black/30 inline-block px-2 py-1 rounded text-brand-cream mt-2 font-medium">
-                  Total Pesanan: <span className="text-brand-warm font-bold">{selectedRecipeItem.quantity}</span> Porsi
+                  Total Order: <span className="text-brand-warm font-bold">{selectedRecipeItem.quantity}</span> Portions
                 </p>
               </div>
               
               <div className="bg-black/20 p-3 rounded-xl border border-white/5">
-                <p className="text-xs font-bold text-brand-sage/60 uppercase tracking-wider mb-2 border-b border-white/5 pb-2">Resep Per Sajian (1 Porsi)</p>
+                <p className="text-xs font-bold text-brand-sage/60 uppercase tracking-wider mb-2 border-b border-white/5 pb-2">Recipe Per Serving (1 Portion)</p>
                 
                 {selectedRecipeItem.product.recipeItems && selectedRecipeItem.product.recipeItems.length > 0 ? (
                   <ul className="space-y-2 mt-3">
@@ -277,12 +277,12 @@ export default function KdsPage() {
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-sm text-brand-sage italic py-2 text-center">Tidak ada data resep / bahan baku.</p>
+                  <p className="text-sm text-brand-sage italic py-2 text-center">No recipe / raw material data.</p>
                 )}
               </div>
             </div>
             <div className="p-4 bg-black/20 border-t border-white/5">
-              <Button fullWidth onClick={() => setSelectedRecipeItem(null)} variant="secondary" className="border-white/10 hover:bg-white/5 text-brand-cream">Tutup</Button>
+              <Button fullWidth onClick={() => setSelectedRecipeItem(null)} variant="secondary" className="border-white/10 hover:bg-white/5 text-brand-cream">Close</Button>
             </div>
           </div>
         </div>

@@ -46,7 +46,7 @@ export default function UsersPage() {
       resetForm();
     },
     onError: (error: any) => {
-      alert(error.response?.data?.error || "Gagal membuat pengguna");
+      alert(error.response?.data?.error || "Failed to create user");
     }
   });
 
@@ -60,7 +60,7 @@ export default function UsersPage() {
       resetForm();
     },
     onError: (error: any) => {
-      alert(error.response?.data?.error || "Gagal mengubah pengguna");
+      alert(error.response?.data?.error || "Failed to update user");
     }
   });
 
@@ -95,8 +95,8 @@ export default function UsersPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username || !fullName) return alert("Username dan Nama Lengkap wajib diisi!");
-    if (!roleId) return alert("Silakan pilih Hak Akses (Role) terlebih dahulu!");
+    if (!username || !fullName) return alert("Username and Full Name are required!");
+    if (!roleId) return alert("Please select a Role first!");
     
     if (editData) {
       updateUser.mutate({
@@ -108,7 +108,7 @@ export default function UsersPage() {
         isActive
       });
     } else {
-      if (!password) return alert("Password wajib diisi untuk pengguna baru!");
+      if (!password) return alert("Password is required for new users!");
       createUser.mutate({
         username,
         fullName,
@@ -120,7 +120,7 @@ export default function UsersPage() {
   };
 
   const handleDelete = (id: number, uname: string) => {
-    if (window.confirm(`Apakah Anda yakin ingin menghapus akun ${uname}?`)) {
+    if (window.confirm(`Are you sure you want to delete the account ${uname}?`)) {
       deleteUser.mutate(id);
     }
   };
@@ -128,11 +128,11 @@ export default function UsersPage() {
   return (
     <div className="flex flex-col gap-6 max-w-6xl mx-auto w-full">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-display font-bold text-brand-cream">Manajemen Pengguna</h1>
+        <h1 className="text-3xl font-display font-bold text-brand-cream">User Management</h1>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <p className="text-brand-sage text-sm md:text-base">Kelola akun akses kasir dan administrator</p>
+          <p className="text-brand-sage text-sm md:text-base">Manage cashier and administrator access accounts</p>
           <Button variant="primary" className="shadow-md w-full md:w-auto justify-center" onClick={() => { resetForm(); setShowForm(true); }}>
-            <Plus className="w-4 h-4 mr-2" /> Tambah Pengguna
+            <Plus className="w-4 h-4 mr-2" /> Add User
           </Button>
         </div>
       </div>
@@ -140,7 +140,7 @@ export default function UsersPage() {
       {showForm && (
         <Card variant="olive" className="relative z-20 bg-black/40 border-brand-warm/30 animate-in fade-in slide-in-from-top-4">
           <h2 className="text-lg font-bold text-brand-cream mb-4 border-b border-white/10 pb-2">
-            {editData ? 'Ubah Data Pengguna' : 'Tambah Pengguna Baru'}
+            {editData ? 'Edit User Data' : 'Add New User'}
           </h2>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -150,17 +150,17 @@ export default function UsersPage() {
                   type="text" 
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Misal: kasir1" 
+                  placeholder="e.g., cashier1" 
                   className="w-full bg-black/20 border border-white/10 text-brand-cream rounded-xl px-4 py-3 focus:outline-none focus:border-brand-warm transition" 
                 />
               </div>
               <div>
-                <label className="text-xs text-brand-sage mb-1 block">Nama Lengkap</label>
+                <label className="text-xs text-brand-sage mb-1 block">Full Name</label>
                 <input 
                   type="text" 
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Misal: Budi Santoso" 
+                  placeholder="e.g., John Doe" 
                   className="w-full bg-black/20 border border-white/10 text-brand-cream rounded-xl px-4 py-3 focus:outline-none focus:border-brand-warm transition" 
                 />
               </div>
@@ -170,30 +170,30 @@ export default function UsersPage() {
                   type="text" 
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder={editData ? "Kosongkan jika tidak ingin mengubah" : "Password untuk login"} 
+                  placeholder={editData ? "Leave empty if you don't want to change" : "Password for login"} 
                   className="w-full bg-black/20 border border-white/10 text-brand-cream rounded-xl px-4 py-3 focus:outline-none focus:border-brand-warm transition" 
                 />
               </div>
               <div className="flex gap-4">
                 <div className="flex-1">
-                  <label className="text-xs text-brand-sage mb-1 block">Hak Akses (Role)</label>
+                  <label className="text-xs text-brand-sage mb-1 block">Role</label>
                   <CustomSelect
                     value={roleId.toString()}
                     onChange={(v) => setRoleId(Number(v))}
                     className="bg-black/20 border border-white/10 text-brand-cream rounded-xl px-4 py-3"
                     options={roles.map((r: any) => ({ value: r.id.toString(), label: r.name }))}
-                    placeholder="Pilih Role"
+                    placeholder="Select Role"
                   />
                 </div>
                 <div className="w-24">
-                  <label className="text-xs text-brand-sage mb-1 block">Status Aktif</label>
+                  <label className="text-xs text-brand-sage mb-1 block">Active Status</label>
                   <CustomSelect
                     value={isActive ? "true" : "false"}
                     onChange={(v) => setIsActive(v === "true")}
                     className="bg-black/20 border border-white/10 text-brand-cream rounded-xl px-4 py-3"
                     options={[
-                      { value: "true", label: 'Aktif' },
-                      { value: "false", label: 'Non-aktif' }
+                      { value: "true", label: 'Active' },
+                      { value: "false", label: 'Inactive' }
                     ]}
                   />
                 </div>
@@ -201,9 +201,9 @@ export default function UsersPage() {
             </div>
             
             <div className="flex justify-end gap-3 mt-2">
-              <Button type="button" variant="outline" onClick={resetForm}>Batal</Button>
+              <Button type="button" variant="outline" onClick={resetForm}>Cancel</Button>
               <Button type="submit" variant="primary" disabled={createUser.isPending || updateUser.isPending}>
-                {createUser.isPending || updateUser.isPending ? 'Menyimpan...' : 'Simpan Data'}
+                {createUser.isPending || updateUser.isPending ? 'Saving...' : 'Save Data'}
               </Button>
             </div>
           </form>
@@ -216,22 +216,22 @@ export default function UsersPage() {
             <thead className="bg-black/40 text-brand-cream border-b border-white/10">
               <tr>
                 <th className="px-6 py-5 font-semibold">Username</th>
-                <th className="px-6 py-5 font-semibold">Nama Lengkap</th>
-                <th className="px-6 py-5 font-semibold">Role / Akses</th>
+                <th className="px-6 py-5 font-semibold">Full Name</th>
+                <th className="px-6 py-5 font-semibold">Role / Access</th>
                 <th className="px-6 py-5 font-semibold">Status</th>
-                <th className="px-6 py-5 font-semibold text-right">Aksi</th>
+                <th className="px-6 py-5 font-semibold text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
               {isLoading && (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-brand-sage">Memuat data pengguna...</td>
+                  <td colSpan={5} className="px-6 py-8 text-center text-brand-sage">Loading user data...</td>
                 </tr>
               )}
               {!isLoading && users.length === 0 && (
                 <tr>
                   <td colSpan={5} className="px-6 py-8 text-center text-brand-sage">
-                    Belum ada data pengguna yang terdaftar.
+                    No registered users yet.
                   </td>
                 </tr>
               )}
@@ -250,27 +250,27 @@ export default function UsersPage() {
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1.5 bg-white/10 text-brand-sage px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider">
-                        <Users className="w-3.5 h-3.5" /> Tidak ada
+                        <Users className="w-3.5 h-3.5" /> None
                       </span>
                     )}
                   </td>
                   <td className="px-6 py-4">
                     <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${user.isActive ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-                      {user.isActive ? 'Aktif' : 'Non-aktif'}
+                      {user.isActive ? 'Active' : 'Inactive'}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right whitespace-nowrap">
                     <button
                       onClick={() => handleEditClick(user)}
                       className="text-brand-sage hover:text-brand-cream bg-black/20 hover:bg-black/40 border border-white/5 p-2 rounded-lg transition mr-2"
-                      title="Ubah"
+                      title="Edit"
                     >
                       <Pencil className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handleDelete(user.id, user.username)}
                       className="text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 p-2 rounded-lg transition"
-                      title="Hapus"
+                      title="Delete"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

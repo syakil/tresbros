@@ -25,17 +25,17 @@ export default function CoaPage() {
     }
   };
 
-  if (loading) return <div className="p-6 text-brand-cream">Memuat Chart of Accounts...</div>;
+  if (loading) return <div className="p-6 text-brand-cream">Loading Chart of Accounts...</div>;
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-display font-bold text-brand-cream">Chart of Accounts</h1>
-          <p className="text-brand-sage">Kelola akun-akun keuangan sistem</p>
+          <p className="text-brand-sage">Manage system financial accounts</p>
         </div>
         <Button variant="primary">
-          <Plus className="w-4 h-4 mr-2" /> Tambah Akun
+          <Plus className="w-4 h-4 mr-2" /> Add Account
         </Button>
       </div>
 
@@ -44,10 +44,10 @@ export default function CoaPage() {
           <table className="w-full text-left">
             <thead className="bg-black/40 text-brand-sage text-sm border-b border-white/5">
               <tr>
-                <th className="p-4 font-medium">Kode</th>
-                <th className="p-4 font-medium">Nama Akun</th>
-                <th className="p-4 font-medium">Tipe</th>
-                <th className="p-4 font-medium text-right">Aksi</th>
+                <th className="p-4 font-medium">Code</th>
+                <th className="p-4 font-medium">Account Name</th>
+                <th className="p-4 font-medium">Type</th>
+                <th className="p-4 font-medium text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 text-brand-cream text-sm">
@@ -72,7 +72,7 @@ export default function CoaPage() {
               ))}
               {coas.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="p-8 text-center text-brand-sage">Belum ada akun terdaftar.</td>
+                  <td colSpan={4} className="p-8 text-center text-brand-sage">No accounts registered yet.</td>
                 </tr>
               )}
             </tbody>

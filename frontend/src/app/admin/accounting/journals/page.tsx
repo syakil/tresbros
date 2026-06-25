@@ -75,35 +75,35 @@ export default function JournalsPage() {
     setCurrentPage(1);
   }, [searchQuery, startDate, endDate, category]);
 
-  if (loading) return <div className="p-6 text-brand-cream">Memuat Jurnal...</div>;
+  if (loading) return <div className="p-6 text-brand-cream">Loading Journals...</div>;
 
   return (
     <div className="p-6 space-y-6 max-w-6xl mx-auto w-full">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-display font-bold text-brand-cream">Jurnal Keuangan</h1>
-        <p className="text-brand-sage">Daftar histori transaksi jurnal umum</p>
+        <h1 className="text-3xl font-display font-bold text-brand-cream">Financial Journals</h1>
+        <p className="text-brand-sage">General journal transaction history list</p>
       </div>
 
       {/* Toolbar Filter & Search */}
       <Card variant="olive" className="p-4 bg-black/40 border-white/10 flex flex-col md:flex-row gap-4 justify-between items-end relative z-20">
         <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto flex-wrap">
           <div>
-            <label className="text-[10px] text-brand-sage uppercase tracking-wider font-bold mb-1.5 block">Kategori Transaksi</label>
+            <label className="text-[10px] text-brand-sage uppercase tracking-wider font-bold mb-1.5 block">Transaction Category</label>
             <CustomSelect
               value={category}
               onChange={setCategory}
               className="bg-black/60 border border-white/10 text-brand-cream rounded-xl px-4 py-2.5 min-w-[180px]"
               options={[
-                { value: 'ALL', label: 'Semua Kategori' },
-                { value: 'SALES', label: 'Penjualan' },
-                { value: 'PURCHASE', label: 'Pembelian Stok' },
-                { value: 'ADJUSTMENT', label: 'Penyesuaian Stok' },
+                { value: 'ALL', label: 'All Categories' },
+                { value: 'SALES', label: 'Sales' },
+                { value: 'PURCHASE', label: 'Stock Purchase' },
+                { value: 'ADJUSTMENT', label: 'Stock Adjustment' },
               ]}
             />
           </div>
           <div className="flex gap-2">
             <div>
-              <label className="text-[10px] text-brand-sage uppercase tracking-wider font-bold mb-1.5 block">Dari Tanggal</label>
+              <label className="text-[10px] text-brand-sage uppercase tracking-wider font-bold mb-1.5 block">From Date</label>
               <input 
                 type="date" 
                 value={startDate}
@@ -119,7 +119,7 @@ export default function JournalsPage() {
               />
             </div>
             <div>
-              <label className="text-[10px] text-brand-sage uppercase tracking-wider font-bold mb-1.5 block">Sampai Tanggal</label>
+              <label className="text-[10px] text-brand-sage uppercase tracking-wider font-bold mb-1.5 block">To Date</label>
               <input 
                 type="date" 
                 value={endDate}
@@ -141,7 +141,7 @@ export default function JournalsPage() {
           <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-brand-sage" />
           <input 
             type="text" 
-            placeholder="Cari keterangan / no ref..." 
+            placeholder="Search description / ref no..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-black/60 border border-white/10 text-brand-cream rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:border-brand-warm focus:ring-1 focus:ring-brand-warm transition"
@@ -155,20 +155,20 @@ export default function JournalsPage() {
           <table className="w-full text-left text-sm text-brand-sage min-w-[800px]">
             <thead className="bg-black/40 text-brand-cream border-b border-white/10">
               <tr>
-                <th className="px-6 py-5 font-semibold">Tanggal</th>
-                <th className="px-6 py-5 font-semibold">No. Referensi</th>
-                <th className="px-6 py-5 font-semibold">Keterangan</th>
-                <th className="px-6 py-5 font-semibold text-right">Aksi</th>
+                <th className="px-6 py-5 font-semibold">Date</th>
+                <th className="px-6 py-5 font-semibold">Reference No.</th>
+                <th className="px-6 py-5 font-semibold">Description</th>
+                <th className="px-6 py-5 font-semibold text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
               {paginatedJournals.length === 0 && (
                 <tr>
                   <td colSpan={4} className="px-6 py-12 text-center">
-                    <p className="text-brand-sage mb-2">Tidak ada jurnal yang cocok dengan filter pencarian.</p>
+                    <p className="text-brand-sage mb-2">No journals match the search filters.</p>
                     <Button variant="outline" onClick={() => {
                       setSearchQuery(''); setStartDate(''); setEndDate(''); setCategory('ALL');
-                    }}>Reset Filter</Button>
+                    }}>Reset Filters</Button>
                   </td>
                 </tr>
               )}
@@ -189,7 +189,7 @@ export default function JournalsPage() {
                       className="inline-flex items-center text-brand-sage hover:text-brand-cream bg-black/20 hover:bg-black/40 border border-white/5 px-3 py-1.5 rounded-lg transition text-xs font-medium"
                     >
                       <Eye className="w-4 h-4 mr-1.5" />
-                      Detail
+                      Details
                     </button>
                   </td>
                 </tr>
@@ -202,7 +202,7 @@ export default function JournalsPage() {
         {totalPages > 1 && (
           <div className="bg-black/40 border-t border-white/10 px-6 py-4 flex items-center justify-between">
             <p className="text-xs text-brand-sage">
-              Menampilkan <span className="font-bold text-brand-cream">{((safeCurrentPage - 1) * itemsPerPage) + 1}</span> - <span className="font-bold text-brand-cream">{Math.min(safeCurrentPage * itemsPerPage, filteredJournals.length)}</span> dari <span className="font-bold text-brand-cream">{filteredJournals.length}</span> entri
+              Showing <span className="font-bold text-brand-cream">{((safeCurrentPage - 1) * itemsPerPage) + 1}</span> - <span className="font-bold text-brand-cream">{Math.min(safeCurrentPage * itemsPerPage, filteredJournals.length)}</span> of <span className="font-bold text-brand-cream">{filteredJournals.length}</span> entries
             </p>
             <div className="flex gap-2">
               <Button 
@@ -214,7 +214,7 @@ export default function JournalsPage() {
                 <ChevronLeft className="w-4 h-4" />
               </Button>
               <div className="flex items-center px-4 font-medium text-sm text-brand-cream">
-                Halaman {safeCurrentPage} dari {totalPages}
+                Page {safeCurrentPage} of {totalPages}
               </div>
               <Button 
                 variant="outline" 
@@ -235,7 +235,7 @@ export default function JournalsPage() {
           <Card variant="olive" className="w-full max-w-3xl bg-brand-dark border-white/10 p-0 flex flex-col shadow-2xl overflow-hidden">
             <div className="flex items-center justify-between p-6 border-b border-white/10 bg-black/40">
               <div>
-                <h2 className="text-xl font-display font-bold text-brand-cream">Detail Jurnal Umum</h2>
+                <h2 className="text-xl font-display font-bold text-brand-cream">General Journal Details</h2>
                 <p className="text-sm text-brand-sage mt-1">Ref: {selectedJournal.reference}</p>
               </div>
               <button 
@@ -249,11 +249,11 @@ export default function JournalsPage() {
             <div className="p-6 bg-brand-dark">
               <div className="mb-6 grid grid-cols-2 gap-4">
                 <div className="bg-black/20 p-4 rounded-xl border border-white/5">
-                  <p className="text-xs text-brand-sage mb-1 uppercase tracking-wider font-bold">Tanggal Transaksi</p>
+                  <p className="text-xs text-brand-sage mb-1 uppercase tracking-wider font-bold">Transaction Date</p>
                   <p className="text-sm text-brand-cream">{new Date(selectedJournal.date).toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' })}</p>
                 </div>
                 <div className="bg-black/20 p-4 rounded-xl border border-white/5">
-                  <p className="text-xs text-brand-sage mb-1 uppercase tracking-wider font-bold">Keterangan</p>
+                  <p className="text-xs text-brand-sage mb-1 uppercase tracking-wider font-bold">Description</p>
                   <p className="text-sm text-brand-cream">{selectedJournal.description}</p>
                 </div>
               </div>
@@ -262,10 +262,10 @@ export default function JournalsPage() {
                 <table className="w-full text-left text-sm">
                   <thead className="bg-black/40 text-brand-sage border-b border-white/10">
                     <tr>
-                      <th className="py-3 px-4 font-medium">Kode Akun</th>
-                      <th className="py-3 px-4 font-medium">Nama Akun</th>
+                      <th className="py-3 px-4 font-medium">Account Code</th>
+                      <th className="py-3 px-4 font-medium">Account Name</th>
                       <th className="py-3 px-4 font-medium text-right w-32">Debit</th>
-                      <th className="py-3 px-4 font-medium text-right w-32">Kredit</th>
+                      <th className="py-3 px-4 font-medium text-right w-32">Credit</th>
                     </tr>
                   </thead>
                   <tbody className="text-brand-cream bg-black/20">
@@ -287,7 +287,7 @@ export default function JournalsPage() {
               </div>
             </div>
             <div className="p-4 border-t border-white/10 bg-black/40 flex justify-end">
-              <Button variant="outline" onClick={() => setSelectedJournal(null)}>Tutup</Button>
+              <Button variant="outline" onClick={() => setSelectedJournal(null)}>Close</Button>
             </div>
           </Card>
         </div>

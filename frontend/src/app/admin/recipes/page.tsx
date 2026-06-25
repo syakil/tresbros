@@ -62,7 +62,7 @@ export default function RecipesPage() {
   // Mutations
   const addRecipeItem = useMutation({
     mutationFn: async () => {
-      if (!activeProductId || !newMaterialId || !newQuantity) throw new Error("Data tidak lengkap");
+      if (!activeProductId || !newMaterialId || !newQuantity) throw new Error("Incomplete data");
       await axios.post('/api/recipes', {
         productId: activeProductId,
         materialId: parseInt(newMaterialId),
@@ -74,10 +74,10 @@ export default function RecipesPage() {
       setShowAddMaterial(false);
       setNewMaterialId('');
       setNewQuantity('');
-      showToast('Bahan baku berhasil ditambahkan ke resep');
+      showToast('Raw material successfully added to recipe');
     },
     onError: (error: any) => {
-      showToast(error.response?.data?.error || "Gagal menambahkan", "error");
+      showToast(error.response?.data?.error || "Failed to add", "error");
     }
   });
 
@@ -88,11 +88,11 @@ export default function RecipesPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['recipes', activeProductId] });
       setConfirmDeleteId(null);
-      showToast('Bahan baku dihapus dari resep');
+      showToast('Raw material removed from recipe');
     },
     onError: (error: any) => {
       setConfirmDeleteId(null);
-      showToast(error.response?.data?.error || "Gagal menghapus", "error");
+      showToast(error.response?.data?.error || "Failed to remove", "error");
     }
   });
 
@@ -124,19 +124,19 @@ export default function RecipesPage() {
             <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-2 text-red-400">
               <Trash2 className="w-6 h-6" />
             </div>
-            <h3 className="text-xl font-display font-bold text-brand-cream">Hapus dari Resep?</h3>
+            <h3 className="text-xl font-display font-bold text-brand-cream">Remove from Recipe?</h3>
             <p className="text-sm text-brand-sage">
-              Anda yakin ingin menghapus bahan baku ini dari resep?
+              Are you sure you want to remove this raw material from the recipe?
             </p>
             <div className="flex gap-3 justify-center mt-4">
-              <Button variant="outline" onClick={() => setConfirmDeleteId(null)}>Batal</Button>
+              <Button variant="outline" onClick={() => setConfirmDeleteId(null)}>Cancel</Button>
               <Button 
                 variant="primary" 
                 className="bg-red-500 hover:bg-red-600 text-white border-none shadow-[0_4px_20px_rgba(239,68,68,0.4)] hover:-translate-y-0.5 transition-all"
                 onClick={confirmAction}
                 disabled={deleteRecipeItem.isPending}
               >
-                {deleteRecipeItem.isPending ? 'Menghapus...' : 'Ya, Hapus'}
+                {deleteRecipeItem.isPending ? 'Removing...' : 'Yes, Remove'}
               </Button>
             </div>
           </Card>
@@ -144,8 +144,8 @@ export default function RecipesPage() {
       )}
 
       <div className="flex flex-col gap-2 shrink-0">
-        <h1 className="text-3xl font-display font-bold text-brand-cream">Resep & BOM</h1>
-        <p className="text-brand-sage">Kelola Bill of Materials (Bahan Baku) untuk pemotongan stok otomatis</p>
+        <h1 className="text-3xl font-display font-bold text-brand-cream">Recipes & BOM</h1>
+        <p className="text-brand-sage">Manage Bill of Materials (Raw Materials) for automatic stock deduction</p>
       </div>
 
       <div className="flex flex-col md:flex-row gap-6 flex-1 overflow-hidden">
@@ -157,7 +157,7 @@ export default function RecipesPage() {
               <Search className="w-4 h-4 absolute left-3 top-3 text-brand-sage" />
               <input 
                 type="text" 
-                placeholder="Cari produk..." 
+                placeholder="Search product..." 
                 className="w-full bg-black/40 border border-white/10 text-brand-cream text-sm rounded-lg pl-9 pr-3 py-2.5 focus:outline-none focus:border-brand-warm"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -185,7 +185,7 @@ export default function RecipesPage() {
             ))}
             {filteredProducts.length === 0 && (
               <div className="p-6 text-center text-brand-sage/50 text-sm">
-                Produk tidak ditemukan
+                Product not found
               </div>
             )}
           </div>
@@ -202,18 +202,18 @@ export default function RecipesPage() {
                   </div>
                   <div>
                     <h2 className="text-xl font-display font-semibold text-brand-cream">{activeProduct?.name}</h2>
-                    <p className="text-sm text-brand-sage">Kebutuhan bahan baku per 1 porsi</p>
+                    <p className="text-sm text-brand-sage">Raw material needs per 1 portion</p>
                   </div>
                 </div>
                 <Button variant="primary" onClick={() => setShowAddMaterial(!showAddMaterial)} className="text-sm shadow-md">
-                  <Plus className="w-4 h-4 mr-2" /> Tambah Bahan
+                  <Plus className="w-4 h-4 mr-2" /> Add Material
                 </Button>
               </div>
 
               {showAddMaterial && (
                 <div className="p-4 border-b border-white/10 bg-brand-olive/50 flex gap-3 items-end shrink-0 relative z-30">
                   <div className="flex-1">
-                    <label className="text-xs text-brand-sage mb-1 block">Pilih Bahan Baku Master</label>
+                    <label className="text-xs text-brand-sage mb-1 block">Select Master Raw Material</label>
                     <CustomSelect 
                       value={newMaterialId}
                       onChange={(val) => setNewMaterialId(val)}
@@ -222,11 +222,11 @@ export default function RecipesPage() {
                         value: m.id.toString(),
                         label: `${m.name} (${m.unit})`
                       }))}
-                      placeholder="Pilih Bahan..."
+                      placeholder="Select Material..."
                     />
                   </div>
                   <div className="w-24">
-                    <label className="text-xs text-brand-sage mb-1 block">Kuantitas</label>
+                    <label className="text-xs text-brand-sage mb-1 block">Quantity</label>
                     <input 
                       type="number" 
                       placeholder="0" 
@@ -241,7 +241,7 @@ export default function RecipesPage() {
                     className="py-2.5"
                     disabled={addRecipeItem.isPending || !newMaterialId || !newQuantity}
                   >
-                    Simpan
+                    Save
                   </Button>
                 </div>
               )}
@@ -250,21 +250,21 @@ export default function RecipesPage() {
                 <table className="w-full text-left text-sm text-brand-sage">
                   <thead className="bg-black/40 text-brand-cream sticky top-0 shadow-sm z-20">
                     <tr>
-                      <th className="px-6 py-4 font-semibold">Nama Bahan Baku</th>
-                      <th className="px-6 py-4 font-semibold">Kuantitas Dipakai</th>
-                      <th className="px-6 py-4 font-semibold text-right">Aksi</th>
+                      <th className="px-6 py-4 font-semibold">Raw Material Name</th>
+                      <th className="px-6 py-4 font-semibold">Quantity Used</th>
+                      <th className="px-6 py-4 font-semibold text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
                     {loadingRecipe ? (
                       <tr>
-                        <td colSpan={3} className="text-center py-12 text-brand-sage/60">Memuat resep...</td>
+                        <td colSpan={3} className="text-center py-12 text-brand-sage/60">Loading recipe...</td>
                       </tr>
                     ) : currentRecipe.length === 0 ? (
                       <tr>
                         <td colSpan={3} className="text-center py-12">
                           <PackageOpen className="w-12 h-12 text-brand-sage/20 mx-auto mb-3" />
-                          <p className="text-brand-sage/60">Belum ada resep bahan baku untuk produk ini.</p>
+                          <p className="text-brand-sage/60">No raw material recipe for this product yet.</p>
                         </td>
                       </tr>
                     ) : (
@@ -279,7 +279,7 @@ export default function RecipesPage() {
                             <button 
                               onClick={() => setConfirmDeleteId(item.id)}
                               className="text-red-400/80 hover:text-red-400 hover:bg-red-400/10 p-2 rounded-lg transition" 
-                              title="Hapus Bahan"
+                              title="Remove Material"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -294,7 +294,7 @@ export default function RecipesPage() {
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-brand-sage/40">
               <Beaker className="w-16 h-16 mb-4 opacity-20" />
-              <p>Pilih produk di sebelah kiri untuk melihat resep</p>
+              <p>Select a product on the left to view the recipe</p>
             </div>
           )}
         </Card>

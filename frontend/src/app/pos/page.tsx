@@ -12,7 +12,7 @@ import axios from 'axios';
 
 export default function PosPage() {
   const { items, customerName, setCustomerName, addItem, removeItem, updateQuantity, getSubtotal, getTax, getTotal, clearCart, discountAmount, setDiscountAmount, discountType, setDiscountType, getCalculatedDiscount, appliedCoupon, setAppliedCoupon, setTaxEnabled, taxEnabled } = useCartStore();
-  const [activeCategory, setActiveCategory] = useState<string>('Semua');
+  const [activeCategory, setActiveCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [showCheckout, setShowCheckout] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -70,7 +70,7 @@ export default function PosPage() {
       const sub = getSubtotal();
       if (sub < appliedCoupon.minPurchase) {
         setAppliedCoupon(null, 0);
-        showToast(`Kupon dibatalkan: minimal belanja Rp ${formatRupiah(appliedCoupon.minPurchase)} tidak terpenuhi.`, 'warning');
+        showToast(`Coupon cancelled: minimum purchase of Rp ${formatRupiah(appliedCoupon.minPurchase)} not met.`, 'warning');
       } else {
         let amt = appliedCoupon.type === 'NOMINAL' ? appliedCoupon.value : (sub * appliedCoupon.value) / 100;
         if (appliedCoupon.maxDiscount && amt > appliedCoupon.maxDiscount) amt = appliedCoupon.maxDiscount;
@@ -80,7 +80,7 @@ export default function PosPage() {
     }
   }, [items]);
 
-  const categories = ['Semua', 'Kopi', 'Non-Kopi', 'Makanan'];
+  const categories = ['All', 'Coffee', 'Non-Coffee', 'Food'];
   
   // Fetch real data from Next.js API Routes (SQLite Dummy Backend)
   const { data: products = [], isLoading } = useQuery<Product[]>({
@@ -93,7 +93,7 @@ export default function PosPage() {
   
   // Filter by Category AND Search Query
   const filteredProducts = products.filter(p => {
-    const matchCategory = activeCategory === 'Semua' || p.category === activeCategory;
+    const matchCategory = activeCategory === 'All' || p.category === activeCategory;
     const matchSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchCategory && matchSearch;
   });
@@ -112,9 +112,9 @@ export default function PosPage() {
       });
       setAppliedCoupon(res.data.coupon, res.data.calculatedDiscount);
       setCouponInput('');
-      showToast('Kupon berhasil diterapkan!', 'success');
+      showToast('Coupon successfully applied!', 'success');
     } catch (err: any) {
-      showToast(err.response?.data?.error || "Gagal memvalidasi kupon", 'error');
+      showToast(err.response?.data?.error || "Failed to validate coupon", 'error');
     } finally {
       setIsValidatingCoupon(false);
     }
@@ -150,7 +150,7 @@ export default function PosPage() {
            (window as any).snap.pay(res.data.snapToken, {
              onSuccess: function(result: any){
                setShowCheckout(false);
-               showToast("Pembayaran Midtrans Berhasil! Pesanan dikirim ke KDS.", 'success');
+               showToast("Midtrans Payment Successful! Order sent to KDS.", 'success');
                setTimeout(() => { 
                  window.print(); 
                  clearCart();
@@ -158,21 +158,21 @@ export default function PosPage() {
              },
              onPending: function(result: any){
                setShowCheckout(false);
-               showToast("Pesanan dibuat. Menunggu pembayaran Anda...", 'warning');
+               showToast("Order created. Waiting for your payment...", 'warning');
                clearCart();
              },
              onError: function(result: any){
-               showToast("Pembayaran gagal.", 'error');
+               showToast("Payment failed.", 'error');
                // Tidak menutup modal checkout agar kasir bisa coba lagi
              },
              onClose: function(){
-               showToast("Jendela pembayaran ditutup.", 'warning');
+               showToast("Payment window closed.", 'warning');
                // Tidak menutup modal checkout agar kasir bisa coba lagi/ganti metode bayar
              }
            });
            return;
         } else {
-           showToast("Gagal membuat transaksi Midtrans. Cek API Key di backend.", 'error');
+           showToast("Failed to create Midtrans transaction. Check API Key in backend.", 'error');
            return;
         }
       }
@@ -180,14 +180,14 @@ export default function PosPage() {
       // Untuk pembayaran CASH, langsung tutup modal
       setShowCheckout(false);
 
-      showToast("Pembayaran Berhasil! Pesanan dikirim ke KDS.", 'success');
+      showToast("Payment Successful! Order sent to KDS.", 'success');
       // Trigger print receipt
       setTimeout(() => {
         window.print();
         clearCart();
       }, 500);
     } catch (error) {
-      showToast("Terjadi kesalahan saat menyimpan pesanan.", 'error');
+      showToast("An error occurred while saving the order.", 'error');
       console.error(error);
     } finally {
       setIsProcessing(false);
@@ -195,7 +195,7 @@ export default function PosPage() {
   };
 
   const getCategoryIcon = (cat: string) => {
-    if (cat === 'Makanan') return <Pizza className="w-5 h-5 text-zinc-600" />;
+    if (cat === 'Food') return <Pizza className="w-5 h-5 text-zinc-600" />;
     return <Coffee className="w-5 h-5 text-zinc-600" />;
   };
 
@@ -233,7 +233,7 @@ export default function PosPage() {
               </div>
               <input
                 type="text"
-                placeholder="Cari menu produk..."
+                placeholder="Search products..."
                 className="w-full bg-white border border-zinc-200 text-zinc-900 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition shadow-sm"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -245,7 +245,7 @@ export default function PosPage() {
                 className="bg-orange-50 text-orange-600 border border-orange-200 hover:bg-orange-100 px-6 rounded-xl font-semibold transition-all text-sm flex items-center gap-2 shadow-sm"
               >
                 <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
-                {pendingOrders.length} Pesanan Tertunda
+                {pendingOrders.length} Pending Orders
               </button>
             )}
           </div>
@@ -274,7 +274,7 @@ export default function PosPage() {
               <div className="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mb-4">
                 <Search className="w-8 h-8 text-zinc-300" />
               </div>
-              <p className="font-medium">Produk tidak ditemukan</p>
+              <p className="font-medium">Products not found</p>
             </div>
           ) : (
             filteredProducts.map((product) => (
@@ -286,7 +286,7 @@ export default function PosPage() {
               {typeof product.availableCount === 'number' && product.availableCount <= 0 && (
                 <div className="absolute inset-0 bg-white/80 rounded-2xl z-10 flex items-center justify-center backdrop-blur-[2px]">
                   <div className="bg-red-50 text-red-600 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm border border-red-200">
-                    Habis / Stok Kurang
+                    Out of Stock / Low Stock
                   </div>
                 </div>
               )}
@@ -310,8 +310,8 @@ export default function PosPage() {
             <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
               <ShoppingCart className="w-5 h-5" />
             </div>
-            <h2 className="font-display text-lg font-bold text-zinc-900">Pesanan Aktif</h2>
-            <span className="ml-auto bg-zinc-200 text-zinc-700 text-xs font-bold px-2.5 py-1 rounded-full">{items.length} item</span>
+            <h2 className="font-display text-lg font-bold text-zinc-900">Active Orders</h2>
+            <span className="ml-auto bg-zinc-200 text-zinc-700 text-xs font-bold px-2.5 py-1 rounded-full">{items.length} items</span>
           </div>
 
           <div className="relative">
@@ -320,7 +320,7 @@ export default function PosPage() {
             </div>
             <input
               type="text"
-              placeholder="Nama Customer (Opsional)"
+              placeholder="Customer Name (Optional)"
               className="w-full bg-white border border-zinc-200 text-zinc-900 text-sm rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition shadow-sm"
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
@@ -335,7 +335,7 @@ export default function PosPage() {
               <div className="w-20 h-20 bg-zinc-100 rounded-full flex items-center justify-center mb-4">
                 <ShoppingCart className="w-10 h-10 text-zinc-300" />
               </div>
-              <p className="text-sm font-medium">Keranjang belum terisi</p>
+              <p className="text-sm font-medium">Cart is empty</p>
             </div>
           ) : (
             items.map((item) => (
@@ -349,10 +349,10 @@ export default function PosPage() {
                       <div className="flex flex-col mt-2 bg-red-50 border border-red-100 p-2 rounded-lg">
                         <span className="text-[11px] font-semibold text-red-600 flex items-center gap-1.5">
                           <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>
-                          Stok Bahan Kurang
+                          Insufficient Materials
                         </span>
                         {item.missingMaterials && item.missingMaterials.length > 0 && (
-                          <span className="text-[10px] text-red-500 mt-1 pl-2 border-l-2 border-red-200">Butuh: {item.missingMaterials.join(', ')}</span>
+                          <span className="text-[10px] text-red-500 mt-1 pl-2 border-l-2 border-red-200">Need: {item.missingMaterials.join(', ')}</span>
                         )}
                       </div>
                     )}
@@ -389,7 +389,7 @@ export default function PosPage() {
                 </div>
                 <input 
                   type="text"
-                  placeholder="Kode Kupon"
+                  placeholder="Coupon Code"
                   className="w-full bg-zinc-50 border border-zinc-200 rounded-xl pl-9 pr-3 py-2.5 text-sm text-zinc-900 focus:outline-none focus:border-blue-500 focus:bg-white uppercase transition-colors"
                   value={couponInput}
                   onChange={e => setCouponInput(e.target.value.toUpperCase())}
@@ -400,14 +400,14 @@ export default function PosPage() {
                 disabled={isValidatingCoupon || !couponInput || items.length === 0}
                 className="bg-zinc-900 hover:bg-zinc-800 disabled:bg-zinc-200 disabled:text-zinc-400 text-white px-5 rounded-xl text-sm font-semibold transition-colors"
               >
-                Cek
+                Check
               </button>
             </div>
 
             {/* Input Diskon Manual */}
             <div className={`flex justify-between items-center bg-zinc-50 border border-zinc-200 rounded-xl p-2.5 pl-4 transition-colors ${appliedCoupon ? 'opacity-70 pointer-events-none bg-zinc-100' : 'focus-within:border-blue-500 focus-within:bg-white'}`}>
               <span className="text-sm font-semibold text-zinc-600">
-                {appliedCoupon ? `Kupon: ${appliedCoupon.code}` : 'Diskon Manual'}
+                {appliedCoupon ? `Coupon: ${appliedCoupon.code}` : 'Manual Discount'}
               </span>
               
               {!appliedCoupon && (
@@ -441,7 +441,7 @@ export default function PosPage() {
                 <button 
                   onClick={() => setAppliedCoupon(null, 0)}
                   className="text-xs text-red-500 font-bold bg-red-50 px-2 py-1 rounded-md"
-                >Hapus</button>
+                >Remove</button>
               )}
             </div>
           </div>
@@ -455,18 +455,18 @@ export default function PosPage() {
               </div>
               {discountAmount > 0 && (
                 <div className="flex justify-between text-sm text-red-500 font-medium">
-                  <span>Diskon {appliedCoupon ? `[${appliedCoupon.code}]` : (discountType === 'percentage' ? `(${discountAmount}%)` : '')}</span>
+                  <span>Discount {appliedCoupon ? `[${appliedCoupon.code}]` : (discountType === 'percentage' ? `(${discountAmount}%)` : '')}</span>
                   <span>-{formatRupiah(getCalculatedDiscount())}</span>
                 </div>
               )}
               {taxEnabled && (
                 <div className="flex justify-between text-sm text-zinc-500 font-medium">
-                  <span>Pajak (11%)</span>
+                  <span>Tax (11%)</span>
                   <span className="text-zinc-900">{formatRupiah(getTax())}</span>
                 </div>
               )}
               <div className="pt-3 mt-3 border-t border-zinc-200 flex justify-between items-end">
-                <span className="text-zinc-900 font-bold">Total Bayar</span>
+                <span className="text-zinc-900 font-bold">Total Payment</span>
                 <span className="text-3xl font-display font-bold text-blue-600 leading-none tracking-tight">{formatRupiah(getTotal())}</span>
               </div>
             </div>
@@ -478,7 +478,7 @@ export default function PosPage() {
               disabled={items.length === 0}
               onClick={handleCheckout}
             >
-              Selesaikan Pesanan
+              Complete Order
             </Button>
           </div>
         </div>
@@ -489,7 +489,7 @@ export default function PosPage() {
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-zinc-900/40 backdrop-blur-sm p-4">
           <Card className="w-full max-w-2xl bg-white border-zinc-200 shadow-2xl p-0 max-h-[80vh] flex flex-col overflow-hidden">
             <div className="flex justify-between items-center p-6 border-b border-zinc-100">
-              <h2 className="text-xl font-display font-bold text-zinc-900">Pesanan Menunggu Pembayaran</h2>
+              <h2 className="text-xl font-display font-bold text-zinc-900">Orders Waiting for Payment</h2>
               <button onClick={() => setShowPendingOrders(false)} className="text-zinc-400 hover:text-zinc-700 bg-zinc-100 hover:bg-zinc-200 p-2 rounded-lg transition-colors">
                 <X className="w-5 h-5" />
               </button>
@@ -513,37 +513,37 @@ export default function PosPage() {
                         setShowPendingOrders(false);
                         (window as any).snap.pay(order.snapToken, {
                           onSuccess: function(){
-                            showToast("Pembayaran Berhasil! Pesanan dikirim ke KDS.", 'success');
+                            showToast("Payment Successful! Order sent to KDS.", 'success');
                             setLastOrderNumber(order.orderNumber || order.id);
                             setLastQueueNumber(order.queueNumber || '-');
                             setTimeout(() => window.print(), 500);
                             refetchOrders();
                           },
                           onPending: function(){
-                            showToast("Pembayaran masih tertunda...", 'warning');
+                            showToast("Payment still pending...", 'warning');
                             refetchOrders();
                           },
                           onError: function(){
-                            showToast("Pembayaran gagal.", 'error');
+                            showToast("Payment failed.", 'error');
                             refetchOrders();
                           },
                           onClose: function(){
-                            showToast("Jendela pembayaran ditutup.", 'warning');
+                            showToast("Payment window closed.", 'warning');
                             refetchOrders();
                           }
                         });
                       } else {
-                        showToast("Token Midtrans tidak ditemukan.", 'error');
+                        showToast("Midtrans token not found.", 'error');
                       }
                     }}
                   >
-                    Lanjut Bayar
+                    Continue Payment
                   </Button>
                 </div>
               ))}
               
               {pendingOrders.length === 0 && (
-                <div className="text-center text-zinc-500 font-medium py-12 bg-white rounded-xl border border-zinc-200 border-dashed">Tidak ada pesanan tertunda.</div>
+                <div className="text-center text-zinc-500 font-medium py-12 bg-white rounded-xl border border-zinc-200 border-dashed">No pending orders.</div>
               )}
             </div>
           </Card>
@@ -558,8 +558,8 @@ export default function PosPage() {
               <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <ShoppingCart className="w-8 h-8" />
               </div>
-              <h2 className="text-2xl font-display font-bold text-zinc-900 mb-2">Pilih Pembayaran</h2>
-              <p className="text-zinc-500 text-sm font-medium">Total tagihan yang harus dibayar</p>
+              <h2 className="text-2xl font-display font-bold text-zinc-900 mb-2">Select Payment</h2>
+              <p className="text-zinc-500 text-sm font-medium">Total bill to be paid</p>
               <p className="text-4xl font-display font-bold text-blue-600 mt-2 tracking-tight">{formatRupiah(getTotal())}</p>
             </div>
             
@@ -569,7 +569,7 @@ export default function PosPage() {
                 onClick={() => setPaymentMethod('CASH')}
               >
                 <div className="flex items-center gap-3 font-semibold">
-                  <span className="text-xl">💵</span> Tunai (Cash)
+                  <span className="text-xl">💵</span> Cash
                 </div>
                 <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'CASH' ? 'border-blue-600' : 'border-zinc-300'}`}>
                   {paymentMethod === 'CASH' && <div className="w-2.5 h-2.5 rounded-full bg-blue-600"></div>}
@@ -584,7 +584,7 @@ export default function PosPage() {
                   <span className="text-xl">💳</span> 
                   <span>
                     Midtrans <br/>
-                    <span className="text-xs font-normal opacity-80">(QRIS / Transfer / Kartu)</span>
+                    <span className="text-xs font-normal opacity-80">(QRIS / Transfer / Card)</span>
                   </span>
                 </div>
                 <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${paymentMethod === 'MIDTRANS' ? 'border-blue-600' : 'border-zinc-300'}`}>
@@ -594,8 +594,8 @@ export default function PosPage() {
             </div>
             
             <div className="flex gap-3 pt-6 border-t border-zinc-100">
-              <Button variant="outline" className="flex-1 py-3" onClick={() => setShowCheckout(false)}>Batal</Button>
-              <Button variant="primary" className="flex-1 py-3" onClick={processPayment}>Proses Bayar</Button>
+              <Button variant="outline" className="flex-1 py-3" onClick={() => setShowCheckout(false)}>Cancel</Button>
+              <Button variant="primary" className="flex-1 py-3" onClick={processPayment}>Process Payment</Button>
             </div>
           </Card>
         </div>
@@ -614,11 +614,11 @@ export default function PosPage() {
       <div className="border-b border-black border-dashed mb-2"></div>
       
       <div className="mb-2">
-        <p>Kasir : Admin</p>
-        <p>Waktu : {isMounted ? new Date().toLocaleString('id-ID') : ''}</p>
-        {lastOrderNumber && <p>No. Order: {lastOrderNumber}</p>}
-        {lastQueueNumber && <p className="font-bold text-[14px] mt-1 mb-1">No. Antrian: {lastQueueNumber}</p>}
-        {customerName && <p>Nama  : {customerName}</p>}
+        <p>Cashier : Admin</p>
+        <p>Time : {isMounted ? new Date().toLocaleString('id-ID') : ''}</p>
+        {lastOrderNumber && <p>Order No: {lastOrderNumber}</p>}
+        {lastQueueNumber && <p className="font-bold text-[14px] mt-1 mb-1">Queue No: {lastQueueNumber}</p>}
+        {customerName && <p>Name  : {customerName}</p>}
       </div>
       
       <div className="border-b border-black border-dashed mb-2"></div>
@@ -639,7 +639,7 @@ export default function PosPage() {
       
       <div className="mb-2">
         <div className="flex justify-between"><span>Subtotal</span><span>{getSubtotal()}</span></div>
-        {discountAmount > 0 && <div className="flex justify-between"><span>Diskon {appliedCoupon ? `[${appliedCoupon.code}]` : (discountType === 'percentage' ? `(${discountAmount}%)` : '')}</span><span>-{getCalculatedDiscount()}</span></div>}
+        {discountAmount > 0 && <div className="flex justify-between"><span>Discount {appliedCoupon ? `[${appliedCoupon.code}]` : (discountType === 'percentage' ? `(${discountAmount}%)` : '')}</span><span>-{getCalculatedDiscount()}</span></div>}
         {taxEnabled && <div className="flex justify-between"><span>PB1 (11%)</span><span>{getTax()}</span></div>}
       </div>
       
@@ -653,9 +653,9 @@ export default function PosPage() {
       </div>
       
       <div className="text-center mt-4 mb-2">
-        <p className="font-bold text-[14px]">*** LUNAS ***</p>
-        <p className="mt-1">Pembayaran : {paymentMethod === 'CASH' ? 'Tunai' : 'Midtrans'}</p>
-        <p className="italic mt-2">Terima kasih atas<br/>kunjungan Anda!</p>
+        <p className="font-bold text-[14px]">*** PAID ***</p>
+        <p className="mt-1">Payment : {paymentMethod === 'CASH' ? 'Cash' : 'Midtrans'}</p>
+        <p className="italic mt-2">Thank you for<br/>your visit!</p>
       </div>
     </div>
     </>

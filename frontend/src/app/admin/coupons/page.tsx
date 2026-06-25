@@ -36,7 +36,7 @@ export default function CouponsPage() {
       setFormData({ code: '', type: 'PERCENTAGE', value: '', minPurchase: '0', maxDiscount: '', maxUsage: '100' });
     },
     onError: (err: any) => {
-      alert(err.response?.data?.error || "Terjadi kesalahan");
+      alert(err.response?.data?.error || "An error occurred");
     }
   });
 
@@ -63,11 +63,11 @@ export default function CouponsPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-end">
         <div>
-          <h1 className="font-display font-bold text-3xl mb-2">Kupon Diskon</h1>
-          <p className="text-brand-sage text-sm">Kelola kode promo dan kupon untuk pelanggan.</p>
+          <h1 className="font-display font-bold text-3xl mb-2">Discount Coupons</h1>
+          <p className="text-brand-sage text-sm">Manage promo codes and coupons for customers.</p>
         </div>
         <Button onClick={() => setShowForm(!showForm)} className="flex gap-2">
-          {showForm ? 'Batal' : <><Plus className="w-4 h-4" /> Tambah Kupon</>}
+          {showForm ? 'Cancel' : <><Plus className="w-4 h-4" /> Add Coupon</>}
         </Button>
       </div>
 
@@ -76,41 +76,41 @@ export default function CouponsPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm text-brand-sage mb-1">Kode Kupon</label>
+                <label className="block text-sm text-brand-sage mb-1">Coupon Code</label>
                 <input required type="text" className="w-full bg-black/20 border border-white/10 rounded-lg p-2.5 text-white focus:outline-none focus:border-brand-warm" 
                   value={formData.code} onChange={e => setFormData({...formData, code: e.target.value.toUpperCase()})} placeholder="PROMO30" />
               </div>
               <div>
-                <label className="block text-sm text-brand-sage mb-1">Tipe Diskon</label>
+                <label className="block text-sm text-brand-sage mb-1">Discount Type</label>
                 <select className="w-full bg-black/20 border border-white/10 rounded-lg p-2.5 text-white focus:outline-none focus:border-brand-warm [&>option]:bg-brand-dark" 
                   value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})}>
-                  <option value="PERCENTAGE">Persentase (%)</option>
+                  <option value="PERCENTAGE">Percentage (%)</option>
                   <option value="NOMINAL">Nominal (Rp)</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm text-brand-sage mb-1">Nilai Diskon</label>
+                <label className="block text-sm text-brand-sage mb-1">Discount Value</label>
                 <input required type="number" className="w-full bg-black/20 border border-white/10 rounded-lg p-2.5 text-white focus:outline-none focus:border-brand-warm" 
                   value={formData.value} onChange={e => setFormData({...formData, value: e.target.value})} placeholder={formData.type === 'PERCENTAGE' ? "30" : "15000"} />
               </div>
               <div>
-                <label className="block text-sm text-brand-sage mb-1">Batas Maksimal Potongan (Rp) <span className="text-xs opacity-50">(Opsional)</span></label>
+                <label className="block text-sm text-brand-sage mb-1">Maximum Discount (Rp) <span className="text-xs opacity-50">(Optional)</span></label>
                 <input type="number" className="w-full bg-black/20 border border-white/10 rounded-lg p-2.5 text-white focus:outline-none focus:border-brand-warm" 
-                  value={formData.maxDiscount} onChange={e => setFormData({...formData, maxDiscount: e.target.value})} placeholder="Contoh: 10000" disabled={formData.type === 'NOMINAL'} />
+                  value={formData.maxDiscount} onChange={e => setFormData({...formData, maxDiscount: e.target.value})} placeholder="e.g., 10000" disabled={formData.type === 'NOMINAL'} />
               </div>
               <div>
-                <label className="block text-sm text-brand-sage mb-1">Minimal Belanja (Rp)</label>
+                <label className="block text-sm text-brand-sage mb-1">Minimum Purchase (Rp)</label>
                 <input required type="number" className="w-full bg-black/20 border border-white/10 rounded-lg p-2.5 text-white focus:outline-none focus:border-brand-warm" 
                   value={formData.minPurchase} onChange={e => setFormData({...formData, minPurchase: e.target.value})} />
               </div>
               <div>
-                <label className="block text-sm text-brand-sage mb-1">Kuota Kupon</label>
+                <label className="block text-sm text-brand-sage mb-1">Coupon Quota</label>
                 <input required type="number" className="w-full bg-black/20 border border-white/10 rounded-lg p-2.5 text-white focus:outline-none focus:border-brand-warm" 
                   value={formData.maxUsage} onChange={e => setFormData({...formData, maxUsage: e.target.value})} />
               </div>
             </div>
             <div className="flex justify-end pt-4 border-t border-white/10">
-              <Button type="submit" variant="primary" disabled={createMutation.isPending}>Simpan Kupon</Button>
+              <Button type="submit" variant="primary" disabled={createMutation.isPending}>Save Coupon</Button>
             </div>
           </form>
         </Card>
@@ -126,10 +126,10 @@ export default function CouponsPage() {
                   {coupon.code}
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={() => toggleMutation.mutate({ id: coupon.id, isActive: !coupon.isActive })} className="p-2 hover:bg-white/10 rounded-lg transition-colors" title={coupon.isActive ? 'Nonaktifkan' : 'Aktifkan'}>
+                  <button onClick={() => toggleMutation.mutate({ id: coupon.id, isActive: !coupon.isActive })} className="p-2 hover:bg-white/10 rounded-lg transition-colors" title={coupon.isActive ? 'Deactivate' : 'Activate'}>
                     <Power className={`w-4 h-4 ${coupon.isActive ? 'text-brand-sage' : 'text-red-400'}`} />
                   </button>
-                  <button onClick={() => { if(confirm('Hapus kupon ini?')) deleteMutation.mutate(coupon.id) }} className="p-2 hover:bg-red-500/10 hover:text-red-400 rounded-lg transition-colors">
+                  <button onClick={() => { if(confirm('Delete this coupon?')) deleteMutation.mutate(coupon.id) }} className="p-2 hover:bg-red-500/10 hover:text-red-400 rounded-lg transition-colors">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -140,14 +140,14 @@ export default function CouponsPage() {
                   {coupon.type === 'PERCENTAGE' ? `${coupon.value}% OFF` : formatRupiah(coupon.value)}
                 </p>
                 {coupon.type === 'PERCENTAGE' && coupon.maxDiscount && (
-                  <p className="text-xs text-brand-sage">Maks. potongan: {formatRupiah(coupon.maxDiscount)}</p>
+                  <p className="text-xs text-brand-sage">Max discount: {formatRupiah(coupon.maxDiscount)}</p>
                 )}
-                <p className="text-xs text-brand-sage">Min. belanja: {formatRupiah(coupon.minPurchase)}</p>
+                <p className="text-xs text-brand-sage">Min. purchase: {formatRupiah(coupon.minPurchase)}</p>
               </div>
             </div>
 
             <div className="border-t border-white/10 pt-3 flex justify-between items-center text-xs">
-              <span className="text-brand-sage/70">Terpakai</span>
+              <span className="text-brand-sage/70">Used</span>
               <span className="font-bold text-brand-cream">
                 {coupon.currentUsage} <span className="text-brand-sage font-normal">/ {coupon.maxUsage}</span>
               </span>

@@ -62,10 +62,10 @@ export default function ExpensesPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
       resetForm();
-      showToast('Pengeluaran berhasil dicatat!', 'success');
+      showToast('Expense recorded successfully!', 'success');
     },
     onError: () => {
-      showToast('Gagal menyimpan pengeluaran', 'error');
+      showToast('Failed to save expense', 'error');
     }
   });
 
@@ -77,10 +77,10 @@ export default function ExpensesPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
       resetForm();
-      showToast('Pengeluaran berhasil diperbarui!', 'success');
+      showToast('Expense updated successfully!', 'success');
     },
     onError: () => {
-      showToast('Gagal memperbarui pengeluaran', 'error');
+      showToast('Failed to update expense', 'error');
     }
   });
 
@@ -90,10 +90,10 @@ export default function ExpensesPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
-      showToast('Pengeluaran berhasil dihapus!', 'success');
+      showToast('Expense deleted successfully!', 'success');
     },
     onError: () => {
-      showToast('Gagal menghapus pengeluaran', 'error');
+      showToast('Failed to delete expense', 'error');
     }
   });
 
@@ -112,7 +112,7 @@ export default function ExpensesPage() {
         uploadedUrl = res.data.url;
         setImageUrl(uploadedUrl);
       } catch (error) {
-        showToast('Gagal mengunggah gambar', 'error');
+        showToast('Failed to upload image', 'error');
         setUploading(false);
         return;
       }
@@ -178,9 +178,9 @@ export default function ExpensesPage() {
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-display font-bold text-brand-cream flex items-center gap-3">
           <ReceiptText className="w-8 h-8 text-brand-warm" />
-          Pengeluaran (Expenses)
+          Expenses
         </h1>
-        <p className="text-brand-sage">Catat semua pengeluaran operasional toko di sini (di luar stok bahan otomatis).</p>
+        <p className="text-brand-sage">Record all operational store expenses here (excluding automatic stock).</p>
       </div>
 
       {/* Custom Toast Notification */}
@@ -198,10 +198,10 @@ export default function ExpensesPage() {
       {deleteId !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
           <Card variant="olive" className="max-w-md w-full p-6 text-center border-red-500/30 border shadow-2xl">
-            <h3 className="text-xl font-bold text-white mb-2">Hapus Pengeluaran?</h3>
-            <p className="text-brand-sage mb-6">Apakah Anda yakin ingin menghapus data ini? Aksi ini tidak dapat dibatalkan.</p>
+            <h3 className="text-xl font-bold text-white mb-2">Delete Expense?</h3>
+            <p className="text-brand-sage mb-6">Are you sure you want to delete this data? This action cannot be undone.</p>
             <div className="flex gap-3 justify-center">
-              <Button variant="secondary" onClick={() => setDeleteId(null)} className="flex-1">Batal</Button>
+              <Button variant="secondary" onClick={() => setDeleteId(null)} className="flex-1">Cancel</Button>
               <Button 
                 variant="primary" 
                 className="bg-red-500 text-white border-red-500 hover:bg-red-600 flex-1" 
@@ -210,7 +210,7 @@ export default function ExpensesPage() {
                   setDeleteId(null);
                 }}
               >
-                Ya, Hapus
+                Yes, Delete
               </Button>
             </div>
           </Card>
@@ -221,7 +221,7 @@ export default function ExpensesPage() {
         <Card variant="olive" className="md:col-span-1 h-fit">
           <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-4">
             <h2 className="font-semibold text-lg text-brand-cream">
-              {editingId ? 'Edit Pengeluaran' : 'Tambah Pengeluaran'}
+              {editingId ? 'Edit Expense' : 'Add Expense'}
             </h2>
             {editingId && (
               <button 
@@ -229,13 +229,13 @@ export default function ExpensesPage() {
                 className="text-xs text-brand-sage hover:text-white"
                 type="button"
               >
-                Batal Edit
+                Cancel Edit
               </button>
             )}
           </div>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
-              <label className="block text-sm text-brand-sage mb-1">Waktu</label>
+              <label className="block text-sm text-brand-sage mb-1">Time</label>
               <input
                 type="datetime-local"
                 required
@@ -245,18 +245,18 @@ export default function ExpensesPage() {
               />
             </div>
             <div>
-              <label className="block text-sm text-brand-sage mb-1">Keterangan (Contoh: Beli Es Batu)</label>
+              <label className="block text-sm text-brand-sage mb-1">Description (e.g., Buy Ice Cubes)</label>
               <input
                 type="text"
                 required
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Deskripsi pengeluaran..."
+                placeholder="Expense description..."
                 className="w-full bg-black/40 border border-white/10 rounded-lg p-2.5 text-brand-cream focus:outline-none focus:border-brand-warm placeholder:text-white/20"
               />
             </div>
             <div>
-              <label className="block text-sm text-brand-sage mb-1">Nominal (Rp)</label>
+              <label className="block text-sm text-brand-sage mb-1">Amount (Rp)</label>
               <input
                 type="number"
                 required
@@ -268,7 +268,7 @@ export default function ExpensesPage() {
               />
             </div>
             <div>
-              <label className="block text-sm text-brand-sage mb-1">Bukti Pembayaran / Nota (Opsional)</label>
+              <label className="block text-sm text-brand-sage mb-1">Payment Proof / Receipt (Optional)</label>
               <input
                 type="file"
                 accept="image/*"
@@ -277,7 +277,7 @@ export default function ExpensesPage() {
               />
               {imageUrl && !selectedFile && (
                 <div className="mt-3 relative inline-block">
-                  <img src={imageUrl} alt="Bukti" className="w-24 h-24 object-cover rounded-md border border-white/20" />
+                  <img src={imageUrl} alt="Proof" className="w-24 h-24 object-cover rounded-md border border-white/20" />
                   <button type="button" onClick={() => setImageUrl('')} className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 transition text-white p-1 rounded-full shadow-lg">
                     <X className="w-3 h-3" />
                   </button>
@@ -291,18 +291,18 @@ export default function ExpensesPage() {
               disabled={createExpense.isPending || updateExpense.isPending || uploading}
             >
               <Plus className="w-4 h-4 mr-2" />
-              {uploading ? 'Mengunggah...' : 
-               editingId ? (updateExpense.isPending ? 'Menyimpan...' : 'Simpan Perubahan') :
-               (createExpense.isPending ? 'Menyimpan...' : 'Simpan Pengeluaran')}
+              {uploading ? 'Uploading...' : 
+               editingId ? (updateExpense.isPending ? 'Saving...' : 'Save Changes') :
+               (createExpense.isPending ? 'Saving...' : 'Save Expense')}
             </Button>
           </form>
         </Card>
 
         <Card variant="olive" className="md:col-span-2 flex flex-col p-0 overflow-hidden">
           <div className="p-5 flex justify-between items-center border-b border-white/10 bg-black/20">
-            <h2 className="font-semibold text-lg text-brand-cream">Riwayat Pengeluaran</h2>
+            <h2 className="font-semibold text-lg text-brand-cream">Expense History</h2>
             <div className="text-right">
-              <span className="text-xs text-brand-sage block uppercase tracking-wider font-bold">Total Pengeluaran</span>
+              <span className="text-xs text-brand-sage block uppercase tracking-wider font-bold">Total Expenses</span>
               <span className="text-xl font-bold text-red-400">{formatRupiah(totalExpense)}</span>
             </div>
           </div>
@@ -311,7 +311,7 @@ export default function ExpensesPage() {
             <Search className="w-4 h-4 text-brand-sage" />
             <input 
               type="text" 
-              placeholder="Cari keterangan..." 
+              placeholder="Search description..." 
               value={searchQuery}
               onChange={handleSearchChange}
               className="bg-transparent border-none text-sm text-brand-cream focus:outline-none w-full placeholder:text-brand-sage"
@@ -320,22 +320,22 @@ export default function ExpensesPage() {
           
           <div className="flex-1 overflow-auto max-h-[500px]">
             {isLoading ? (
-              <div className="p-8 text-center text-brand-sage animate-pulse">Memuat data...</div>
+              <div className="p-8 text-center text-brand-sage animate-pulse">Loading data...</div>
             ) : filteredExpenses.length === 0 ? (
               <div className="p-12 text-center flex flex-col items-center justify-center">
                 <ReceiptText className="w-12 h-12 text-brand-sage/30 mb-4" />
                 <p className="text-brand-sage">
-                  {searchQuery ? 'Tidak ada data yang cocok dengan pencarian.' : 'Belum ada catatan pengeluaran.'}
+                  {searchQuery ? 'No data matches your search.' : 'No expense records yet.'}
                 </p>
               </div>
             ) : (
               <table className="w-full text-left text-sm text-brand-sage">
                 <thead className="bg-black/40 text-brand-cream border-b border-white/10 sticky top-0">
                   <tr>
-                    <th className="px-5 py-3 font-semibold">Tanggal</th>
-                    <th className="px-5 py-3 font-semibold">Keterangan</th>
-                    <th className="px-5 py-3 font-semibold text-right">Nominal</th>
-                    <th className="px-5 py-3 font-semibold text-center w-16">Aksi</th>
+                    <th className="px-5 py-3 font-semibold">Date</th>
+                    <th className="px-5 py-3 font-semibold">Description</th>
+                    <th className="px-5 py-3 font-semibold text-right">Amount</th>
+                    <th className="px-5 py-3 font-semibold text-center w-16">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
@@ -350,7 +350,7 @@ export default function ExpensesPage() {
                           <span className="text-brand-cream">{exp.description}</span>
                           {exp.imageUrl && (
                             <a href={exp.imageUrl} target="_blank" rel="noreferrer" className="text-brand-warm text-xs mt-1 flex items-center gap-1 hover:underline w-fit">
-                              <ImageIcon className="w-3 h-3" /> Lihat Bukti
+                              <ImageIcon className="w-3 h-3" /> View Proof
                             </a>
                           )}
                         </div>
@@ -368,7 +368,7 @@ export default function ExpensesPage() {
                           <button 
                             onClick={() => setDeleteId(exp.id)}
                             className="p-2 text-brand-sage hover:text-red-400 hover:bg-red-400/10 rounded-lg transition"
-                            title="Hapus"
+                            title="Delete"
                             disabled={deleteExpense.isPending}
                           >
                             <Trash2 className="w-4 h-4" />
@@ -385,7 +385,7 @@ export default function ExpensesPage() {
           {totalPages > 1 && (
             <div className="p-4 border-t border-white/10 bg-black/20 flex justify-between items-center">
               <span className="text-xs text-brand-sage">
-                Menampilkan {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, filteredExpenses.length)} dari {filteredExpenses.length} data
+                Showing {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, filteredExpenses.length)} of {filteredExpenses.length} entries
               </span>
               <div className="flex items-center gap-2">
                 <Button 

@@ -106,8 +106,8 @@ export default function QueuePage() {
             <Coffee className="w-8 h-8 text-brand-dark" />
           </div>
           <div>
-            <h1 className="text-4xl font-display font-bold text-brand-cream tracking-wide">Antrean Pesanan</h1>
-            <p className="text-brand-sage text-base mt-1">Silakan tunggu nomor pesanan Anda dipanggil</p>
+            <h1 className="text-4xl font-display font-bold text-brand-cream tracking-wide">Order Queue</h1>
+            <p className="text-brand-sage text-base mt-1">Please wait for your order number to be called</p>
           </div>
         </div>
         <div className="flex items-center gap-4">
@@ -126,10 +126,10 @@ export default function QueuePage() {
           <div className="bg-black/30 py-5 px-8 text-center border-b border-white/10 shadow-sm z-10 shrink-0">
             <h2 className="text-4xl font-display font-bold text-brand-cream/90 flex items-center justify-center gap-4">
               <Coffee className="w-10 h-10 text-brand-sage" />
-              Sedang Disiapkan
+              Preparing
               {preparingOrders.length > ITEMS_PER_PAGE && (
                 <span className="text-lg bg-white/10 px-3 py-1 rounded-full text-brand-sage ml-2">
-                  {preparingOrders.length} Pesanan
+                  {preparingOrders.length} Orders
                 </span>
               )}
             </h2>
@@ -147,7 +147,7 @@ export default function QueuePage() {
               {preparingOrders.length === 0 && (
                 <div className="col-span-2 h-full flex flex-col items-center justify-center text-brand-sage/30 mt-20">
                   <Coffee className="w-32 h-32 mb-6 opacity-30" />
-                  <p className="text-3xl font-display font-semibold">Tidak ada antrean</p>
+                  <p className="text-3xl font-display font-semibold">No queue</p>
                 </div>
               )}
             </div>
@@ -163,10 +163,10 @@ export default function QueuePage() {
           <div className="bg-brand-warm/10 py-5 px-8 text-center border-b border-brand-warm/20 backdrop-blur-sm z-10 shadow-sm shrink-0">
             <h2 className="text-4xl font-display font-bold text-brand-warm flex items-center justify-center gap-4 drop-shadow-md">
               <CheckCircle className="w-10 h-10" />
-              Silakan Ambil
+              Please Collect
               {readyOrders.length > ITEMS_PER_PAGE && (
                 <span className="text-lg bg-brand-warm/20 px-3 py-1 rounded-full text-brand-warm ml-2">
-                  {readyOrders.length} Pesanan
+                  {readyOrders.length} Orders
                 </span>
               )}
             </h2>
@@ -189,7 +189,7 @@ export default function QueuePage() {
               {readyOrders.length === 0 && (
                 <div className="col-span-2 h-full flex flex-col items-center justify-center text-brand-warm/20 mt-20">
                   <CheckCircle className="w-32 h-32 mb-6 opacity-30" />
-                  <p className="text-3xl font-display font-semibold">Belum ada pesanan selesai</p>
+                  <p className="text-3xl font-display font-semibold">No finished orders yet</p>
                 </div>
               )}
             </div>
@@ -201,7 +201,7 @@ export default function QueuePage() {
       
       {/* Footer */}
       <footer className="bg-black/60 border-t border-brand-warm/10 py-4 px-8 text-center z-10 shrink-0">
-        <p className="text-brand-sage/80 text-lg font-medium">Terima kasih telah mengunjungi Tresbros. Pesanan yang sudah diambil akan otomatis hilang dari layar.</p>
+        <p className="text-brand-sage/80 text-lg font-medium">Thank you for visiting Tresbros. Orders that have been collected will automatically disappear from the screen.</p>
       </footer>
     </div>
   );

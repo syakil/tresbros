@@ -74,18 +74,18 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <nav className="space-y-1">
             <Link href="/" onClick={() => setIsSidebarOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-r-xl transition ${getActiveStyle('/')}`}>
               <Home className="w-5 h-5" />
-              <span>Beranda</span>
+              <span>Home</span>
             </Link>
             {hasPermission('pos') && (
               <Link href="/pos" onClick={() => setIsSidebarOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-r-xl transition ${getActiveStyle('/pos')}`}>
                 <ShoppingBag className="w-5 h-5" />
-                <span>Kasir (POS)</span>
+                <span>Point of Sale (POS)</span>
               </Link>
             )}
             {hasPermission('kds') && (
               <Link href="/kds" onClick={() => setIsSidebarOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-r-xl transition ${getActiveStyle('/kds')}`}>
                 <MonitorPlay className="w-5 h-5" />
-                <span>Dapur (KDS)</span>
+                <span>Kitchen Display (KDS)</span>
               </Link>
             )}
             
@@ -96,7 +96,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 </div>
                 <Link href="/admin/dashboard" onClick={() => setIsSidebarOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-r-xl transition ${getActiveStyle('/admin/dashboard')}`}>
                   <BarChart3 className="w-5 h-5" />
-                  <span>Laporan Penjualan</span>
+                  <span>Sales Report</span>
                 </Link>
               </>
             )}
@@ -105,11 +105,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <>
                 <Link href="/admin/incomes" onClick={() => setIsSidebarOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-r-xl transition ${getActiveStyle('/admin/incomes')}`}>
                   <TrendingUp className="w-5 h-5 text-blue-400" />
-                  <span>Pemasukan</span>
+                  <span>Incomes</span>
                 </Link>
                 <Link href="/admin/expenses" onClick={() => setIsSidebarOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-r-xl transition ${getActiveStyle('/admin/expenses')}`}>
                   <ReceiptText className="w-5 h-5 text-red-400" />
-                  <span>Pengeluaran</span>
+                  <span>Expenses</span>
                 </Link>
               </>
             )}
@@ -118,19 +118,19 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <>
                 <Link href="/admin/coupons" onClick={() => setIsSidebarOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-r-xl transition ${getActiveStyle('/admin/coupons')}`}>
                   <Tag className="w-5 h-5" />
-                  <span>Kupon Diskon</span>
+                  <span>Discount Coupons</span>
                 </Link>
                 <Link href="/admin/items" onClick={() => setIsSidebarOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-r-xl transition ${getActiveStyle('/admin/items')}`}>
                   <Package className="w-5 h-5" />
-                  <span>Data Produk</span>
+                  <span>Product Data</span>
                 </Link>
                 <Link href="/admin/recipes" onClick={() => setIsSidebarOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-r-xl transition ${getActiveStyle('/admin/recipes')}`}>
                   <ClipboardList className="w-5 h-5" />
-                  <span>Resep / BOM</span>
+                  <span>Recipes / BOM</span>
                 </Link>
                 <Link href="/admin/rnd" onClick={() => setIsSidebarOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-r-xl transition ${getActiveStyle('/admin/rnd')}`}>
                   <MonitorPlay className="w-5 h-5" />
-                  <span>R&D / Eksperimen</span>
+                  <span>R&D / Experiments</span>
                 </Link>
               </>
             )}
@@ -138,14 +138,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             {hasPermission('purchases') && (
               <Link href="/admin/purchases" onClick={() => setIsSidebarOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-r-xl transition ${getActiveStyle('/admin/purchases')}`}>
                 <ShoppingCart className="w-5 h-5" />
-                <span>Pembelian Bahan</span>
+                <span>Material Purchases</span>
               </Link>
             )}
 
             {hasPermission('inventory') && (
               <Link href="/admin/inventory" onClick={() => setIsSidebarOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-r-xl transition ${getActiveStyle('/admin/inventory')}`}>
                 <Boxes className="w-5 h-5" />
-                <span>Manajemen Stok</span>
+                <span>Stock Management</span>
               </Link>
             )}
             
@@ -160,15 +160,15 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 </Link>
                 <Link href="/admin/accounting/journals" onClick={() => setIsSidebarOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-r-xl transition ${getActiveStyle('/admin/accounting/journals')}`}>
                   <ReceiptText className="w-5 h-5" />
-                  <span>Jurnal Keuangan</span>
+                  <span>Financial Journals</span>
                 </Link>
                 <Link href="/admin/accounting/ledger" onClick={() => setIsSidebarOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-r-xl transition ${getActiveStyle('/admin/accounting/ledger')}`}>
                   <ClipboardList className="w-5 h-5" />
-                  <span>Buku Besar</span>
+                  <span>General Ledger</span>
                 </Link>
                 <Link href="/admin/accounting/profit-loss" onClick={() => setIsSidebarOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-r-xl transition ${getActiveStyle('/admin/accounting/profit-loss')}`}>
                   <BarChart3 className="w-5 h-5" />
-                  <span>Laba Rugi</span>
+                  <span>Profit & Loss</span>
                 </Link>
               </>
             )}
@@ -177,15 +177,15 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <>
                 <Link href="/admin/settings" onClick={() => setIsSidebarOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-r-xl transition ${getActiveStyle('/admin/settings')}`}>
                   <MonitorPlay className="w-5 h-5" />
-                  <span>Pengaturan Sistem</span>
+                  <span>System Settings</span>
                 </Link>
                 <Link href="/admin/users" onClick={() => setIsSidebarOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-r-xl transition ${getActiveStyle('/admin/users')}`}>
                   <Users className="w-5 h-5" />
-                  <span>Manajemen Pengguna</span>
+                  <span>User Management</span>
                 </Link>
                 <Link href="/admin/roles" onClick={() => setIsSidebarOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-r-xl transition ${getActiveStyle('/admin/roles')}`}>
                   <ClipboardList className="w-5 h-5" />
-                  <span>Manajemen Role</span>
+                  <span>Role Management</span>
                 </Link>
               </>
             )}

@@ -8,13 +8,13 @@ import { Button } from '@/components/ui/Button';
 import { Plus, Pencil, Trash2, ClipboardList } from 'lucide-react';
 
 const MODULES = [
-  { id: 'dashboard', label: 'Dashboard & Laporan Penjualan' },
-  { id: 'pos', label: 'Kasir (POS)' },
-  { id: 'kds', label: 'Dapur (KDS)' },
-  { id: 'inventory', label: 'Manajemen Stok & Produk' },
-  { id: 'purchases', label: 'Pembelian' },
-  { id: 'accounting', label: 'Akuntansi (Jurnal, Buku Besar, Laba Rugi)' },
-  { id: 'settings', label: 'Pengaturan Sistem & User' }
+  { id: 'dashboard', label: 'Dashboard & Sales Reports' },
+  { id: 'pos', label: 'Cashier (POS)' },
+  { id: 'kds', label: 'Kitchen (KDS)' },
+  { id: 'inventory', label: 'Stock & Product Management' },
+  { id: 'purchases', label: 'Purchases' },
+  { id: 'accounting', label: 'Accounting (Journals, Ledger, Profit & Loss)' },
+  { id: 'settings', label: 'System & User Settings' }
 ];
 
 export default function RolesPage() {
@@ -45,7 +45,7 @@ export default function RolesPage() {
       resetForm();
     },
     onError: (error: any) => {
-      alert(error.response?.data?.error || "Gagal membuat role");
+      alert(error.response?.data?.error || "Failed to create role");
     }
   });
 
@@ -59,7 +59,7 @@ export default function RolesPage() {
       resetForm();
     },
     onError: (error: any) => {
-      alert(error.response?.data?.error || "Gagal mengubah role");
+      alert(error.response?.data?.error || "Failed to update role");
     }
   });
 
@@ -71,7 +71,7 @@ export default function RolesPage() {
       queryClient.invalidateQueries({ queryKey: ['roles'] });
     },
     onError: (error: any) => {
-      alert(error.response?.data?.error || "Gagal menghapus role. Mungkin role ini masih digunakan oleh pengguna.");
+      alert(error.response?.data?.error || "Failed to delete role. It might still be used by users.");
     }
   });
 
@@ -105,7 +105,7 @@ export default function RolesPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name) return alert("Nama Role wajib diisi!");
+    if (!name) return alert("Role Name is required!");
     
     const payload = {
       name,
@@ -121,7 +121,7 @@ export default function RolesPage() {
   };
 
   const handleDelete = (id: number, roleName: string) => {
-    if (window.confirm(`Apakah Anda yakin ingin menghapus role ${roleName}?`)) {
+    if (window.confirm(`Are you sure you want to delete the role ${roleName}?`)) {
       deleteRole.mutate(id);
     }
   };
@@ -129,11 +129,11 @@ export default function RolesPage() {
   return (
     <div className="flex flex-col gap-6 max-w-6xl mx-auto w-full">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-display font-bold text-brand-cream">Manajemen Role</h1>
+        <h1 className="text-3xl font-display font-bold text-brand-cream">Role Management</h1>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <p className="text-brand-sage text-sm md:text-base">Kelola daftar hak akses dan peran sistem</p>
+          <p className="text-brand-sage text-sm md:text-base">Manage access rights and system roles</p>
           <Button variant="primary" className="shadow-md w-full md:w-auto justify-center" onClick={() => { resetForm(); setShowForm(true); }}>
-            <Plus className="w-4 h-4 mr-2" /> Tambah Role
+            <Plus className="w-4 h-4 mr-2" /> Add Role
           </Button>
         </div>
       </div>
@@ -141,34 +141,34 @@ export default function RolesPage() {
       {showForm && (
         <Card variant="olive" className="bg-black/40 border-brand-warm/30 animate-in fade-in slide-in-from-top-4">
           <h2 className="text-lg font-bold text-brand-cream mb-4 border-b border-white/10 pb-2">
-            {editData ? 'Ubah Data Role' : 'Tambah Role Baru'}
+            {editData ? 'Edit Role Data' : 'Add New Role'}
           </h2>
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs text-brand-sage mb-1 block">Nama Role</label>
+                <label className="text-xs text-brand-sage mb-1 block">Role Name</label>
                 <input 
                   type="text" 
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Misal: Manager Cabang" 
+                  placeholder="e.g., Branch Manager" 
                   className="w-full bg-black/20 border border-white/10 text-brand-cream rounded-xl px-4 py-3 focus:outline-none focus:border-brand-warm transition" 
                 />
               </div>
               <div>
-                <label className="text-xs text-brand-sage mb-1 block">Keterangan Singkat</label>
+                <label className="text-xs text-brand-sage mb-1 block">Short Description</label>
                 <input 
                   type="text" 
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Opsional" 
+                  placeholder="Optional" 
                   className="w-full bg-black/20 border border-white/10 text-brand-cream rounded-xl px-4 py-3 focus:outline-none focus:border-brand-warm transition" 
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-xs text-brand-sage mb-3 block">Pilih Hak Akses Menu</label>
+              <label className="text-xs text-brand-sage mb-3 block">Select Menu Access Rights</label>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {MODULES.map(mod => (
                   <label key={mod.id} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition ${permissions.includes(mod.id) ? 'bg-brand-warm/10 border-brand-warm text-brand-cream' : 'bg-black/20 border-white/10 text-brand-sage hover:bg-white/5'}`}>
@@ -185,9 +185,9 @@ export default function RolesPage() {
             </div>
             
             <div className="flex justify-end gap-3 mt-2 border-t border-white/10 pt-4">
-              <Button type="button" variant="outline" onClick={resetForm}>Batal</Button>
+              <Button type="button" variant="outline" onClick={resetForm}>Cancel</Button>
               <Button type="submit" variant="primary" disabled={createRole.isPending || updateRole.isPending}>
-                {createRole.isPending || updateRole.isPending ? 'Menyimpan...' : 'Simpan Role'}
+                {createRole.isPending || updateRole.isPending ? 'Saving...' : 'Save Role'}
               </Button>
             </div>
           </form>
@@ -199,22 +199,22 @@ export default function RolesPage() {
           <table className="w-full text-left text-sm text-brand-sage min-w-[800px]">
             <thead className="bg-black/40 text-brand-cream border-b border-white/10">
               <tr>
-                <th className="px-6 py-5 font-semibold w-1/4">Nama Role</th>
-                <th className="px-6 py-5 font-semibold w-1/3">Keterangan</th>
-                <th className="px-6 py-5 font-semibold text-center w-1/4">Jumlah Akses Menu</th>
-                <th className="px-6 py-5 font-semibold text-right">Aksi</th>
+                <th className="px-6 py-5 font-semibold w-1/4">Role Name</th>
+                <th className="px-6 py-5 font-semibold w-1/3">Description</th>
+                <th className="px-6 py-5 font-semibold text-center w-1/4">Number of Menu Accesses</th>
+                <th className="px-6 py-5 font-semibold text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
               {isLoading && (
                 <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-brand-sage">Memuat data role...</td>
+                  <td colSpan={4} className="px-6 py-8 text-center text-brand-sage">Loading role data...</td>
                 </tr>
               )}
               {!isLoading && roles.length === 0 && (
                 <tr>
                   <td colSpan={4} className="px-6 py-8 text-center text-brand-sage">
-                    Belum ada role yang terdaftar.
+                    No registered roles yet.
                   </td>
                 </tr>
               )}
@@ -234,21 +234,21 @@ export default function RolesPage() {
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span className="bg-black/40 border border-white/10 px-3 py-1 rounded-full text-xs font-medium">
-                        {perms.length} Menu Diizinkan
+                        {perms.length} Allowed Menus
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right whitespace-nowrap">
                       <button
                         onClick={() => handleEditClick(role)}
                         className="text-brand-sage hover:text-brand-cream bg-black/20 hover:bg-black/40 border border-white/5 p-2 rounded-lg transition mr-2"
-                        title="Ubah"
+                        title="Edit"
                       >
                         <Pencil className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(role.id, role.name)}
                         className="text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 p-2 rounded-lg transition"
-                        title="Hapus"
+                        title="Delete"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

@@ -60,10 +60,10 @@ export default function PurchasesPage() {
       setPurchaseItems([{ materialId: '', qty: '', price: '' }]);
       setReceiptFile(null);
       setReceiptBase64('');
-      showToast('PO berhasil disimpan!', 'success');
+      showToast('PO saved successfully!', 'success');
     },
     onError: (error: any) => {
-      showToast(error.response?.data?.error || 'Gagal menyimpan PO', 'error');
+      showToast(error.response?.data?.error || 'Failed to save PO', 'error');
     }
   });
 
@@ -78,11 +78,11 @@ export default function PurchasesPage() {
       queryClient.invalidateQueries({ queryKey: ['materials'] });
       setConfirmCancelId(null);
       setSelectedPO(null); // Tutup modal atau update state jika ingin modal tetap terbuka
-      showToast('PO berhasil dibatalkan dan stok telah disesuaikan.', 'success');
+      showToast('PO successfully canceled and stock adjusted.', 'success');
     },
     onError: (error: any) => {
       setConfirmCancelId(null);
-      showToast(error.response?.data?.error || 'Gagal membatalkan PO', 'error');
+      showToast(error.response?.data?.error || 'Failed to cancel PO', 'error');
     }
   });
 
@@ -119,11 +119,11 @@ export default function PurchasesPage() {
   };
 
   const handleSavePurchase = () => {
-    if (!supplier) return showToast("Nama supplier harus diisi!", "error");
+    if (!supplier) return showToast("Supplier name is required!", "error");
     
     // Validasi item
     const validItems = purchaseItems.filter(item => item.materialId && item.qty && item.price);
-    if (validItems.length === 0) return showToast("Minimal 1 item belanja harus diisi dengan lengkap!", "error");
+    if (validItems.length === 0) return showToast("At least 1 shopping item must be fully filled!", "error");
 
     createPurchase.mutate({
       purchaseNo: "",
@@ -174,19 +174,19 @@ export default function PurchasesPage() {
             <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-2 text-red-400">
               <Trash2 className="w-6 h-6" />
             </div>
-            <h3 className="text-xl font-display font-bold text-brand-cream">Batalkan Transaksi?</h3>
+            <h3 className="text-xl font-display font-bold text-brand-cream">Cancel Transaction?</h3>
             <p className="text-sm text-brand-sage">
-              Anda yakin ingin membatalkan Purchase Order ini? Stok bahan baku yang berkaitan dengan transaksi ini akan dikurangi secara otomatis. Aksi ini tidak dapat dibatalkan.
+              Are you sure you want to cancel this Purchase Order? Raw material stocks associated with this transaction will be reduced automatically. This action cannot be undone.
             </p>
             <div className="flex gap-3 justify-center mt-4">
-              <Button variant="outline" onClick={() => setConfirmCancelId(null)}>Kembali</Button>
+              <Button variant="outline" onClick={() => setConfirmCancelId(null)}>Back</Button>
               <Button 
                 variant="primary" 
                 className="bg-red-500 hover:bg-red-600 text-white border-none shadow-[0_4px_20px_rgba(239,68,68,0.4)] hover:-translate-y-0.5 transition-all"
                 onClick={confirmAction}
                 disabled={cancelPurchase.isPending}
               >
-                {cancelPurchase.isPending ? 'Memproses...' : 'Ya, Batalkan PO'}
+                {cancelPurchase.isPending ? 'Processing...' : 'Yes, Cancel PO'}
               </Button>
             </div>
           </Card>
@@ -194,11 +194,11 @@ export default function PurchasesPage() {
       )}
 
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-display font-bold text-brand-cream">Pembelian Bahan Baku</h1>
+        <h1 className="text-3xl font-display font-bold text-brand-cream">Raw Material Purchase</h1>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <p className="text-brand-sage text-sm md:text-base">Catat transaksi belanja bahan baku (Purchase Orders) dari supplier</p>
+          <p className="text-brand-sage text-sm md:text-base">Record raw material purchase transactions (Purchase Orders) from suppliers</p>
           <Button variant="primary" className="shadow-md w-full md:w-auto justify-center" onClick={() => setShowAdd(!showAdd)}>
-            <Plus className="w-4 h-4 mr-2" /> Buat Pembelian Baru
+            <Plus className="w-4 h-4 mr-2" /> Create New Purchase
           </Button>
         </div>
       </div>
@@ -209,29 +209,29 @@ export default function PurchasesPage() {
             <div className="flex justify-between items-center border-b border-white/10 pb-4">
               <h3 className="font-semibold text-brand-cream flex items-center gap-2">
                 <ShoppingCart className="w-5 h-5 text-brand-warm" />
-                Form Input Pembelian Baru
+                New Purchase Input Form
               </h3>
               <p className="text-sm text-brand-sage">PO-{new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 10)}</p>
             </div>
 
             <div className="flex flex-col md:flex-row gap-6">
               <div className="w-full md:w-1/2">
-                <label className="text-xs text-brand-sage mb-1.5 block">Nama Supplier / Toko</label>
+                <label className="text-xs text-brand-sage mb-1.5 block">Supplier / Store Name</label>
                 <input
                   type="text"
                   value={supplier}
                   onChange={(e) => setSupplier(e.target.value)}
-                  placeholder="Contoh: PT Kopi Maju Jaya"
+                  placeholder="e.g., PT Kopi Maju Jaya"
                   className="w-full bg-black/20 border border-white/10 text-brand-cream rounded-xl px-4 py-3 focus:outline-none focus:border-brand-warm"
                 />
               </div>
 
               <div className="w-full md:w-1/2">
-                <label className="text-xs text-brand-sage mb-1.5 block">Upload Foto Struk (Opsional)</label>
+                <label className="text-xs text-brand-sage mb-1.5 block">Upload Receipt Photo (Optional)</label>
                 <div className="flex items-center gap-4">
                   <label className="cursor-pointer bg-black/40 hover:bg-black/60 border border-white/10 text-brand-cream rounded-xl px-4 py-3 flex items-center gap-2 transition-colors w-full md:w-auto justify-center">
                     <UploadCloud className="w-4 h-4 text-brand-warm" />
-                    <span className="text-sm">{receiptFile ? 'Ganti File' : 'Pilih File Gambar'}</span>
+                    <span className="text-sm">{receiptFile ? 'Change File' : 'Choose Image File'}</span>
                     <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
                   </label>
                   {receiptFile && (
@@ -248,12 +248,12 @@ export default function PurchasesPage() {
             </div>
 
             <div className="space-y-3">
-              <label className="text-xs text-brand-sage block border-b border-white/5 pb-2">Rincian Item Pembelian</label>
+              <label className="text-xs text-brand-sage block border-b border-white/5 pb-2">Purchase Item Details</label>
 
               {purchaseItems.map((item, index) => (
                 <div key={index} className="flex flex-col md:flex-row gap-3 items-start md:items-end bg-black/20 p-4 rounded-xl border border-white/5 relative">
                   <div className="flex-1 w-full">
-                    <label className="text-[10px] uppercase tracking-wider text-brand-sage mb-1 block">Bahan Baku</label>
+                    <label className="text-[10px] uppercase tracking-wider text-brand-sage mb-1 block">Raw Material</label>
                     <CustomSelect
                       value={item.materialId}
                       onChange={(val) => {
@@ -263,13 +263,13 @@ export default function PurchasesPage() {
                       }}
                       className="bg-black/40 border border-white/10 text-brand-cream rounded-lg px-3 py-2.5"
                       options={[
-                        { value: '', label: 'Pilih Bahan Baku' },
+                        { value: '', label: 'Select Raw Material' },
                         ...materials.map((m: any) => ({ value: m.id.toString(), label: `${m.name} (${m.unit})` }))
                       ]}
                     />
                   </div>
                   <div className="w-full md:w-32">
-                    <label className="text-[10px] uppercase tracking-wider text-brand-sage mb-1 block">Kuantitas</label>
+                    <label className="text-[10px] uppercase tracking-wider text-brand-sage mb-1 block">Quantity</label>
                     <input
                       type="number"
                       value={item.qty}
@@ -283,7 +283,7 @@ export default function PurchasesPage() {
                     />
                   </div>
                   <div className="w-full md:w-48">
-                    <label className="text-[10px] uppercase tracking-wider text-brand-sage mb-1 block">Harga Total Beli (Rp)</label>
+                    <label className="text-[10px] uppercase tracking-wider text-brand-sage mb-1 block">Total Purchase Price (Rp)</label>
                     <input
                       type="number"
                       value={item.price}
@@ -302,7 +302,7 @@ export default function PurchasesPage() {
                     <button 
                       onClick={() => removeLineItem(index)}
                       className="absolute top-2 right-2 md:relative md:top-auto md:right-auto md:mb-1 w-8 h-8 md:w-10 md:h-10 shrink-0 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg flex items-center justify-center transition border border-red-500/20"
-                      title="Hapus Baris"
+                      title="Delete Row"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -311,14 +311,13 @@ export default function PurchasesPage() {
               ))}
 
               <Button variant="outline" className="w-full md:w-auto mt-2 text-sm py-2" onClick={addLineItem}>
-                <Plus className="w-4 h-4 mr-2" /> Tambah Baris Item
+                <Plus className="w-4 h-4 mr-2" /> Add Item Row
               </Button>
             </div>
 
-            {/* Ringkasan Total */}
             <div className="flex justify-end p-4 bg-brand-dark/50 rounded-xl border border-white/5">
                <div className="text-right">
-                  <p className="text-xs text-brand-sage mb-1 uppercase tracking-wider font-bold">Total Pembelian</p>
+                  <p className="text-xs text-brand-sage mb-1 uppercase tracking-wider font-bold">Total Purchase</p>
                   <p className="text-2xl font-display font-bold text-brand-warm">
                     Rp {purchaseItems.reduce((acc, curr) => acc + (Number(curr.price) || 0), 0).toLocaleString('id-ID')}
                   </p>
@@ -327,10 +326,10 @@ export default function PurchasesPage() {
 
             <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
               <Button variant="outline" onClick={() => setShowAdd(false)}>
-                Batal
+                Cancel
               </Button>
               <Button variant="primary" onClick={handleSavePurchase} disabled={createPurchase.isPending}>
-                {createPurchase.isPending ? 'Menyimpan...' : 'Simpan & Tambah Stok'}
+                {createPurchase.isPending ? 'Saving...' : 'Save & Add Stock'}
               </Button>
             </div>
           </div>
@@ -343,8 +342,8 @@ export default function PurchasesPage() {
             <FileText className="w-5 h-5 text-brand-warm" />
           </div>
           <div>
-            <p className="text-brand-sage text-[10px] md:text-xs font-medium uppercase tracking-wider">Total PO Bulan Ini</p>
-            <h3 className="text-lg md:text-xl font-display font-bold text-brand-cream">{thisMonthPurchases.length} Transaksi</h3>
+            <p className="text-brand-sage text-[10px] md:text-xs font-medium uppercase tracking-wider">Total PO This Month</p>
+            <h3 className="text-lg md:text-xl font-display font-bold text-brand-cream">{thisMonthPurchases.length} Transactions</h3>
           </div>
         </Card>
         <Card variant="olive" className="flex items-center gap-4 bg-black/40 p-4">
@@ -352,7 +351,7 @@ export default function PurchasesPage() {
             <Building2 className="w-5 h-5 text-brand-sage" />
           </div>
           <div>
-            <p className="text-brand-sage text-[10px] md:text-xs font-medium uppercase tracking-wider">Pengeluaran Bulan Ini</p>
+            <p className="text-brand-sage text-[10px] md:text-xs font-medium uppercase tracking-wider">Expenses This Month</p>
             <h3 className="text-lg md:text-xl font-display font-bold text-brand-cream">Rp {totalPengeluaranBulanIni.toLocaleString('id-ID')}</h3>
           </div>
         </Card>
@@ -360,12 +359,12 @@ export default function PurchasesPage() {
 
       <Card variant="olive" className="p-0 overflow-hidden shadow-xl border-white/10">
         <div className="p-4 border-b border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-black/20">
-          <h3 className="font-semibold text-brand-cream">Riwayat Pembelian Terbaru</h3>
+          <h3 className="font-semibold text-brand-cream">Recent Purchase History</h3>
           <div className="relative w-full md:w-auto">
             <Search className="w-4 h-4 text-brand-sage absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Cari PO atau Supplier..."
+              placeholder="Search PO or Supplier..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="bg-black/40 border border-white/10 text-sm text-brand-cream rounded-lg pl-9 pr-4 py-2 focus:outline-none focus:border-brand-warm w-full md:w-64"
@@ -375,9 +374,9 @@ export default function PurchasesPage() {
 
         {/* Mobile View: Compact Cards */}
         <div className="md:hidden flex flex-col bg-black/40 divide-y divide-white/5">
-          {isLoadingPurchases && <div className="p-6 text-center text-brand-sage text-sm">Memuat data...</div>}
+          {isLoadingPurchases && <div className="p-6 text-center text-brand-sage text-sm">Loading data...</div>}
           {!isLoadingPurchases && filteredPurchases.length === 0 && (
-            <div className="p-6 text-center text-brand-sage text-sm">Tidak ada transaksi ditemukan.</div>
+            <div className="p-6 text-center text-brand-sage text-sm">No transactions found.</div>
           )}
           {filteredPurchases.map((po: any) => (
             <div key={po.id} className="p-4 flex flex-col gap-2" onClick={() => setSelectedPO(po)}>
@@ -385,7 +384,7 @@ export default function PurchasesPage() {
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-xs text-brand-warm font-bold">{po.purchaseNo}</span>
                   {po.status === 'CANCELLED' && (
-                    <span className="bg-red-500/20 text-red-400 text-[8px] px-1.5 py-0.5 rounded-sm font-bold uppercase tracking-wider">Dibatalkan</span>
+                    <span className="bg-red-500/20 text-red-400 text-[8px] px-1.5 py-0.5 rounded-sm font-bold uppercase tracking-wider">Cancelled</span>
                   )}
                 </div>
                 <span className="bg-brand-sage/20 text-brand-sage text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
@@ -402,7 +401,7 @@ export default function PurchasesPage() {
                 </span>
               </div>
               <div className="mt-2 bg-black/20 p-2.5 rounded-lg border border-white/5 flex justify-between items-center">
-                <span className="text-[10px] uppercase tracking-wider text-brand-sage font-bold">Total Pembelian</span>
+                <span className="text-[10px] uppercase tracking-wider text-brand-sage font-bold">Total Purchase</span>
                 <span className="font-bold text-brand-cream">Rp {po.totalAmount.toLocaleString('id-ID')}</span>
               </div>
             </div>
@@ -414,23 +413,23 @@ export default function PurchasesPage() {
           <table className="w-full text-left text-sm text-brand-sage min-w-[800px]">
             <thead className="bg-black/40 text-brand-cream border-b border-white/10">
               <tr>
-                <th className="px-6 py-5 font-semibold w-40">No PO</th>
+                <th className="px-6 py-5 font-semibold w-40">PO No</th>
                 <th className="px-6 py-5 font-semibold">Supplier</th>
-                <th className="px-6 py-5 font-semibold">Tanggal</th>
-                <th className="px-6 py-5 font-semibold">Item Belanja</th>
-                <th className="px-6 py-5 font-semibold text-right">Total Nominal</th>
+                <th className="px-6 py-5 font-semibold">Date</th>
+                <th className="px-6 py-5 font-semibold">Shopping Items</th>
+                <th className="px-6 py-5 font-semibold text-right">Total Amount</th>
                 <th className="px-6 py-5 font-semibold text-center">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
               {isLoadingPurchases && (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center">Memuat data...</td>
+                  <td colSpan={6} className="px-6 py-8 text-center">Loading data...</td>
                 </tr>
               )}
               {!isLoadingPurchases && filteredPurchases.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center">Tidak ada transaksi ditemukan.</td>
+                  <td colSpan={6} className="px-6 py-8 text-center">No transactions found.</td>
                 </tr>
               )}
               {filteredPurchases.map((po: any) => (
@@ -438,25 +437,25 @@ export default function PurchasesPage() {
                   <td className="px-6 py-4 font-mono text-xs text-brand-warm">{po.purchaseNo}</td>
                   <td className="px-6 py-4 text-brand-cream font-medium flex items-center gap-2">
                     {po.supplierName}
-                    {po.receiptUrl && <span title="Ada Struk"><ImageIcon className="w-3 h-3 text-brand-warm shrink-0" /></span>}
+                    {po.receiptUrl && <span title="Has Receipt"><ImageIcon className="w-3 h-3 text-brand-warm shrink-0" /></span>}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
                       <Calendar className="w-3 h-3" /> {new Date(po.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </div>
                   </td>
-                  <td className="px-6 py-4">{po.items.length} Jenis Bahan</td>
+                  <td className="px-6 py-4">{po.items.length} Types of Materials</td>
                   <td className="px-6 py-4 text-right font-semibold text-brand-cream">
                     Rp {po.totalAmount.toLocaleString('id-ID')}
                   </td>
                   <td className="px-6 py-4 text-center">
                     {po.status === 'CANCELLED' ? (
                       <span className="bg-red-500/20 text-red-400 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider inline-block">
-                        Dibatalkan
+                        Cancelled
                       </span>
                     ) : (
                       <span className="bg-brand-sage/20 text-brand-sage text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider inline-block">
-                        Selesai
+                        Completed
                       </span>
                     )}
                   </td>
@@ -471,14 +470,13 @@ export default function PurchasesPage() {
       {selectedPO && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
           <Card variant="olive" className="w-full max-w-2xl bg-[#1C1F1D] border-brand-warm/30 shadow-2xl max-h-[90vh] overflow-hidden flex flex-col p-0">
-            {/* Header */}
             <div className="p-4 border-b border-white/10 flex justify-between items-center bg-black/20 shrink-0">
               <div>
-                <h3 className="font-semibold text-brand-cream text-lg">Detail Pembelian</h3>
+                <h3 className="font-semibold text-brand-cream text-lg">Purchase Details</h3>
                 <div className="flex items-center gap-2 mt-1">
                   <p className="text-xs text-brand-warm font-mono">{selectedPO.purchaseNo}</p>
                   {selectedPO.status === 'CANCELLED' && (
-                    <span className="bg-red-500/20 text-red-400 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Dibatalkan</span>
+                    <span className="bg-red-500/20 text-red-400 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Cancelled</span>
                   )}
                 </div>
               </div>
@@ -493,28 +491,26 @@ export default function PurchasesPage() {
             {/* Content (Scrollable) */}
             <div className="overflow-y-auto p-4 md:p-6 flex flex-col gap-6">
               
-              {/* Info Utama */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-black/20 p-4 rounded-xl border border-white/5">
-                  <p className="text-[10px] uppercase tracking-wider text-brand-sage mb-1">Nama Supplier</p>
+                  <p className="text-[10px] uppercase tracking-wider text-brand-sage mb-1">Supplier Name</p>
                   <p className="font-medium text-brand-cream">{selectedPO.supplierName}</p>
                 </div>
                 <div className="bg-black/20 p-4 rounded-xl border border-white/5">
-                  <p className="text-[10px] uppercase tracking-wider text-brand-sage mb-1">Waktu Transaksi</p>
+                  <p className="text-[10px] uppercase tracking-wider text-brand-sage mb-1">Transaction Time</p>
                   <p className="font-medium text-brand-cream">{new Date(selectedPO.createdAt).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}</p>
                 </div>
               </div>
 
-              {/* Rincian Item */}
               <div>
-                <p className="text-xs uppercase tracking-wider text-brand-sage mb-3 font-bold border-b border-white/10 pb-2">Rincian Item</p>
+                <p className="text-xs uppercase tracking-wider text-brand-sage mb-3 font-bold border-b border-white/10 pb-2">Item Details</p>
                 <div className="bg-black/20 rounded-xl border border-white/5 overflow-hidden">
                   <table className="w-full text-left text-sm text-brand-sage">
                     <thead className="bg-black/40 text-brand-cream border-b border-white/10">
                       <tr>
-                        <th className="px-4 py-3 font-semibold">Bahan Baku</th>
-                        <th className="px-4 py-3 font-semibold text-right">Kuantitas</th>
-                        <th className="px-4 py-3 font-semibold text-right">Harga</th>
+                        <th className="px-4 py-3 font-semibold">Raw Material</th>
+                        <th className="px-4 py-3 font-semibold text-right">Quantity</th>
+                        <th className="px-4 py-3 font-semibold text-right">Price</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
@@ -528,7 +524,7 @@ export default function PurchasesPage() {
                     </tbody>
                     <tfoot className="bg-black/40 border-t border-white/10">
                       <tr>
-                        <th colSpan={2} className="px-4 py-3 text-right font-bold text-brand-cream uppercase text-xs">Total Pembelian</th>
+                        <th colSpan={2} className="px-4 py-3 text-right font-bold text-brand-cream uppercase text-xs">Total Purchase</th>
                         <th className="px-4 py-3 text-right font-bold text-brand-warm">Rp {selectedPO.totalAmount.toLocaleString('id-ID')}</th>
                       </tr>
                     </tfoot>
@@ -536,27 +532,25 @@ export default function PurchasesPage() {
                 </div>
               </div>
 
-              {/* Foto Struk */}
               {selectedPO.receiptUrl && (
                 <div>
-                  <p className="text-xs uppercase tracking-wider text-brand-sage mb-3 font-bold border-b border-white/10 pb-2">Foto Struk</p>
+                  <p className="text-xs uppercase tracking-wider text-brand-sage mb-3 font-bold border-b border-white/10 pb-2">Receipt Photo</p>
                   <div className="rounded-xl border border-white/10 overflow-hidden bg-black/40 flex justify-center">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={selectedPO.receiptUrl} alt="Struk Pembelian" className="max-w-full max-h-[400px] object-contain" />
+                    <img src={selectedPO.receiptUrl} alt="Purchase Receipt" className="max-w-full max-h-[400px] object-contain" />
                   </div>
                 </div>
               )}
               {!selectedPO.receiptUrl && (
                 <div className="bg-brand-sage/10 text-brand-sage p-4 rounded-xl text-center text-sm border border-brand-sage/20 border-dashed">
-                  Tidak ada foto struk yang dilampirkan pada transaksi ini.
+                  No receipt photo attached to this transaction.
                 </div>
               )}
 
             </div>
             
-            {/* Modal Footer */}
             <div className="p-4 border-t border-white/10 bg-black/20 shrink-0 flex justify-end gap-3">
-              <Button variant="outline" onClick={() => setSelectedPO(null)}>Tutup</Button>
+              <Button variant="outline" onClick={() => setSelectedPO(null)}>Close</Button>
               {selectedPO.status !== 'CANCELLED' && (
                 <Button 
                   variant="outline" 
@@ -564,7 +558,7 @@ export default function PurchasesPage() {
                   onClick={() => handleCancelPO(selectedPO.id)}
                   disabled={cancelPurchase.isPending}
                 >
-                  {cancelPurchase.isPending ? 'Membatalkan...' : 'Batalkan PO'}
+                  {cancelPurchase.isPending ? 'Cancelling...' : 'Cancel PO'}
                 </Button>
               )}
             </div>

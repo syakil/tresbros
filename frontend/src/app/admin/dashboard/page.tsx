@@ -34,13 +34,13 @@ export default function DashboardPage() {
     let transactions: any[] = [];
     let title = "";
     if (type === 'revenue') {
-      title = "Detail Pemasukan";
+      title = "Income Details";
       transactions = [...(data.allOrders || []), ...(data.allIncomes || [])].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     } else if (type === 'expense') {
-      title = "Detail Pengeluaran";
+      title = "Expense Details";
       transactions = [...(data.allExpenses || [])].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     } else {
-      title = "Detail Laba/Rugi (Buku Besar)";
+      title = "Profit/Loss Details (General Ledger)";
       transactions = [
         ...(data.allOrders || []), 
         ...(data.allIncomes || []), 
@@ -73,11 +73,11 @@ export default function DashboardPage() {
   const handleExportCSV = () => {
     if (!data?.recentOrders) return;
     
-    const headers = ['ID Pesanan', 'Tanggal', 'Customer', 'Total Tagihan', 'Metode Pembayaran'];
+    const headers = ['Order ID', 'Date', 'Customer', 'Total Amount', 'Payment Method'];
     const rows = data.recentOrders.map((o: any) => [
       o.id,
       new Date(o.createdAt).toLocaleString('id-ID'),
-      o.customerName || 'Pelanggan',
+      o.customerName || 'Customer',
       o.totalAmount,
       o.paymentMethod || 'CASH'
     ]);
@@ -91,7 +91,7 @@ export default function DashboardPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `laporan_penjualan_${filter}.csv`);
+    link.setAttribute("download", `sales_report_${filter}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -106,18 +106,18 @@ export default function DashboardPage() {
     <div className="flex flex-col gap-6 max-w-6xl mx-auto w-full pb-10">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-display font-bold text-zinc-900">Laporan Penjualan & Laba Rugi</h1>
-          <p className="text-zinc-500 mt-1">Ringkasan performa finansial bisnis Anda</p>
+          <h1 className="text-3xl font-display font-bold text-zinc-900">Sales & Profit/Loss Report</h1>
+          <p className="text-zinc-500 mt-1">Summary of your business financial performance</p>
         </div>
 
         <div className="flex flex-col sm:flex-row items-center gap-3">
           {/* Custom Tabs */}
           <div className="flex bg-zinc-200/50 p-1 rounded-lg border border-zinc-200/80">
             {[
-              { id: 'today', label: 'Hari Ini' },
-              { id: 'yesterday', label: 'Kemarin' },
-              { id: '7days', label: '7 Hari' },
-              { id: 'thismonth', label: 'Bulan Ini' }
+              { id: 'today', label: 'Today' },
+              { id: 'yesterday', label: 'Yesterday' },
+              { id: '7days', label: '7 Days' },
+              { id: 'thismonth', label: 'This Month' }
             ].map(tab => (
               <button
                 key={tab.id}
@@ -142,7 +142,7 @@ export default function DashboardPage() {
       {isLoading ? (
         <div className="text-zinc-500 animate-pulse mt-10 flex items-center gap-2">
           <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-          Memuat laporan analitik...
+          Loading analytics report...
         </div>
       ) : (
         <>
@@ -153,10 +153,10 @@ export default function DashboardPage() {
                 <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center border border-blue-100">
                   <TrendingUp className="w-6 h-6 text-blue-600" />
                 </div>
-                <span className="bg-zinc-100 border border-zinc-200 text-xs font-semibold px-2.5 py-1 rounded-full text-zinc-600">Pemasukan</span>
+                <span className="bg-zinc-100 border border-zinc-200 text-xs font-semibold px-2.5 py-1 rounded-full text-zinc-600">Incomes</span>
               </div>
               <div>
-                <p className="text-zinc-500 text-sm font-medium mb-1">Total Pendapatan Kotor</p>
+                <p className="text-zinc-500 text-sm font-medium mb-1">Total Gross Revenue</p>
                 <h3 className="text-3xl font-display font-bold text-zinc-900 tracking-tight">{formatRupiah(data?.revenue)}</h3>
               </div>
             </Card>
@@ -166,10 +166,10 @@ export default function DashboardPage() {
                 <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center border border-red-100">
                   <TrendingDown className="w-6 h-6 text-red-600" />
                 </div>
-                <span className="bg-zinc-100 border border-zinc-200 text-xs font-semibold px-2.5 py-1 rounded-full text-zinc-600">Pengeluaran</span>
+                <span className="bg-zinc-100 border border-zinc-200 text-xs font-semibold px-2.5 py-1 rounded-full text-zinc-600">Expenses</span>
               </div>
               <div>
-                <p className="text-zinc-500 text-sm font-medium mb-1">Total Pengeluaran Ops.</p>
+                <p className="text-zinc-500 text-sm font-medium mb-1">Total Ops. Expenses</p>
                 <h3 className="text-3xl font-display font-bold text-zinc-900 tracking-tight">{formatRupiah(data?.expenses)}</h3>
               </div>
             </Card>
@@ -179,10 +179,10 @@ export default function DashboardPage() {
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center border ${data?.netProfit >= 0 ? 'bg-emerald-50 border-emerald-100' : 'bg-orange-50 border-orange-100'}`}>
                   <DollarSign className={`w-6 h-6 ${data?.netProfit >= 0 ? 'text-emerald-600' : 'text-orange-600'}`} />
                 </div>
-                <span className="bg-zinc-100 border border-zinc-200 text-xs font-semibold px-2.5 py-1 rounded-full text-zinc-600">Laba/Rugi</span>
+                <span className="bg-zinc-100 border border-zinc-200 text-xs font-semibold px-2.5 py-1 rounded-full text-zinc-600">Profit/Loss</span>
               </div>
               <div>
-                <p className="text-zinc-500 text-sm font-medium mb-1">Laba Bersih (Net Profit)</p>
+                <p className="text-zinc-500 text-sm font-medium mb-1">Net Profit</p>
                 <h3 className={`text-3xl font-display font-bold tracking-tight ${data?.netProfit >= 0 ? 'text-emerald-600' : 'text-orange-600'}`}>
                   {formatRupiah(data?.netProfit)}
                 </h3>
@@ -197,8 +197,8 @@ export default function DashboardPage() {
               <Card className="p-6 flex flex-col h-[420px]">
                 <div className="mb-6 flex justify-between items-center">
                   <div>
-                    <h2 className="text-lg font-display font-bold text-zinc-900">Grafik Pemasukan, Pengeluaran, dan Laba</h2>
-                    <p className="text-zinc-500 text-sm mt-1">Pemantauan kesehatan bisnis secara menyeluruh.</p>
+                    <h2 className="text-lg font-display font-bold text-zinc-900">Incomes, Expenses, and Profit Chart</h2>
+                    <p className="text-zinc-500 text-sm mt-1">Comprehensive business health monitoring.</p>
                   </div>
                 </div>
                 <div className="flex-1 w-full mt-2">
@@ -230,9 +230,9 @@ export default function DashboardPage() {
                         }} 
                       />
                       
-                      <Line hide={hiddenLines.revenue} type="monotone" name="Pemasukan" dataKey="revenue" stroke="#2563eb" strokeWidth={3} dot={false} activeDot={{ r: 6, fill: '#2563eb', stroke: '#ffffff', strokeWidth: 2 }} />
-                      <Line hide={hiddenLines.expense} type="monotone" name="Pengeluaran" dataKey="expense" stroke="#ef4444" strokeWidth={3} dot={false} activeDot={{ r: 6, fill: '#ef4444', stroke: '#ffffff', strokeWidth: 2 }} />
-                      <Line hide={hiddenLines.profit} type="monotone" name="Laba" dataKey="profit" stroke="#10b981" strokeWidth={3} dot={false} activeDot={{ r: 6, fill: '#10b981', stroke: '#ffffff', strokeWidth: 2 }} />
+                      <Line hide={hiddenLines.revenue} type="monotone" name="Incomes" dataKey="revenue" stroke="#2563eb" strokeWidth={3} dot={false} activeDot={{ r: 6, fill: '#2563eb', stroke: '#ffffff', strokeWidth: 2 }} />
+                      <Line hide={hiddenLines.expense} type="monotone" name="Expenses" dataKey="expense" stroke="#ef4444" strokeWidth={3} dot={false} activeDot={{ r: 6, fill: '#ef4444', stroke: '#ffffff', strokeWidth: 2 }} />
+                      <Line hide={hiddenLines.profit} type="monotone" name="Profit" dataKey="profit" stroke="#10b981" strokeWidth={3} dot={false} activeDot={{ r: 6, fill: '#10b981', stroke: '#ffffff', strokeWidth: 2 }} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -247,12 +247,12 @@ export default function DashboardPage() {
                   <div className="bg-zinc-100 p-1.5 rounded-lg border border-zinc-200">
                     <Receipt className="w-4 h-4 text-zinc-600" />
                   </div>
-                  Sumber Pembayaran
+                  Payment Sources
                 </h2>
                 <div className="space-y-5 mt-2">
                   <div>
                     <div className="flex justify-between text-sm mb-2">
-                      <span className="text-zinc-600 font-medium">Tunai (Cash)</span>
+                      <span className="text-zinc-600 font-medium">Cash</span>
                       <span className="font-bold text-zinc-900">{formatRupiah(data?.paymentBreakdown?.CASH)}</span>
                     </div>
                     <div className="w-full bg-zinc-100 rounded-full h-2.5 overflow-hidden">
@@ -270,7 +270,7 @@ export default function DashboardPage() {
                   </div>
                   <div>
                     <div className="flex justify-between text-sm mb-2">
-                      <span className="text-zinc-600 font-medium">Kartu Debit/Kredit</span>
+                      <span className="text-zinc-600 font-medium">Debit/Credit Card</span>
                       <span className="font-bold text-zinc-900">{formatRupiah(data?.paymentBreakdown?.DEBIT)}</span>
                     </div>
                     <div className="w-full bg-zinc-100 rounded-full h-2.5 overflow-hidden">
@@ -286,10 +286,10 @@ export default function DashboardPage() {
                   <div className="bg-zinc-100 p-1.5 rounded-lg border border-zinc-200">
                     <Package className="w-4 h-4 text-zinc-600" />
                   </div>
-                  Produk Terlaris
+                  Best Selling Products
                 </h2>
                 {data?.topProducts?.length === 0 ? (
-                  <p className="text-zinc-500 text-sm text-center py-10 flex-1 flex items-center justify-center bg-zinc-50 rounded-xl mt-4 border border-zinc-100 border-dashed">Belum ada data penjualan.</p>
+                  <p className="text-zinc-500 text-sm text-center py-10 flex-1 flex items-center justify-center bg-zinc-50 rounded-xl mt-4 border border-zinc-100 border-dashed">No sales data yet.</p>
                 ) : (
                   <div className="w-full mt-4 h-[200px]">
                     <ResponsiveContainer width="100%" height="100%">
@@ -313,7 +313,7 @@ export default function DashboardPage() {
                         <Tooltip 
                           contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e4e4e7', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                           itemStyle={{ color: '#18181b', fontWeight: 500 }}
-                          formatter={(value: any, name: any) => [`${value} Porsi`, name]}
+                          formatter={(value: any, name: any) => [`${value} Qty`, name]}
                         />
                         <Legend verticalAlign="bottom" height={24} iconType="circle" wrapperStyle={{ fontSize: '12px', color: '#52525b', fontWeight: 500 }} />
                       </PieChart>
@@ -326,17 +326,17 @@ export default function DashboardPage() {
           </div>
 
           <div className="mt-8">
-            <h2 className="text-lg font-display font-bold text-zinc-900 mb-4">Riwayat Pesanan Terakhir</h2>
+            <h2 className="text-lg font-display font-bold text-zinc-900 mb-4">Recent Order History</h2>
             <Card className="p-0 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm whitespace-nowrap">
                   <thead className="bg-zinc-50 text-zinc-500 border-b border-zinc-200">
                     <tr>
-                      <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">ID Pesanan</th>
-                      <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Waktu Selesai</th>
+                      <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Order ID</th>
+                      <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Completion Time</th>
                       <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Customer</th>
-                      <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs text-center">Metode</th>
-                      <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs text-right">Total Tagihan</th>
+                      <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs text-center">Method</th>
+                      <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs text-right">Total Amount</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-100">
@@ -347,7 +347,7 @@ export default function DashboardPage() {
                         <td className="px-6 py-4 text-zinc-700">{order.customerName || '-'}</td>
                         <td className="px-6 py-4 text-center">
                           <span className="bg-zinc-100 border border-zinc-200 text-zinc-600 px-2.5 py-1 rounded-md text-xs font-medium">
-                            {order.paymentMethod === 'CASH' ? 'Tunai' : order.paymentMethod}
+                            {order.paymentMethod === 'CASH' ? 'Cash' : order.paymentMethod}
                           </span>
                         </td>
                         <td className="px-6 py-4 font-semibold text-zinc-900 text-right">{formatRupiah(order.totalAmount)}</td>
@@ -355,7 +355,7 @@ export default function DashboardPage() {
                     ))}
                     {(!data?.recentOrders || data.recentOrders.length === 0) && (
                       <tr>
-                        <td colSpan={5} className="text-center py-12 text-zinc-400 bg-zinc-50/50">Belum ada transaksi di rentang waktu ini.</td>
+                        <td colSpan={5} className="text-center py-12 text-zinc-400 bg-zinc-50/50">No transactions in this time range.</td>
                       </tr>
                     )}
                   </tbody>
@@ -380,10 +380,10 @@ export default function DashboardPage() {
               <table className="w-full text-left text-sm whitespace-nowrap">
                 <thead className="bg-zinc-50 text-zinc-500 sticky top-0 border-b border-zinc-200 z-10">
                   <tr>
-                    <th className="px-6 py-3.5 font-semibold uppercase tracking-wider text-xs">Tanggal & Waktu</th>
-                    <th className="px-6 py-3.5 font-semibold uppercase tracking-wider text-xs">ID / Referensi</th>
-                    <th className="px-6 py-3.5 font-semibold uppercase tracking-wider text-xs">Keterangan</th>
-                    <th className="px-6 py-3.5 font-semibold uppercase tracking-wider text-xs text-right">Nominal</th>
+                    <th className="px-6 py-3.5 font-semibold uppercase tracking-wider text-xs">Date & Time</th>
+                    <th className="px-6 py-3.5 font-semibold uppercase tracking-wider text-xs">ID / Reference</th>
+                    <th className="px-6 py-3.5 font-semibold uppercase tracking-wider text-xs">Description</th>
+                    <th className="px-6 py-3.5 font-semibold uppercase tracking-wider text-xs text-right">Amount</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-100">
@@ -402,7 +402,7 @@ export default function DashboardPage() {
                   ))}
                   {modalData.transactions.length === 0 && (
                     <tr>
-                      <td colSpan={4} className="text-center py-12 text-zinc-400">Tidak ada data transaksi.</td>
+                      <td colSpan={4} className="text-center py-12 text-zinc-400">No transaction data.</td>
                     </tr>
                   )}
                 </tbody>

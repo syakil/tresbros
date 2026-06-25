@@ -11,7 +11,7 @@ import { CustomSelect } from '@/components/ui/CustomSelect';
 export default function ItemsPage() {
   const queryClient = useQueryClient();
   const [showAdd, setShowAdd] = useState(false);
-  const [form, setForm] = useState({ name: '', price: '', category: 'Kopi' });
+  const [form, setForm] = useState({ name: '', price: '', category: 'Coffee' });
 
   // Custom Alert & Toast State
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
@@ -37,11 +37,11 @@ export default function ItemsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       setShowAdd(false);
-      setForm({ name: '', price: '', category: 'Kopi' });
-      showToast('Produk berhasil ditambahkan!', 'success');
+      setForm({ name: '', price: '', category: 'Coffee' });
+      showToast('Product added successfully!', 'success');
     },
     onError: (error: any) => {
-      showToast(error.response?.data?.error || 'Gagal menambahkan produk', 'error');
+      showToast(error.response?.data?.error || 'Failed to add product', 'error');
     }
   });
 
@@ -52,11 +52,11 @@ export default function ItemsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       setConfirmDeleteId(null);
-      showToast('Produk berhasil dihapus', 'success');
+      showToast('Product deleted successfully', 'success');
     },
     onError: (error: any) => {
       setConfirmDeleteId(null);
-      showToast(error.response?.data?.error || "Gagal menghapus", "error");
+      showToast(error.response?.data?.error || "Failed to delete", "error");
     }
   });
 
@@ -85,19 +85,19 @@ export default function ItemsPage() {
             <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-2 text-red-400">
               <Trash2 className="w-6 h-6" />
             </div>
-            <h3 className="text-xl font-display font-bold text-brand-cream">Hapus Produk?</h3>
+            <h3 className="text-xl font-display font-bold text-brand-cream">Delete Product?</h3>
             <p className="text-sm text-brand-sage">
-              Anda yakin ingin menghapus produk ini? Aksi ini tidak dapat dibatalkan.
+              Are you sure you want to delete this product? This action cannot be undone.
             </p>
             <div className="flex gap-3 justify-center mt-4">
-              <Button variant="outline" onClick={() => setConfirmDeleteId(null)}>Batal</Button>
+              <Button variant="outline" onClick={() => setConfirmDeleteId(null)}>Cancel</Button>
               <Button 
                 variant="primary" 
                 className="bg-red-500 hover:bg-red-600 text-white border-none shadow-[0_4px_20px_rgba(239,68,68,0.4)] hover:-translate-y-0.5 transition-all"
                 onClick={confirmAction}
                 disabled={deleteProduct.isPending}
               >
-                {deleteProduct.isPending ? 'Menghapus...' : 'Ya, Hapus'}
+                {deleteProduct.isPending ? 'Deleting...' : 'Yes, Delete'}
               </Button>
             </div>
           </Card>
@@ -105,11 +105,11 @@ export default function ItemsPage() {
       )}
 
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-display font-bold text-brand-cream">Data Produk</h1>
+        <h1 className="text-3xl font-display font-bold text-brand-cream">Product Data</h1>
         <div className="flex justify-between items-center">
-          <p className="text-brand-sage">Kelola menu dan harga produk yang dijual</p>
+          <p className="text-brand-sage">Manage menu and prices of products sold</p>
           <Button variant="primary" onClick={() => setShowAdd(!showAdd)}>
-            <Plus className="w-4 h-4 mr-2" /> Tambah Produk
+            <Plus className="w-4 h-4 mr-2" /> Add Product
           </Button>
         </div>
       </div>
@@ -117,17 +117,17 @@ export default function ItemsPage() {
       {showAdd && (
         <Card variant="olive" className="relative z-20 flex flex-col md:flex-row gap-4 items-end bg-black/40 border border-brand-warm/30">
           <div className="flex-1 w-full">
-            <label className="text-xs text-brand-sage mb-1 block">Nama Produk</label>
+            <label className="text-xs text-brand-sage mb-1 block">Product Name</label>
             <input 
               type="text"
               value={form.name} 
               onChange={(e) => setForm({...form, name: e.target.value})} 
-              placeholder="Contoh: Espresso" 
+              placeholder="e.g., Espresso" 
               className="w-full bg-black/20 border border-white/10 text-brand-cream rounded-xl px-4 py-3 focus:outline-none focus:border-brand-warm focus:ring-1 focus:ring-brand-warm transition"
             />
           </div>
           <div className="w-full md:w-48">
-            <label className="text-xs text-brand-sage mb-1 block">Harga (Rp)</label>
+            <label className="text-xs text-brand-sage mb-1 block">Price (Rp)</label>
             <input 
               type="number"
               value={form.price} 
@@ -137,15 +137,15 @@ export default function ItemsPage() {
             />
           </div>
           <div className="w-full md:w-48">
-            <label className="text-xs text-brand-sage mb-1 block">Kategori</label>
+            <label className="text-xs text-brand-sage mb-1 block">Category</label>
             <CustomSelect 
               value={form.category}
               onChange={(val) => setForm({...form, category: val})}
               className="bg-black/20 border border-white/10 text-brand-cream rounded-xl px-4 py-3"
               options={[
-                { value: 'Kopi', label: 'Kopi' },
-                { value: 'Non-Kopi', label: 'Non-Kopi' },
-                { value: 'Makanan', label: 'Makanan' }
+                { value: 'Coffee', label: 'Coffee' },
+                { value: 'Non-Coffee', label: 'Non-Coffee' },
+                { value: 'Food', label: 'Food' }
               ]}
             />
           </div>
@@ -155,7 +155,7 @@ export default function ItemsPage() {
             onClick={() => addProduct.mutate(form)}
             disabled={!form.name || !form.price}
           >
-            Simpan
+            Save
           </Button>
         </Card>
       )}
@@ -165,10 +165,10 @@ export default function ItemsPage() {
           <thead className="bg-black/40 text-brand-cream border-b border-white/10">
             <tr>
               <th className="px-6 py-5 font-semibold w-16">ID</th>
-              <th className="px-6 py-5 font-semibold w-32">Kategori</th>
-              <th className="px-6 py-5 font-semibold">Nama Produk</th>
-              <th className="px-6 py-5 font-semibold">Harga</th>
-              <th className="px-6 py-5 font-semibold text-right">Aksi</th>
+              <th className="px-6 py-5 font-semibold w-32">Category</th>
+              <th className="px-6 py-5 font-semibold">Product Name</th>
+              <th className="px-6 py-5 font-semibold">Price</th>
+              <th className="px-6 py-5 font-semibold text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5">
@@ -182,7 +182,7 @@ export default function ItemsPage() {
                   <button 
                     onClick={() => setConfirmDeleteId(p.id)}
                     className="text-red-400/80 hover:text-red-400 hover:bg-red-400/10 p-2.5 rounded-lg transition"
-                    title="Hapus Produk"
+                    title="Delete Product"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -192,7 +192,7 @@ export default function ItemsPage() {
             {products.length === 0 && (
               <tr>
                 <td colSpan={5} className="px-6 py-10 text-center text-brand-sage/50">
-                  Belum ada produk. Silakan tambah produk baru.
+                  No products yet. Please add a new product.
                 </td>
               </tr>
             )}

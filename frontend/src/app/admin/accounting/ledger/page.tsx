@@ -29,7 +29,7 @@ export default function LedgerPage() {
   };
 
   const fetchLedger = async () => {
-    if (!accountId) return alert("Pilih akun terlebih dahulu!");
+    if (!accountId) return alert("Select an account first!");
     setLoading(true);
     try {
       const query = new URLSearchParams();
@@ -50,25 +50,25 @@ export default function LedgerPage() {
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-display font-bold text-brand-cream">Buku Besar</h1>
-          <p className="text-brand-sage">Riwayat transaksi per akun (Ledger)</p>
+          <h1 className="text-3xl font-display font-bold text-brand-cream">General Ledger</h1>
+          <p className="text-brand-sage">Transaction history per account</p>
         </div>
       </div>
 
       <Card className="p-4 flex flex-wrap gap-4 items-end bg-black/40 border border-white/5">
         <div className="flex-1 min-w-[200px]">
-          <label className="block text-brand-sage text-sm mb-1">Pilih Akun</label>
+          <label className="block text-brand-sage text-sm mb-1">Select Account</label>
           <select 
             className="w-full bg-black border border-white/10 rounded-lg p-2 text-brand-cream"
             value={accountId}
             onChange={(e) => setAccountId(e.target.value)}
           >
-            <option value="">-- Pilih Akun --</option>
+            <option value="">-- Select Account --</option>
             {coas.map(c => <option key={c.id} value={c.id}>{c.code} - {c.name}</option>)}
           </select>
         </div>
         <div>
-          <label className="block text-brand-sage text-sm mb-1">Dari Tanggal</label>
+          <label className="block text-brand-sage text-sm mb-1">From Date</label>
           <input 
             type="date" 
             className="bg-black border border-white/10 rounded-lg p-2 text-brand-cream"
@@ -77,7 +77,7 @@ export default function LedgerPage() {
           />
         </div>
         <div>
-          <label className="block text-brand-sage text-sm mb-1">Sampai Tanggal</label>
+          <label className="block text-brand-sage text-sm mb-1">To Date</label>
           <input 
             type="date" 
             className="bg-black border border-white/10 rounded-lg p-2 text-brand-cream"
@@ -86,7 +86,7 @@ export default function LedgerPage() {
           />
         </div>
         <Button variant="primary" onClick={fetchLedger} disabled={loading}>
-          {loading ? 'Memuat...' : <><Search className="w-4 h-4 mr-2" /> Cari</>}
+          {loading ? 'Loading...' : <><Search className="w-4 h-4 mr-2" /> Search</>}
         </Button>
       </Card>
 
@@ -94,17 +94,17 @@ export default function LedgerPage() {
         <Card className="p-0 overflow-hidden">
           <div className="p-4 border-b border-white/5 bg-black/20">
             <h2 className="text-xl font-bold text-brand-warm">{ledgerData.account.code} - {ledgerData.account.name}</h2>
-            <p className="text-brand-sage text-sm">Tipe: {ledgerData.account.type}</p>
+            <p className="text-brand-sage text-sm">Type: {ledgerData.account.type}</p>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead className="bg-black/40 text-brand-sage text-sm border-b border-white/5">
                 <tr>
-                  <th className="p-4 font-medium">Tanggal</th>
-                  <th className="p-4 font-medium">Referensi</th>
+                  <th className="p-4 font-medium">Date</th>
+                  <th className="p-4 font-medium">Reference</th>
                   <th className="p-4 font-medium">Debit</th>
-                  <th className="p-4 font-medium">Kredit</th>
-                  <th className="p-4 font-medium text-right">Saldo Perubahan</th>
+                  <th className="p-4 font-medium">Credit</th>
+                  <th className="p-4 font-medium text-right">Balance Change</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5 text-brand-cream text-sm">
@@ -125,7 +125,7 @@ export default function LedgerPage() {
                 })}
                 {ledgerData.lines.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="p-8 text-center text-brand-sage">Tidak ada transaksi pada periode ini.</td>
+                    <td colSpan={5} className="p-8 text-center text-brand-sage">No transactions in this period.</td>
                   </tr>
                 )}
               </tbody>

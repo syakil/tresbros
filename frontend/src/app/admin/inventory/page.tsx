@@ -91,7 +91,7 @@ export default function InventoryPage() {
   });
 
   const handleAddMaterial = () => {
-    if (!addName) return alert("Nama bahan baku harus diisi!");
+    if (!addName) return alert("Raw material name is required!");
     createMaterial.mutate({
       name: addName,
       unit: addUnit,
@@ -100,7 +100,7 @@ export default function InventoryPage() {
   };
 
   const handleAdjustMaterial = (id: number) => {
-    if (!adjustQty) return alert("Kuantitas harus diisi!");
+    if (!adjustQty) return alert("Quantity is required!");
     adjustMaterial.mutate({
       id,
       type: adjustType,
@@ -111,7 +111,7 @@ export default function InventoryPage() {
   };
 
   const handleUpdateMaster = () => {
-    if (!editMaterialData?.name) return alert("Nama harus diisi!");
+    if (!editMaterialData?.name) return alert("Name is required!");
     updateMasterMaterial.mutate(editMaterialData);
   };
 
@@ -124,12 +124,12 @@ export default function InventoryPage() {
   return (
     <div className="flex flex-col gap-6 max-w-6xl mx-auto w-full">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-display font-bold text-brand-cream">Manajemen Stok</h1>
+        <h1 className="text-3xl font-display font-bold text-brand-cream">Stock Management</h1>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <p className="text-brand-sage text-sm md:text-base">Pantau ketersediaan bahan baku dan mutasi stok (Stock Movement)</p>
+          <p className="text-brand-sage text-sm md:text-base">Monitor raw material availability and stock movement</p>
           <div className="flex gap-2 w-full md:w-auto">
             <Button variant="primary" className="shadow-md w-full md:w-auto justify-center" onClick={() => setShowAdd(!showAdd)}>
-              <Plus className="w-4 h-4 mr-2" /> Tambah Bahan Baku
+              <Plus className="w-4 h-4 mr-2" /> Add Raw Material
             </Button>
           </div>
         </div>
@@ -138,17 +138,17 @@ export default function InventoryPage() {
       {showAdd && (
         <Card variant="olive" className="flex flex-col md:flex-row gap-4 items-end bg-black/40 border border-brand-warm/30 mb-2">
           <div className="flex-1 w-full">
-            <label className="text-xs text-brand-sage mb-1 block">Nama Bahan Baku</label>
+            <label className="text-xs text-brand-sage mb-1 block">Raw Material Name</label>
             <input 
               type="text" 
               value={addName}
               onChange={(e) => setAddName(e.target.value)}
-              placeholder="Contoh: Sirup Vanilla" 
+              placeholder="e.g., Vanilla Syrup" 
               className="w-full bg-black/20 border border-white/10 text-brand-cream rounded-xl px-4 py-3 focus:outline-none focus:border-brand-warm focus:ring-1 focus:ring-brand-warm transition" 
             />
           </div>
           <div className="w-full md:w-40">
-            <label className="text-xs text-brand-sage mb-1 block">Satuan Ukur</label>
+            <label className="text-xs text-brand-sage mb-1 block">Unit of Measurement</label>
             <CustomSelect
               value={addUnit}
               onChange={setAddUnit}
@@ -161,17 +161,17 @@ export default function InventoryPage() {
             />
           </div>
           <div className="w-full md:w-40">
-            <label className="text-xs text-brand-sage mb-1 block">Batas Minimum Stok</label>
+            <label className="text-xs text-brand-sage mb-1 block">Minimum Stock Alert</label>
             <input 
               type="number" 
               value={addMinStock}
               onChange={(e) => setAddMinStock(e.target.value)}
-              placeholder="Misal: 500" 
+              placeholder="e.g., 500" 
               className="w-full bg-black/20 border border-white/10 text-brand-cream rounded-xl px-4 py-3 focus:outline-none focus:border-brand-warm focus:ring-1 focus:ring-brand-warm transition" 
             />
           </div>
           <Button variant="primary" className="w-full md:w-auto" onClick={handleAddMaterial} disabled={createMaterial.isPending}>
-            {createMaterial.isPending ? 'Menyimpan...' : 'Simpan'}
+            {createMaterial.isPending ? 'Saving...' : 'Save'}
           </Button>
         </Card>
       )}
@@ -186,8 +186,8 @@ export default function InventoryPage() {
             <Boxes className="w-5 h-5 text-brand-warm" />
           </div>
           <div>
-            <p className="text-brand-sage text-[10px] md:text-xs font-medium uppercase tracking-wider">Total Bahan</p>
-            <h3 className="text-xl font-display font-bold text-brand-cream">{materials.length} Item</h3>
+            <p className="text-brand-sage text-[10px] md:text-xs font-medium uppercase tracking-wider">Total Items</p>
+            <h3 className="text-xl font-display font-bold text-brand-cream">{materials.length} Items</h3>
           </div>
         </Card>
         <Card 
@@ -199,9 +199,9 @@ export default function InventoryPage() {
             <AlertTriangle className="w-5 h-5 text-red-400" />
           </div>
           <div>
-            <p className="text-brand-sage text-[10px] md:text-xs font-medium uppercase tracking-wider">Stok Menipis</p>
+            <p className="text-brand-sage text-[10px] md:text-xs font-medium uppercase tracking-wider">Low Stock</p>
             <h3 className="text-xl font-display font-bold text-brand-cream">
-              {materials.filter((m: any) => m.stock <= m.minStock).length} Item
+              {materials.filter((m: any) => m.stock <= m.minStock).length} Items
             </h3>
           </div>
         </Card>
@@ -211,7 +211,7 @@ export default function InventoryPage() {
       <div className="flex mb-4">
         <input 
           type="text" 
-          placeholder="Cari nama bahan baku..." 
+          placeholder="Search raw material name..." 
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full md:w-80 bg-black/40 border border-white/10 text-brand-cream rounded-xl px-4 py-2.5 focus:outline-none focus:border-brand-warm focus:ring-1 focus:ring-brand-warm transition"
@@ -220,10 +220,10 @@ export default function InventoryPage() {
 
       {/* Mobile Compact List Layout (Hidden on Desktop) */}
       <div className="md:hidden bg-black/40 border border-white/10 rounded-xl overflow-hidden divide-y divide-white/5">
-        {isLoading && <div className="text-center text-brand-sage p-4 text-sm">Memuat data dari database...</div>}
+        {isLoading && <div className="text-center text-brand-sage p-4 text-sm">Loading data from database...</div>}
         {!isLoading && filteredMaterials.length === 0 && (
           <div className="text-center text-brand-sage p-4 text-sm">
-            {materials.length === 0 ? "Belum ada data master bahan baku." : "Tidak ada bahan baku yang cocok."}
+            {materials.length === 0 ? "No raw material master data yet." : "No matching raw materials."}
           </div>
         )}
         {filteredMaterials.map((item: any) => {
@@ -259,22 +259,22 @@ export default function InventoryPage() {
                     onClick={(e) => { e.stopPropagation(); setEditMaterialData(item); }} 
                     className="w-full bg-brand-dark hover:bg-black py-2 rounded-lg text-brand-sage hover:text-brand-cream text-xs font-medium border border-white/5 transition"
                   >
-                    Edit Master Data Bahan
+                    Edit Master Data
                   </button>
                   
                   <div className="bg-brand-dark/80 rounded-lg p-3 border border-white/5 flex flex-col gap-3">
-                    <h4 className="text-xs font-bold text-brand-cream border-b border-white/10 pb-1.5">Mutasi Stok</h4>
+                    <h4 className="text-xs font-bold text-brand-cream border-b border-white/10 pb-1.5">Stock Mutation</h4>
                     
                     <div className="flex gap-3">
                       <div className="w-1/3">
-                        <label className="text-[10px] text-brand-sage mb-1 block">Jenis</label>
+                        <label className="text-[10px] text-brand-sage mb-1 block">Type</label>
                         <select
                           value={adjustType}
                           onChange={(e) => setAdjustType(e.target.value)}
                           className="w-full bg-black/60 border border-white/10 text-brand-cream rounded-md px-2 py-2 text-xs focus:outline-none focus:border-brand-warm"
                         >
-                          <option value="in">Masuk (+)</option>
-                          <option value="out">Keluar (-)</option>
+                          <option value="in">In (+)</option>
+                          <option value="out">Out (-)</option>
                         </select>
                       </div>
                       <div className="w-1/3">
@@ -288,7 +288,7 @@ export default function InventoryPage() {
                         />
                       </div>
                       <div className="w-1/3">
-                        <label className="text-[10px] text-brand-sage mb-1 block">Total Harga</label>
+                        <label className="text-[10px] text-brand-sage mb-1 block">Total Price</label>
                         <input 
                           type="number" 
                           value={adjustPrice}
@@ -300,12 +300,12 @@ export default function InventoryPage() {
                     </div>
                     
                     <div>
-                      <label className="text-[10px] text-brand-sage mb-1 block">Catatan / Alasan</label>
+                      <label className="text-[10px] text-brand-sage mb-1 block">Notes / Reason</label>
                       <input 
                         type="text" 
                         value={adjustNotes}
                         onChange={(e) => setAdjustNotes(e.target.value)}
-                        placeholder="Cth: Pembelian/Tumpah" 
+                        placeholder="e.g., Purchase/Spill" 
                         className="w-full bg-black/60 border border-white/10 text-brand-cream rounded-md px-2 py-2 text-xs focus:outline-none focus:border-brand-warm" 
                       />
                     </div>
@@ -316,7 +316,7 @@ export default function InventoryPage() {
                       onClick={() => handleAdjustMaterial(item.id)}
                       disabled={adjustMaterial.isPending}
                     >
-                      {adjustMaterial.isPending ? 'Menyimpan...' : 'Simpan Mutasi'}
+                      {adjustMaterial.isPending ? 'Saving...' : 'Save Mutation'}
                     </Button>
                   </div>
                 </div>
@@ -331,21 +331,21 @@ export default function InventoryPage() {
         <table className="w-full text-left text-sm text-brand-sage min-w-[800px]">
           <thead className="bg-black/40 text-brand-cream border-b border-white/10">
             <tr>
-              <th className="px-6 py-5 font-semibold">Nama Bahan Baku</th>
-              <th className="px-6 py-5 font-semibold">Sisa Stok</th>
-              <th className="px-6 py-5 font-semibold text-right">Aksi</th>
+              <th className="px-6 py-5 font-semibold">Raw Material Name</th>
+              <th className="px-6 py-5 font-semibold">Remaining Stock</th>
+              <th className="px-6 py-5 font-semibold text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5">
             {isLoading && (
               <tr>
-                <td colSpan={3} className="px-6 py-8 text-center text-brand-sage">Memuat data dari database...</td>
+                <td colSpan={3} className="px-6 py-8 text-center text-brand-sage">Loading data from database...</td>
               </tr>
             )}
             {!isLoading && filteredMaterials.length === 0 && (
               <tr>
                 <td colSpan={3} className="px-6 py-8 text-center text-brand-sage">
-                  {materials.length === 0 ? "Belum ada data master bahan baku." : "Tidak ada bahan baku yang cocok dengan filter atau pencarian Anda."}
+                  {materials.length === 0 ? "No raw material master data yet." : "No raw materials match your filter or search."}
                 </td>
               </tr>
             )}
@@ -373,7 +373,7 @@ export default function InventoryPage() {
                         onClick={() => setShowAdjust(showAdjust === item.id ? null : item.id)}
                         className="text-brand-sage hover:text-brand-cream bg-black/20 hover:bg-black/40 border border-white/5 px-3 py-1.5 rounded-lg transition text-xs font-medium"
                       >
-                        Sesuaikan
+                        Adjust
                       </button>
                     </td>
                   </tr>
@@ -383,22 +383,22 @@ export default function InventoryPage() {
                     <tr className="bg-brand-dark/80 border-l-4 border-l-brand-warm border-y border-white/5">
                       <td colSpan={3} className="px-6 py-6">
                         <div className="bg-black/40 rounded-xl p-5 border border-white/5 flex flex-col gap-4">
-                          <h4 className="text-sm font-semibold text-brand-cream">Mutasi Stok: {item.name}</h4>
+                          <h4 className="text-sm font-semibold text-brand-cream">Stock Mutation: {item.name}</h4>
                           <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
                             <div className="md:col-span-1">
-                              <label className="text-xs text-brand-sage mb-1.5 block">Jenis Mutasi</label>
+                              <label className="text-xs text-brand-sage mb-1.5 block">Mutation Type</label>
                               <CustomSelect
                                 value={adjustType}
                                 onChange={setAdjustType}
                                 className="bg-black/60 border border-white/10 text-brand-cream rounded-lg px-4 py-3"
                                 options={[
-                                  { value: 'in', label: 'Barang Masuk (+)' },
-                                  { value: 'out', label: 'Barang Keluar (-)' }
+                                  { value: 'in', label: 'Stock In (+)' },
+                                  { value: 'out', label: 'Stock Out (-)' }
                                 ]}
                               />
                             </div>
                             <div className="md:col-span-1">
-                              <label className="text-xs text-brand-sage mb-1.5 block">Kuantitas ({item.unit})</label>
+                              <label className="text-xs text-brand-sage mb-1.5 block">Quantity ({item.unit})</label>
                               <input 
                                 type="number" 
                                 value={adjustQty}
@@ -408,7 +408,7 @@ export default function InventoryPage() {
                               />
                             </div>
                             <div className="md:col-span-1">
-                              <label className="text-xs text-brand-sage mb-1.5 block">Total Harga (Rp)</label>
+                              <label className="text-xs text-brand-sage mb-1.5 block">Total Price (Rp)</label>
                               <input 
                                 type="number" 
                                 value={adjustPrice}
@@ -419,12 +419,12 @@ export default function InventoryPage() {
                             </div>
                             <div className="md:col-span-2 flex gap-4 items-end">
                               <div className="flex-1">
-                                <label className="text-xs text-brand-sage mb-1.5 block">Keterangan / Alasan</label>
+                                <label className="text-xs text-brand-sage mb-1.5 block">Description / Reason</label>
                                 <input 
                                   type="text" 
                                   value={adjustNotes}
                                   onChange={(e) => setAdjustNotes(e.target.value)}
-                                  placeholder="Contoh: Pembelian / Tumpah..." 
+                                  placeholder="e.g., Purchase / Spill..." 
                                   className="w-full bg-black/60 border border-white/10 text-brand-cream rounded-lg px-4 py-3 focus:outline-none focus:border-brand-warm" 
                                 />
                               </div>
@@ -434,7 +434,7 @@ export default function InventoryPage() {
                                 onClick={() => handleAdjustMaterial(item.id)}
                                 disabled={adjustMaterial.isPending}
                               >
-                                {adjustMaterial.isPending ? 'Menyimpan...' : 'Simpan'}
+                                {adjustMaterial.isPending ? 'Saving...' : 'Save'}
                               </Button>
                             </div>
                           </div>
@@ -453,10 +453,10 @@ export default function InventoryPage() {
       {editMaterialData && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
           <Card variant="olive" className="w-full max-w-md bg-brand-dark border-white/10 p-6 flex flex-col gap-4 shadow-2xl">
-            <h2 className="text-xl font-display font-bold text-brand-cream">Edit Master Bahan</h2>
+            <h2 className="text-xl font-display font-bold text-brand-cream">Edit Master Material</h2>
             
             <div>
-              <label className="text-xs text-brand-sage mb-1 block">Nama Bahan Baku</label>
+              <label className="text-xs text-brand-sage mb-1 block">Raw Material Name</label>
               <input 
                 type="text" 
                 value={editMaterialData.name}
@@ -480,7 +480,7 @@ export default function InventoryPage() {
                 />
               </div>
               <div className="w-1/2">
-                <label className="text-xs text-brand-sage mb-1 block">Alert Stok Menipis</label>
+                <label className="text-xs text-brand-sage mb-1 block">Low Stock Alert</label>
                 <input 
                   type="number" 
                   value={editMaterialData.minStock}
@@ -491,9 +491,9 @@ export default function InventoryPage() {
             </div>
 
             <div className="flex justify-end gap-3 mt-4">
-              <Button variant="outline" onClick={() => setEditMaterialData(null)}>Batal</Button>
+              <Button variant="outline" onClick={() => setEditMaterialData(null)}>Cancel</Button>
               <Button variant="primary" onClick={handleUpdateMaster} disabled={updateMasterMaterial.isPending}>
-                {updateMasterMaterial.isPending ? 'Menyimpan...' : 'Simpan Perubahan'}
+                {updateMasterMaterial.isPending ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>
           </Card>

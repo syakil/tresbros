@@ -25,7 +25,7 @@ export default function LoginPage() {
         window.location.href = '/admin/dashboard';
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Gagal login. Silakan periksa kembali username dan password.');
+      setError(err.response?.data?.error || 'Login failed. Please check your username and password.');
     } finally {
       setLoading(false);
     }
@@ -45,7 +45,7 @@ export default function LoginPage() {
             <Coffee className="w-10 h-10 text-blue-600" />
           </div>
           <h1 className="text-3xl font-display font-bold tracking-tight text-zinc-900">Tres<span className="text-blue-600">bros</span></h1>
-          <p className="text-zinc-500 mt-2">Masuk ke sistem manajemen kasir</p>
+          <p className="text-zinc-500 mt-2">Sign in to the POS management system</p>
         </div>
 
         {error && (
@@ -66,7 +66,7 @@ export default function LoginPage() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="w-full bg-white border border-zinc-300 rounded-xl py-3.5 pl-12 pr-4 text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all shadow-sm"
-                placeholder="Masukkan username"
+                placeholder="Enter your username"
                 required
               />
             </div>
@@ -83,7 +83,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full bg-white border border-zinc-300 rounded-xl py-3.5 pl-12 pr-4 text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all shadow-sm"
-                placeholder="Masukkan password"
+                placeholder="Enter your password"
                 required
               />
             </div>
@@ -95,7 +95,7 @@ export default function LoginPage() {
             className="w-full py-4 mt-2 justify-center text-lg font-bold shadow-md shadow-blue-600/20 hover:shadow-lg hover:shadow-blue-600/30 transition-all"
             disabled={loading}
           >
-            {loading ? 'Memproses...' : 'Masuk Sekarang'}
+            {loading ? 'Processing...' : 'Sign In'}
           </Button>
         </form>
         
