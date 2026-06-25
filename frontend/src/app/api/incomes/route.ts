@@ -7,6 +7,7 @@ export async function GET() {
     return NextResponse.json(incomes);
   } catch (error: any) {
     console.error("GET Incomes Error:", error);
+    if (error?.message === "Unauthorized") return NextResponse.json({ error: "Unauthorized" }, { status: 401 }); if (error?.message === "Unauthorized") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
@@ -30,6 +31,8 @@ export async function POST(request: Request) {
     return NextResponse.json(income, { status: 201 });
   } catch (error: any) {
     console.error("POST Income Error:", error);
+    if (error?.message === "Unauthorized") return NextResponse.json({ error: "Unauthorized" }, { status: 401 }); if (error?.message === "Unauthorized") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
+

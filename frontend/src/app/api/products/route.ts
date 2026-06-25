@@ -38,6 +38,7 @@ export async function GET() {
     return NextResponse.json(formattedProducts);
   } catch (error: any) {
     console.error("Failed to fetch products from backend:", error);
+    if (error?.message === "Unauthorized") return NextResponse.json({ error: "Unauthorized" }, { status: 401 }); if (error?.message === "Unauthorized") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
@@ -74,3 +75,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
   }
 }
+

@@ -186,55 +186,55 @@ export default function KdsPage() {
           <h1 className="text-3xl font-display font-bold text-brand-cream">Kitchen Display System</h1>
           <p className="text-brand-sage">Real-time Kitchen Order Management</p>
         </div>
-        <div className="text-brand-warm text-sm animate-pulse flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-brand-warm"></div> Live Sync
+        <div className="text-emerald-600 font-medium text-sm animate-pulse flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-emerald-500"></div> Live Sync
         </div>
       </div>
 
       <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6 overflow-hidden">
         
         {/* Kolom 1: Antrean (TODO) */}
-        <div className="flex flex-col bg-black/20 rounded-2xl p-4 border border-white/5 overflow-hidden">
+        <div className="flex flex-col bg-white rounded-2xl p-4 border border-gray-200 shadow-sm overflow-hidden">
           <div className="flex items-center justify-between mb-4 px-2">
-            <h2 className="font-semibold text-brand-cream flex items-center gap-2">
+            <h2 className="font-semibold text-gray-800 flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-red-400"></span>
               Queue
             </h2>
-            <span className="bg-black/40 text-brand-sage text-xs px-2 py-1 rounded">{todoOrders.length}</span>
+            <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded font-medium">{todoOrders.length}</span>
           </div>
           <div className="flex-1 overflow-y-auto pr-2 hide-scrollbar">
             {todoOrders.map(order => <OrderCard key={order.id} order={order} />)}
-            {todoOrders.length === 0 && <p className="text-center text-brand-sage/40 text-sm mt-10">No queue</p>}
+            {todoOrders.length === 0 && <p className="text-center text-gray-400 text-sm mt-10">No queue</p>}
           </div>
         </div>
 
         {/* Kolom 2: Diproses (IN_PROGRESS) */}
-        <div className="flex flex-col bg-black/20 rounded-2xl p-4 border border-white/5 overflow-hidden">
+        <div className="flex flex-col bg-white rounded-2xl p-4 border border-gray-200 shadow-sm overflow-hidden">
           <div className="flex items-center justify-between mb-4 px-2">
-            <h2 className="font-semibold text-brand-cream flex items-center gap-2">
+            <h2 className="font-semibold text-gray-800 flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-yellow-400"></span>
               In Progress
             </h2>
-            <span className="bg-black/40 text-brand-sage text-xs px-2 py-1 rounded">{inProgressOrders.length}</span>
+            <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded font-medium">{inProgressOrders.length}</span>
           </div>
           <div className="flex-1 overflow-y-auto pr-2 hide-scrollbar">
             {inProgressOrders.map(order => <OrderCard key={order.id} order={order} />)}
-            {inProgressOrders.length === 0 && <p className="text-center text-brand-sage/40 text-sm mt-10">No orders in progress</p>}
+            {inProgressOrders.length === 0 && <p className="text-center text-gray-400 text-sm mt-10">No orders in progress</p>}
           </div>
         </div>
 
         {/* Kolom 3: Selesai (DONE) */}
-        <div className="flex flex-col bg-black/20 rounded-2xl p-4 border border-white/5 overflow-hidden">
+        <div className="flex flex-col bg-white rounded-2xl p-4 border border-gray-200 shadow-sm overflow-hidden">
           <div className="flex items-center justify-between mb-4 px-2">
-            <h2 className="font-semibold text-brand-cream flex items-center gap-2">
+            <h2 className="font-semibold text-gray-800 flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-green-400"></span>
               Done (Today)
             </h2>
-            <span className="bg-black/40 text-brand-sage text-xs px-2 py-1 rounded">{doneOrders.length}</span>
+            <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded font-medium">{doneOrders.length}</span>
           </div>
           <div className="flex-1 overflow-y-auto pr-2 hide-scrollbar">
             {doneOrders.map(order => <OrderCard key={order.id} order={order} />)}
-            {doneOrders.length === 0 && <p className="text-center text-brand-sage/40 text-sm mt-10">No finished orders yet</p>}
+            {doneOrders.length === 0 && <p className="text-center text-gray-400 text-sm mt-10">No finished orders yet</p>}
           </div>
         </div>
 

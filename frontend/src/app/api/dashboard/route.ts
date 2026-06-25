@@ -164,6 +164,8 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     console.error("Dashboard API Error:", error);
+    if (error?.message === "Unauthorized") return NextResponse.json({ error: "Unauthorized" }, { status: 401 }); if (error?.message === "Unauthorized") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
+

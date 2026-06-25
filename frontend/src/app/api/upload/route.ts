@@ -33,6 +33,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ url: `/uploads/${filename}` }, { status: 201 });
   } catch (error) {
     console.error("Upload Error:", error);
+    if (error?.message === "Unauthorized") return NextResponse.json({ error: "Unauthorized" }, { status: 401 }); if (error?.message === "Unauthorized") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
+

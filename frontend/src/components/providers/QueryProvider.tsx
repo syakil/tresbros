@@ -1,6 +1,6 @@
 "use client";
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, QueryCache, MutationCache } from '@tanstack/react-query';
 import { useState } from 'react';
 
 export function QueryProvider({ children }: { children: React.ReactNode }) {
@@ -11,6 +11,24 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
         refetchOnWindowFocus: false,
       },
     },
+    queryCache: new QueryCache({
+      onError: (error: any) => {
+        if (error?.response?.status === 401 || error?.message?.includes("401") || error?.message?.includes("Unauthorized")) {
+          if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+            window.location.href = '/login';
+          }
+        }
+      }
+    }),
+    mutationCache: new MutationCache({
+      onError: (error: any) => {
+        if (error?.response?.status === 401 || error?.message?.includes("401") || error?.message?.includes("Unauthorized")) {
+          if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+            window.location.href = '/login';
+          }
+        }
+      }
+    }),
   }));
   
   return (
