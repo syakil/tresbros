@@ -195,7 +195,7 @@ export default function RnDDetailPage({ params }: { params: { id: string } }) {
       <Card className="p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-bold">Simulasi Bahan Baku (COGS)</h2>
-          <Button onClick={addIngredient} variant="secondary" size="sm">
+          <Button onClick={addIngredient} variant="secondary" className="py-1.5 px-3 text-sm">
             <Plus className="w-4 h-4 mr-1" /> Tambah Bahan
           </Button>
         </div>

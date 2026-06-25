@@ -1,23 +1,23 @@
 # Tresbros Caffè - Point of Sale (POS) & Backoffice SaaS
 
-Selamat datang di *repository* **Tresbros Caffè**. Aplikasi ini merupakan solusi komprehensif *Point of Sale* (POS), *Kitchen Display System* (KDS), dan Manajemen *Backoffice* (Akuntansi, Inventori, R&D) yang dirancang khusus untuk bisnis Food & Beverage (F&B).
+Welcome to the **Tresbros Caffè** repository. This application is a comprehensive Point of Sale (POS), Kitchen Display System (KDS), and Backoffice Management (Accounting, Inventory, R&D) solution designed specifically for Food & Beverage (F&B) businesses.
 
 ---
 
-## 🏗 Arsitektur Sistem (Architecture)
+## 🏗 System Architecture
 
-Aplikasi ini menggunakan arsitektur modern berbasis kontainer (*Containerized Microservices*), yang dirancang untuk performa tinggi dan skalabilitas:
+This application utilizes a modern containerized microservices architecture, designed for high performance and scalability:
 
 - **Frontend:** [Next.js](https://nextjs.org/) (App Router, React, Tailwind CSS, Zustand)
 - **Backend API:** [.NET Core 8](https://dotnet.microsoft.com/) (C#, Entity Framework Core)
 - **Database:** [PostgreSQL 15](https://www.postgresql.org/) (Relational Database)
-- **Message Broker (TBA):** [RabbitMQ](https://www.rabbitmq.com/) (Untuk antrean *background jobs* dan sinkronisasi data)
-- **Caching (TBA):** [Redis](https://redis.io/) (Untuk *caching* respons API dan performa tinggi)
+- **Message Broker (TBA):** [RabbitMQ](https://www.rabbitmq.com/) (For background jobs queuing and data synchronization)
+- **Caching (TBA):** [Redis](https://redis.io/) (For API response caching and high performance)
 - **Monitoring (TBA):** Prometheus & Grafana
 
 ```mermaid
 graph TD
-    Client[Browser / Kasir] -->|HTTP / REST| Frontend(Next.js App)
+    Client[Browser / Cashier] -->|HTTP / REST| Frontend(Next.js App)
     Frontend -->|HTTP / REST| Backend(.NET Core API)
     Backend -->|Entity Framework| DB[(PostgreSQL)]
     Backend -.->|Cache| Redis[(Redis)]
@@ -27,26 +27,26 @@ graph TD
 
 ---
 
-## 🛠 Persyaratan Sistem (Prerequisites)
+## 🛠 Prerequisites
 
-Sebelum menjalankan aplikasi ini, pastikan mesin / *server* Anda sudah ter-install perangkat lunak berikut:
+Before running this application, make sure your machine/server has the following software installed:
 
-1. **Docker & Docker Compose** (Disarankan menggunakan [Docker Desktop](https://www.docker.com/products/docker-desktop/) untuk Windows/Mac).
-2. **Node.js 20+** (Hanya diperlukan jika ingin menjalankan Frontend tanpa Docker).
-3. **.NET 8 SDK** (Hanya diperlukan jika ingin menjalankan Backend tanpa Docker).
+1. **Docker & Docker Compose** (Recommended to use [Docker Desktop](https://www.docker.com/products/docker-desktop/) for Windows/Mac).
+2. **Node.js 20+** (Only required if you want to run the Frontend without Docker).
+3. **.NET 8 SDK** (Only required if you want to run the Backend without Docker).
 
 ---
 
-## ⚙️ Variabel Lingkungan (Environment Variables)
+## ⚙️ Environment Variables
 
-Aplikasi membutuhkan konfigurasi *environment variables*. Jika Anda menjalankan via Docker Compose, pengaturan dasar sudah tersedia, namun Anda perlu memperhatikan hal berikut:
+The application requires environment variables configuration. If you run via Docker Compose, basic settings are already provided, but you need to note the following:
 
-### Frontend (`frontend/.env` atau `frontend/.env.local`)
+### Frontend (`frontend/.env` or `frontend/.env.local`)
 ```env
-# URL ke Backend API
+# URL to Backend API
 BACKEND_URL=http://localhost:5052
 
-# Jika menggunakan Docker, biarkan seperti di atas.
+# If using Docker, leave it as above.
 ```
 
 ### Backend (`backend/appsettings.json` / `appsettings.Development.json`)
@@ -61,7 +61,7 @@ BACKEND_URL=http://localhost:5052
     "IsProduction": false
   },
   "Jwt": {
-    "Key": "KunciRahasiaAndaMinimal256BitUntukKeamanan",
+    "Key": "YourSuperSecretKeyMinimum256BitsForSecurity",
     "Issuer": "tresbros-api",
     "Audience": "tresbros-client"
   }
@@ -70,56 +70,56 @@ BACKEND_URL=http://localhost:5052
 
 ---
 
-## 🚀 Cara Menjalankan Aplikasi (Deployment)
+## 🚀 Deployment & Running Locally
 
-Cara paling mudah dan direkomendasikan untuk menjalankan seluruh layanan (Frontend, Backend, Database) adalah menggunakan **Docker Compose**.
+The easiest and recommended way to run all services (Frontend, Backend, Database) is using **Docker Compose**.
 
-### 1. Menjalankan Mode Development
-Gunakan `docker-compose.yml` standar agar kode Frontend dan Backend dibaca langsung dari folder lokal Anda (mendukung *Hot Reload* / perubahan *real-time*).
+### 1. Running in Development Mode
+Use the standard `docker-compose.yml` so that Frontend and Backend code are read directly from your local folder (supports Hot Reload / real-time changes).
 
-Buka terminal di folder root project dan jalankan:
+Open a terminal in the project root folder and run:
 ```bash
 docker compose up -d --build
 ```
 
-Layanan yang akan berjalan:
+Running services:
 - **Frontend (Web):** http://localhost:3005
-- **Backend API:** http://localhost:5052/swagger (Halaman Dokumentasi API Swagger)
+- **Backend API:** http://localhost:5052/swagger (Swagger API Documentation Page)
 - **PostgreSQL:** `localhost:5432`
 
-### 2. Menjalankan Mode Production
-Jika ingin men-*deploy* di server asli (production) menggunakan image yang ditarik dari Docker Hub:
+### 2. Running in Production Mode
+If you want to deploy on a real server (production) using images pulled from Docker Hub:
 
 ```bash
 docker compose -f docker-compose.prod.yml up -d --build
 ```
-*(Catatan: Mode ini akan mengunduh versi image produksi yang sudah dikompilasi `syakil/tresbros-frontend:latest` dan tidak akan membaca perubahan kode lokal).*
+*(Note: This mode will download the pre-compiled production image `syakil/tresbros-frontend:latest` and will not reflect local code changes).*
 
-### 3. Menghentikan Layanan
-Untuk mematikan semua layanan Docker:
+### 3. Stopping Services
+To shut down all Docker services:
 ```bash
 docker compose down
-# atau jika menggunakan prod:
+# or if using prod:
 docker compose -f docker-compose.prod.yml down
 ```
 
 ---
 
-## 💡 Akun Default (Testing)
+## 💡 Default Account (Testing)
 
-Saat database pertama kali diinisialisasi, sistem secara otomatis melakukan *seeding* akun **Super Admin**. Anda bisa login di `http://localhost:3005/login` menggunakan:
+When the database is first initialized, the system automatically seeds a **Super Admin** account. You can log in at `http://localhost:3005/login` using:
 
 - **Username:** `admin`
 - **Password:** `password`
 
 ---
 
-## 🗂 Struktur Direktori Utama
-- `/frontend` - Kode sumber aplikasi web Next.js (UI Kasir, KDS, Admin).
-- `/backend` - Kode sumber API C# .NET Core.
-- `/design_system` - Referensi desain HTML/CSS untuk panduan estetika warna.
-- `docker-compose.yml` - Orkestrasi container Docker lokal.
-- `*.md` - Dokumen pelacakan tugas (*tasks*) dan spesifikasi fitur (BRD).
+## 🗂 Main Directory Structure
+- `/frontend` - Next.js web application source code (Cashier UI, KDS, Admin).
+- `/backend` - C# .NET Core API source code.
+- `/design_system` - HTML/CSS design reference for aesthetic color guidelines.
+- `docker-compose.yml` - Local Docker container orchestration.
+- `*.md` - Task tracking documents and feature specifications (BRD).
 
 ---
-*Dikembangkan untuk Tresbros Caffè.*
+*Developed for Tresbros Caffè.*
