@@ -87,6 +87,9 @@ jobs:
             # Rename agar dikenali oleh docker-compose
             mv docker-compose.prod.yml docker-compose.yml
             
+            # Buat file .env dari GitHub Secrets (ini yang menjembatani rahasia dari GitHub ke Server Anda)
+            echo "DB_PASSWORD=${{ secrets.PROD_DB_PASSWORD }}" > .env
+            
             # Tarik images terbaru dari Docker Hub
             docker compose pull
             

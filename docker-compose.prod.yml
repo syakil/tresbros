@@ -5,9 +5,9 @@ services:
     image: postgres:15-alpine
     container_name: tresbros_postgres
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: YOUR_POSTGRES_PASSWORD
-      POSTGRES_DB: tresbros
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME:-tresbros}
     ports:
       - "127.0.0.1:5433:5432"
     volumes:
@@ -19,7 +19,7 @@ services:
     image: syakil/tresbros-backend:latest
     container_name: tresbros_backend
     environment:
-      - ConnectionStrings__DefaultConnection=Host=postgres;Database=tresbros;Username=postgres;Password=YOUR_POSTGRES_PASSWORD
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=${DB_NAME:-tresbros};Username=${DB_USER:-postgres};Password=${DB_PASSWORD}
     ports:
       - "5052:8080"
     depends_on:
