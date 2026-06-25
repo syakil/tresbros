@@ -5,7 +5,7 @@ import { useCartStore, Product } from '@/store/useCartStore';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Plus, Minus, Trash2, ShoppingCart, Coffee, Search, Pizza, User, Tag } from 'lucide-react';
+import { Plus, Minus, Trash2, ShoppingCart, Coffee, Search, Pizza, User, Tag, X } from 'lucide-react';
 
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
