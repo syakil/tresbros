@@ -27,6 +27,8 @@ namespace backend.Data
         public DbSet<MaterialBatch> MaterialBatches { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<RnDRecipe> RnDRecipes { get; set; }
+        public DbSet<RnDRecipeIngredient> RnDRecipeIngredients { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

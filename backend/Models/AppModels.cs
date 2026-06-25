@@ -258,4 +258,36 @@ namespace backend.Models
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
+    public class RnDRecipe
+    {
+        [Key]
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public double TargetCost { get; set; } = 0;
+        public double ActualCost { get; set; } = 0;
+        public string Notes { get; set; } = string.Empty;
+        public string Status { get; set; } = "Draft"; // Draft, Tested, Approved, Rejected
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public ICollection<RnDRecipeIngredient> Ingredients { get; set; } = new List<RnDRecipeIngredient>();
+    }
+
+    public class RnDRecipeIngredient
+    {
+        [Key]
+        public int Id { get; set; }
+        public int RnDRecipeId { get; set; }
+        public int MaterialId { get; set; }
+        public double Quantity { get; set; }
+        public string Unit { get; set; } = string.Empty;
+        public double CostPerUnit { get; set; } = 0;
+        public double Subtotal => Quantity * CostPerUnit;
+
+        [ForeignKey("RnDRecipeId")]
+        public RnDRecipe? RnDRecipe { get; set; }
+
+        [ForeignKey("MaterialId")]
+        public Material? Material { get; set; }
+    }
 }

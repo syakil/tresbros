@@ -128,6 +128,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   <ClipboardList className="w-5 h-5" />
                   <span>Resep / BOM</span>
                 </Link>
+                <Link href="/admin/rnd" onClick={() => setIsSidebarOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-r-xl transition ${getActiveStyle('/admin/rnd')}`}>
+                  <MonitorPlay className="w-5 h-5" />
+                  <span>R&D / Eksperimen</span>
+                </Link>
               </>
             )}
 
