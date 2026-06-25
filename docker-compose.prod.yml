@@ -20,7 +20,7 @@ services:
     container_name: tresbros_backend
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__DefaultConnection=Host=db;Database=${DB_NAME};Username=${DB_USER};Password=${DB_PASSWORD}
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=${DB_NAME};Username=${DB_USER};Password=${DB_PASSWORD}
       - Sentry__Dsn=${SENTRY_DSN}
     ports:
       - "5052:8080"
