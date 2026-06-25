@@ -6,7 +6,7 @@ services:
     container_name: tresbros_postgres
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD: YOUR_POSTGRES_PASSWORD
       POSTGRES_DB: tresbros
     ports:
       - "127.0.0.1:5433:5432"
@@ -19,7 +19,7 @@ services:
     image: syakil/tresbros-backend:latest
     container_name: tresbros_backend
     environment:
-      - ConnectionStrings__DefaultConnection=Host=postgres;Database=tresbros;Username=postgres;Password=password
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=tresbros;Username=postgres;Password=YOUR_POSTGRES_PASSWORD
     ports:
       - "5052:8080"
     depends_on:

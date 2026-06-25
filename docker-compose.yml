@@ -6,7 +6,7 @@ services:
     container_name: tresbros_postgres
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD: YOUR_POSTGRES_PASSWORD
       POSTGRES_DB: tresbros
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -20,7 +20,7 @@ services:
       dockerfile: Dockerfile
     container_name: tresbros_backend
     environment:
-      - ConnectionStrings__DefaultConnection=Host=postgres;Database=tresbros;Username=postgres;Password=password
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=tresbros;Username=postgres;Password=YOUR_POSTGRES_PASSWORD
     ports:
       - "5052:8080"
     depends_on:

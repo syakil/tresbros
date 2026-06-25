@@ -174,20 +174,22 @@ export default function IncomesPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 max-w-5xl mx-auto w-full">
+    <div className="flex flex-col gap-6 max-w-5xl mx-auto w-full p-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-display font-bold text-brand-cream flex items-center gap-3">
-          <TrendingUp className="w-8 h-8 text-blue-400" />
+        <h1 className="text-3xl font-display font-bold text-zinc-900 flex items-center gap-3">
+          <div className="p-3 bg-blue-100 rounded-xl text-blue-600">
+            <TrendingUp className="w-6 h-6" />
+          </div>
           Pemasukan (Incomes)
         </h1>
-        <p className="text-brand-sage">Catat semua pemasukan manual tambahan di luar penjualan kasir (POS).</p>
+        <p className="text-zinc-500">Catat semua pemasukan manual tambahan di luar penjualan kasir (POS).</p>
       </div>
 
       {/* Custom Toast Notification */}
       {toast && (
-        <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[100] px-6 py-3 rounded-full font-medium shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-5 duration-300 ${
-          toast.type === 'success' ? 'bg-green-500 text-white' : 
-          toast.type === 'warning' ? 'bg-orange-500 text-white' : 
+        <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[100] px-6 py-3 rounded-xl font-medium shadow-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-5 duration-300 ${
+          toast.type === 'success' ? 'bg-emerald-500 text-white' : 
+          toast.type === 'warning' ? 'bg-amber-500 text-white' : 
           'bg-red-500 text-white'
         }`}>
           <span>{toast.message}</span>
@@ -196,15 +198,15 @@ export default function IncomesPage() {
 
       {/* Delete Confirmation Modal */}
       {deleteId !== null && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
-          <Card variant="olive" className="max-w-md w-full p-6 text-center border-red-500/30 border shadow-2xl">
-            <h3 className="text-xl font-bold text-white mb-2">Hapus Pemasukan?</h3>
-            <p className="text-brand-sage mb-6">Apakah Anda yakin ingin menghapus data ini? Aksi ini tidak dapat dibatalkan.</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 backdrop-blur-sm p-4 animate-in fade-in">
+          <Card className="max-w-md w-full p-8 text-center shadow-2xl">
+            <h3 className="text-2xl font-bold text-zinc-900 mb-2">Hapus Pemasukan?</h3>
+            <p className="text-zinc-500 mb-8">Apakah Anda yakin ingin menghapus data ini? Aksi ini tidak dapat dibatalkan.</p>
             <div className="flex gap-3 justify-center">
-              <Button variant="secondary" onClick={() => setDeleteId(null)} className="flex-1">Batal</Button>
+              <Button variant="outline" onClick={() => setDeleteId(null)} className="flex-1 py-3">Batal</Button>
               <Button 
                 variant="primary" 
-                className="bg-red-500 text-white border-red-500 hover:bg-red-600 flex-1" 
+                className="bg-red-500 text-white hover:bg-red-600 flex-1 py-3 border-transparent" 
                 onClick={() => {
                   deleteIncome.mutate(deleteId);
                   setDeleteId(null);
@@ -218,45 +220,45 @@ export default function IncomesPage() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card variant="olive" className="md:col-span-1 h-fit">
-          <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-4">
-            <h2 className="font-semibold text-lg text-brand-cream">
+        <Card className="md:col-span-1 h-fit p-6">
+          <div className="flex items-center justify-between border-b border-zinc-100 pb-4 mb-6">
+            <h2 className="font-bold text-xl text-zinc-900">
               {editingId ? 'Edit Pemasukan' : 'Tambah Pemasukan'}
             </h2>
             {editingId && (
               <button 
                 onClick={resetForm}
-                className="text-xs text-brand-sage hover:text-white"
+                className="text-xs text-red-500 font-medium hover:text-red-700 bg-red-50 px-2 py-1 rounded-md transition"
                 type="button"
               >
                 Batal Edit
               </button>
             )}
           </div>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             <div>
-              <label className="block text-sm text-brand-sage mb-1">Waktu</label>
+              <label className="block text-sm font-medium text-zinc-700 mb-1">Waktu</label>
               <input
                 type="datetime-local"
                 required
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full bg-black/40 border border-white/10 rounded-lg p-2.5 text-brand-cream focus:outline-none focus:border-brand-warm"
+                className="w-full bg-white border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition"
               />
             </div>
             <div>
-              <label className="block text-sm text-brand-sage mb-1">Keterangan (Contoh: Dana Tambahan)</label>
+              <label className="block text-sm font-medium text-zinc-700 mb-1">Keterangan (Contoh: Dana Tambahan)</label>
               <input
                 type="text"
                 required
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Deskripsi pemasukan..."
-                className="w-full bg-black/40 border border-white/10 rounded-lg p-2.5 text-brand-cream focus:outline-none focus:border-brand-warm placeholder:text-white/20"
+                className="w-full bg-white border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition placeholder:text-zinc-400"
               />
             </div>
             <div>
-              <label className="block text-sm text-brand-sage mb-1">Nominal (Rp)</label>
+              <label className="block text-sm font-medium text-zinc-700 mb-1">Nominal (Rp)</label>
               <input
                 type="number"
                 required
@@ -264,21 +266,21 @@ export default function IncomesPage() {
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="50000"
-                className="w-full bg-black/40 border border-white/10 rounded-lg p-2.5 text-brand-cream focus:outline-none focus:border-brand-warm placeholder:text-white/20"
+                className="w-full bg-white border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition placeholder:text-zinc-400"
               />
             </div>
             <div>
-              <label className="block text-sm text-brand-sage mb-1">Bukti (Opsional)</label>
+              <label className="block text-sm font-medium text-zinc-700 mb-1">Bukti (Opsional)</label>
               <input
                 type="file"
                 accept="image/*"
                 onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-brand-cream text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-brand-warm file:text-brand-dark hover:file:bg-brand-warm/90"
+                className="w-full bg-zinc-50 border border-zinc-200 rounded-xl p-2 text-zinc-700 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 cursor-pointer"
               />
               {imageUrl && !selectedFile && (
-                <div className="mt-3 relative inline-block">
-                  <img src={imageUrl} alt="Bukti" className="w-24 h-24 object-cover rounded-md border border-white/20" />
-                  <button type="button" onClick={() => setImageUrl('')} className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 transition text-white p-1 rounded-full shadow-lg">
+                <div className="mt-4 relative inline-block group">
+                  <img src={imageUrl} alt="Bukti" className="w-24 h-24 object-cover rounded-xl border border-zinc-200 shadow-sm" />
+                  <button type="button" onClick={() => setImageUrl('')} className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 transition text-white p-1 rounded-full shadow-lg opacity-0 group-hover:opacity-100">
                     <X className="w-3 h-3" />
                   </button>
                 </div>
@@ -287,10 +289,10 @@ export default function IncomesPage() {
             <Button 
               type="submit" 
               variant="primary" 
-              className="mt-2 bg-blue-600 text-white border-blue-600 hover:bg-blue-700" 
+              className="mt-4 w-full" 
               disabled={createIncome.isPending || updateIncome.isPending || uploading}
             >
-              <Plus className="w-4 h-4 mr-2" />
+              <Plus className="w-5 h-5 mr-1" />
               {uploading ? 'Mengunggah...' : 
                editingId ? (updateIncome.isPending ? 'Menyimpan...' : 'Simpan Perubahan') :
                (createIncome.isPending ? 'Menyimpan...' : 'Simpan Pemasukan')}
@@ -298,76 +300,79 @@ export default function IncomesPage() {
           </form>
         </Card>
 
-        <Card variant="olive" className="md:col-span-2 flex flex-col p-0 overflow-hidden">
-          <div className="p-5 flex justify-between items-center border-b border-white/10 bg-black/20">
-            <h2 className="font-semibold text-lg text-brand-cream">Riwayat Pemasukan Manual</h2>
-            <div className="text-right">
-              <span className="text-xs text-brand-sage block uppercase tracking-wider font-bold">Total Pemasukan</span>
-              <span className="text-xl font-bold text-blue-400">{formatRupiah(totalIncome)}</span>
+        <Card className="md:col-span-2 flex flex-col p-0 overflow-hidden shadow-sm border border-zinc-200 bg-white">
+          <div className="p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-zinc-100 bg-white gap-4">
+            <h2 className="font-bold text-xl text-zinc-900">Riwayat Pemasukan Manual</h2>
+            <div className="bg-blue-50 px-4 py-2 rounded-xl text-right">
+              <span className="text-xs text-blue-600 block uppercase tracking-wider font-bold mb-0.5">Total Pemasukan</span>
+              <span className="text-xl font-bold text-blue-700">{formatRupiah(totalIncome)}</span>
             </div>
           </div>
           
-          <div className="px-5 py-3 border-b border-white/5 flex gap-2 items-center bg-black/10">
-            <Search className="w-4 h-4 text-brand-sage" />
+          <div className="px-6 py-4 border-b border-zinc-100 flex gap-3 items-center bg-zinc-50/50">
+            <Search className="w-5 h-5 text-zinc-400" />
             <input 
               type="text" 
               placeholder="Cari keterangan..." 
               value={searchQuery}
               onChange={handleSearchChange}
-              className="bg-transparent border-none text-sm text-brand-cream focus:outline-none w-full placeholder:text-brand-sage"
+              className="bg-transparent border-none text-sm text-zinc-900 focus:outline-none w-full placeholder:text-zinc-400"
             />
           </div>
           
-          <div className="flex-1 overflow-auto max-h-[500px]">
+          <div className="flex-1 overflow-auto max-h-[600px] custom-scrollbar">
             {isLoading ? (
-              <div className="p-8 text-center text-brand-sage animate-pulse">Memuat data...</div>
+              <div className="p-12 text-center text-zinc-400 animate-pulse">Memuat data...</div>
             ) : filteredIncomes.length === 0 ? (
-              <div className="p-12 text-center flex flex-col items-center justify-center">
-                <ReceiptText className="w-12 h-12 text-brand-sage/30 mb-4" />
-                <p className="text-brand-sage">
-                  {searchQuery ? 'Tidak ada data yang cocok dengan pencarian.' : 'Belum ada catatan pemasukan manual.'}
+              <div className="p-16 text-center flex flex-col items-center justify-center">
+                <div className="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mb-4">
+                  <ReceiptText className="w-8 h-8 text-zinc-300" />
+                </div>
+                <h3 className="text-lg font-bold text-zinc-900 mb-1">Tidak Ada Data</h3>
+                <p className="text-zinc-500">
+                  {searchQuery ? 'Tidak ada data yang cocok dengan pencarian Anda.' : 'Belum ada catatan pemasukan manual.'}
                 </p>
               </div>
             ) : (
-              <table className="w-full text-left text-sm text-brand-sage">
-                <thead className="bg-black/40 text-brand-cream border-b border-white/10 sticky top-0">
+              <table className="w-full text-left text-sm text-zinc-600">
+                <thead className="bg-zinc-50 text-zinc-500 border-b border-zinc-200 sticky top-0 uppercase text-xs font-bold tracking-wider">
                   <tr>
-                    <th className="px-5 py-3 font-semibold">Tanggal</th>
-                    <th className="px-5 py-3 font-semibold">Keterangan</th>
-                    <th className="px-5 py-3 font-semibold text-right">Nominal</th>
-                    <th className="px-5 py-3 font-semibold text-center w-16">Aksi</th>
+                    <th className="px-6 py-4">Tanggal</th>
+                    <th className="px-6 py-4">Keterangan</th>
+                    <th className="px-6 py-4 text-right">Nominal</th>
+                    <th className="px-6 py-4 text-center w-24">Aksi</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5">
+                <tbody className="divide-y divide-zinc-100">
                   {paginatedIncomes.map((inc: any) => (
-                    <tr key={inc.id} className="hover:bg-white/5 transition-colors">
-                      <td className="px-5 py-3 whitespace-nowrap">
-                        {new Date(inc.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}<br/>
-                        <span className="text-xs text-brand-sage">{new Date(inc.date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
+                    <tr key={inc.id} className="hover:bg-zinc-50/80 transition-colors group">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="font-medium text-zinc-900">{new Date(inc.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                        <div className="text-xs text-zinc-400 mt-0.5">{new Date(inc.date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</div>
                       </td>
-                      <td className="px-5 py-3">
+                      <td className="px-6 py-4">
                         <div className="flex flex-col">
-                          <span className="text-brand-cream">{inc.description}</span>
+                          <span className="font-medium text-zinc-900">{inc.description}</span>
                           {inc.imageUrl && (
-                            <a href={inc.imageUrl} target="_blank" rel="noreferrer" className="text-blue-400 text-xs mt-1 flex items-center gap-1 hover:underline w-fit">
-                              <ImageIcon className="w-3 h-3" /> Lihat Bukti
+                            <a href={inc.imageUrl} target="_blank" rel="noreferrer" className="text-blue-600 text-xs mt-1 flex items-center gap-1 hover:text-blue-700 w-fit font-medium">
+                              <ImageIcon className="w-3.5 h-3.5" /> Lihat Bukti
                             </a>
                           )}
                         </div>
                       </td>
-                      <td className="px-5 py-3 font-medium text-blue-400 text-right">{formatRupiah(inc.amount)}</td>
-                      <td className="px-5 py-3 text-center">
-                        <div className="flex justify-center gap-2">
+                      <td className="px-6 py-4 font-bold text-blue-600 text-right text-base">{formatRupiah(inc.amount)}</td>
+                      <td className="px-6 py-4 text-center">
+                        <div className="flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button 
                             onClick={() => handleEditClick(inc)}
-                            className="p-2 text-brand-sage hover:text-blue-400 hover:bg-blue-400/10 rounded-lg transition"
+                            className="p-2 text-zinc-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
                             title="Edit"
                           >
                             <Edit className="w-4 h-4" />
                           </button>
                           <button 
                             onClick={() => setDeleteId(inc.id)}
-                            className="p-2 text-brand-sage hover:text-red-400 hover:bg-red-400/10 rounded-lg transition"
+                            className="p-2 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
                             title="Hapus"
                             disabled={deleteIncome.isPending}
                           >
@@ -383,8 +388,8 @@ export default function IncomesPage() {
           </div>
           
           {totalPages > 1 && (
-            <div className="p-4 border-t border-white/10 bg-black/20 flex justify-between items-center">
-              <span className="text-xs text-brand-sage">
+            <div className="p-5 border-t border-zinc-100 bg-zinc-50 flex justify-between items-center">
+              <span className="text-sm text-zinc-500 font-medium">
                 Menampilkan {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, filteredIncomes.length)} dari {filteredIncomes.length} data
               </span>
               <div className="flex items-center gap-2">
@@ -392,18 +397,18 @@ export default function IncomesPage() {
                   variant="outline" 
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
-                  className="px-2 py-1 h-auto text-xs"
+                  className="p-2 h-auto bg-white"
                 >
-                  <ChevronLeft className="w-4 h-4" />
+                  <ChevronLeft className="w-5 h-5" />
                 </Button>
-                <span className="text-sm font-medium px-2">{currentPage} / {totalPages}</span>
+                <span className="text-sm font-bold text-zinc-700 px-3">{currentPage} / {totalPages}</span>
                 <Button 
                   variant="outline" 
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
-                  className="px-2 py-1 h-auto text-xs"
+                  className="p-2 h-auto bg-white"
                 >
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className="w-5 h-5" />
                 </Button>
               </div>
             </div>

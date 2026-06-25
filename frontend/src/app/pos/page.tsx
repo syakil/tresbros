@@ -40,7 +40,7 @@ export default function PosPage() {
     setIsMounted(true);
     // Memuat script Snap.js secara dinamis khusus di halaman POS untuk mencegah error postMessage Next.js
     const snapScriptUrl = "https://app.sandbox.midtrans.com/snap/snap.js";
-    const clientKey = "SB-Mid-client-3c-KuTSEjRrpPILS";
+    const clientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || "YOUR_MIDTRANS_CLIENT_KEY";
 
     let script = document.querySelector(`script[src="${snapScriptUrl}"]`) as HTMLScriptElement;
     
