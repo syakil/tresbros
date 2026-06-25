@@ -36,6 +36,9 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/tresbros-frontend:latest
           cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/tresbros-frontend:buildcache
           cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/tresbros-frontend:buildcache,mode=max
+          build-args: |
+            NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}
+            SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
 
       # BUILD & PUSH BACKEND
       - name: Build and Push Backend Image
@@ -89,6 +92,8 @@ jobs:
             
             # Buat file .env dari GitHub Secrets (ini yang menjembatani rahasia dari GitHub ke Server Anda)
             echo "DB_PASSWORD=${{ secrets.PROD_DB_PASSWORD }}" > .env
+            echo "SENTRY_DSN=${{ secrets.SENTRY_DSN }}" >> .env
+            echo "NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}" >> .env
             
             # Tarik images terbaru dari Docker Hub
             docker compose pull

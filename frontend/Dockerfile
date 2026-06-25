@@ -18,6 +18,12 @@ COPY . .
 
 # Environment variables must be present at build time for Next.js to bake them in if they are public
 # but BACKEND_URL is used server-side, so it's fine to pass at runtime.
+ARG NEXT_PUBLIC_SENTRY_DSN
+ENV NEXT_PUBLIC_SENTRY_DSN=$NEXT_PUBLIC_SENTRY_DSN
+
+ARG SENTRY_AUTH_TOKEN
+ENV SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
+
 RUN npm run build
 
 # Production image, copy all the files and run next
