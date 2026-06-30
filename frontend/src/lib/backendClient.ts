@@ -26,7 +26,10 @@ export const backendClient = {
       ...init,
       headers
     });
-    if (!res.ok) throw new Error(`GET ${endpoint} failed: ${res.statusText}`);
+    if (!res.ok) {
+      if (res.status === 401) throw new Error("Unauthorized");
+      throw new Error(`GET ${endpoint} failed: ${res.statusText}`);
+    }
     
     // Some endpoints might return 204 No Content
     if (res.status === 204) return null;
@@ -46,6 +49,7 @@ export const backendClient = {
       body: JSON.stringify(body),
     });
     if (!res.ok) {
+        if (res.status === 401) throw new Error("Unauthorized");
         let errorMsg = res.statusText;
         try {
             const errBody = await res.json();
@@ -69,7 +73,10 @@ export const backendClient = {
       headers,
       body: JSON.stringify(body),
     });
-    if (!res.ok) throw new Error(`PUT ${endpoint} failed: ${res.statusText}`);
+    if (!res.ok) {
+      if (res.status === 401) throw new Error("Unauthorized");
+      throw new Error(`PUT ${endpoint} failed: ${res.statusText}`);
+    }
     if (res.status === 204) return null;
     return res.json();
   },
@@ -85,7 +92,10 @@ export const backendClient = {
       method: 'DELETE',
       headers,
     });
-    if (!res.ok) throw new Error(`DELETE ${endpoint} failed: ${res.statusText}`);
+    if (!res.ok) {
+      if (res.status === 401) throw new Error("Unauthorized");
+      throw new Error(`DELETE ${endpoint} failed: ${res.statusText}`);
+    }
     if (res.status === 204) return null;
     return res.json();
   },

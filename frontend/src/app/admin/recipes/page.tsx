@@ -110,7 +110,7 @@ export default function RecipesPage() {
       {/* Toast Notification */}
       {toastMessage && (
         <div className={`fixed top-4 right-4 z-[100] px-4 py-3 rounded-lg shadow-lg border animate-in slide-in-from-top-2 fade-in duration-300 flex items-center gap-3
-          ${toastMessage.type === 'success' ? 'bg-brand-olive/95 border-brand-sage/50 text-brand-cream' : 'bg-red-900/95 border-red-500/50 text-red-200'}`}
+          ${toastMessage.type === 'success' ? 'bg-emerald-500 border-emerald-600 text-white' : 'bg-red-500 border-red-600 text-white'}`}
         >
           {toastMessage.type === 'success' ? <CheckCircle className="w-5 h-5" /> : <X className="w-5 h-5" />}
           <p className="font-medium text-sm">{toastMessage.text}</p>
@@ -120,12 +120,12 @@ export default function RecipesPage() {
       {/* Konfirmasi Hapus Resep Item */}
       {confirmDeleteId && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <Card variant="olive" className="w-full max-w-md bg-[#1C1F1D] border-red-500/30 shadow-2xl p-6 flex flex-col gap-4 text-center">
-            <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-2 text-red-400">
+          <Card className="w-full max-w-md bg-white border-0 shadow-2xl p-6 flex flex-col gap-4 text-center">
+            <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-2 text-red-500">
               <Trash2 className="w-6 h-6" />
             </div>
-            <h3 className="text-xl font-display font-bold text-brand-cream">Remove from Recipe?</h3>
-            <p className="text-sm text-brand-sage">
+            <h3 className="text-xl font-display font-bold text-zinc-900">Remove from Recipe?</h3>
+            <p className="text-sm text-zinc-500">
               Are you sure you want to remove this raw material from the recipe?
             </p>
             <div className="flex gap-3 justify-center mt-4">
@@ -144,21 +144,21 @@ export default function RecipesPage() {
       )}
 
       <div className="flex flex-col gap-2 shrink-0">
-        <h1 className="text-3xl font-display font-bold text-brand-cream">Recipes & BOM</h1>
-        <p className="text-brand-sage">Manage Bill of Materials (Raw Materials) for automatic stock deduction</p>
+        <h1 className="text-3xl font-display font-bold text-zinc-900">Recipes & BOM</h1>
+        <p className="text-zinc-500">Manage Bill of Materials (Raw Materials) for automatic stock deduction</p>
       </div>
 
       <div className="flex flex-col md:flex-row gap-6 flex-1 overflow-hidden">
         
         {/* Kiri: Daftar Produk */}
-        <Card variant="olive" className="w-full md:w-1/3 flex flex-col p-0 overflow-hidden shrink-0 border-white/10 shadow-xl">
-          <div className="p-4 border-b border-white/10 bg-black/20">
+        <Card className="w-full md:w-1/3 flex flex-col p-0 overflow-hidden shrink-0 border border-zinc-200 shadow-sm bg-white">
+          <div className="p-4 border-b border-zinc-100 bg-zinc-50">
             <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-3 text-brand-sage" />
+              <Search className="w-4 h-4 absolute left-3 top-3.5 text-zinc-400" />
               <input 
                 type="text" 
                 placeholder="Search product..." 
-                className="w-full bg-black/40 border border-white/10 text-brand-cream text-sm rounded-lg pl-9 pr-3 py-2.5 focus:outline-none focus:border-brand-warm"
+                className="w-full bg-white border border-zinc-200 text-zinc-900 text-sm rounded-lg pl-9 pr-3 py-2.5 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition placeholder:text-zinc-400 shadow-sm"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -172,19 +172,19 @@ export default function RecipesPage() {
                   setActiveProductId(product.id);
                   setShowAddMaterial(false);
                 }}
-                className={`w-full text-left p-4 border-b border-white/5 transition flex items-center justify-between ${
-                  activeProductId === product.id ? 'bg-brand-sage/20 border-l-4 border-l-brand-warm' : 'hover:bg-black/20 border-l-4 border-l-transparent'
+                className={`w-full text-left p-4 border-b border-zinc-50 transition flex items-center justify-between ${
+                  activeProductId === product.id ? 'bg-blue-50 border-l-4 border-l-blue-600' : 'hover:bg-zinc-50 border-l-4 border-l-transparent'
                 }`}
               >
                 <div>
-                  <p className={`font-medium ${activeProductId === product.id ? 'text-brand-warm' : 'text-brand-cream'}`}>{product.name}</p>
-                  <p className="text-xs text-brand-sage mt-1">{product.category}</p>
+                  <p className={`font-medium ${activeProductId === product.id ? 'text-blue-700' : 'text-zinc-900'}`}>{product.name}</p>
+                  <p className="text-xs text-zinc-500 mt-1">{product.category}</p>
                 </div>
-                {activeProductId === product.id && <ArrowRight className="w-4 h-4 text-brand-warm" />}
+                {activeProductId === product.id && <ArrowRight className="w-4 h-4 text-blue-600" />}
               </button>
             ))}
             {filteredProducts.length === 0 && (
-              <div className="p-6 text-center text-brand-sage/50 text-sm">
+              <div className="p-6 text-center text-zinc-400 text-sm font-medium">
                 Product not found
               </div>
             )}
@@ -192,32 +192,32 @@ export default function RecipesPage() {
         </Card>
 
         {/* Kanan: Detail Resep */}
-        <Card variant="olive" className="flex-1 flex flex-col p-0 overflow-hidden border-white/10 shadow-xl relative z-20">
+        <Card className="flex-1 flex flex-col p-0 overflow-hidden border border-zinc-200 shadow-sm relative z-20 bg-white">
           {activeProductId ? (
             <>
-              <div className="p-6 border-b border-white/10 bg-black/20 flex justify-between items-center shrink-0">
+              <div className="p-6 border-b border-zinc-100 bg-white flex justify-between items-center shrink-0">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-brand-warm/20 flex items-center justify-center">
-                    <Beaker className="w-5 h-5 text-brand-warm" />
+                  <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
+                    <Beaker className="w-5 h-5 text-blue-600" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-display font-semibold text-brand-cream">{activeProduct?.name}</h2>
-                    <p className="text-sm text-brand-sage">Raw material needs per 1 portion</p>
+                    <h2 className="text-xl font-display font-semibold text-zinc-900">{activeProduct?.name}</h2>
+                    <p className="text-sm text-zinc-500">Raw material needs per 1 portion</p>
                   </div>
                 </div>
-                <Button variant="primary" onClick={() => setShowAddMaterial(!showAddMaterial)} className="text-sm shadow-md">
+                <Button variant="primary" onClick={() => setShowAddMaterial(!showAddMaterial)} className="text-sm shadow-md py-2 px-4 rounded-xl">
                   <Plus className="w-4 h-4 mr-2" /> Add Material
                 </Button>
               </div>
 
               {showAddMaterial && (
-                <div className="p-4 border-b border-white/10 bg-brand-olive/50 flex gap-3 items-end shrink-0 relative z-30">
-                  <div className="flex-1">
-                    <label className="text-xs text-brand-sage mb-1 block">Select Master Raw Material</label>
+                <div className="p-5 border-b border-zinc-100 bg-zinc-50 flex flex-col md:flex-row gap-4 items-end shrink-0 relative z-30 shadow-inner">
+                  <div className="flex-1 w-full">
+                    <label className="text-sm font-medium text-zinc-700 mb-1.5 block">Select Master Raw Material</label>
                     <CustomSelect 
                       value={newMaterialId}
                       onChange={(val) => setNewMaterialId(val)}
-                      className="bg-black/40 border border-white/10 text-brand-cream rounded-lg px-3 py-2.5"
+                      className="bg-white border border-zinc-200 text-zinc-900 rounded-lg px-3 py-2.5"
                       options={materials.map((m: any) => ({
                         value: m.id.toString(),
                         label: `${m.name} (${m.unit})`
@@ -225,20 +225,20 @@ export default function RecipesPage() {
                       placeholder="Select Material..."
                     />
                   </div>
-                  <div className="w-24">
-                    <label className="text-xs text-brand-sage mb-1 block">Quantity</label>
+                  <div className="w-full md:w-32">
+                    <label className="text-sm font-medium text-zinc-700 mb-1.5 block">Quantity</label>
                     <input 
                       type="number" 
                       placeholder="0" 
                       value={newQuantity}
                       onChange={(e) => setNewQuantity(e.target.value)}
-                      className="w-full bg-black/20 border border-white/10 text-brand-cream rounded-lg px-4 py-2.5 focus:outline-none focus:border-brand-warm" 
+                      className="w-full bg-white border border-zinc-200 text-zinc-900 rounded-lg px-4 py-2.5 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition" 
                     />
                   </div>
                   <Button 
                     variant="primary" 
                     onClick={() => addRecipeItem.mutate()} 
-                    className="py-2.5"
+                    className="py-2.5 w-full md:w-auto"
                     disabled={addRecipeItem.isPending || !newMaterialId || !newQuantity}
                   >
                     Save
@@ -246,39 +246,41 @@ export default function RecipesPage() {
                 </div>
               )}
 
-              <div className="flex-1 overflow-y-auto z-10">
-                <table className="w-full text-left text-sm text-brand-sage">
-                  <thead className="bg-black/40 text-brand-cream sticky top-0 shadow-sm z-20">
+              <div className="flex-1 overflow-y-auto z-10 bg-white">
+                <table className="w-full text-left text-sm text-zinc-600">
+                  <thead className="bg-zinc-50 text-zinc-500 sticky top-0 border-b border-zinc-200 z-20">
                     <tr>
-                      <th className="px-6 py-4 font-semibold">Raw Material Name</th>
-                      <th className="px-6 py-4 font-semibold">Quantity Used</th>
-                      <th className="px-6 py-4 font-semibold text-right">Actions</th>
+                      <th className="px-6 py-4 font-bold text-xs uppercase tracking-wider">Raw Material Name</th>
+                      <th className="px-6 py-4 font-bold text-xs uppercase tracking-wider">Quantity Used</th>
+                      <th className="px-6 py-4 font-bold text-xs uppercase tracking-wider text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/5">
+                  <tbody className="divide-y divide-zinc-100">
                     {loadingRecipe ? (
                       <tr>
-                        <td colSpan={3} className="text-center py-12 text-brand-sage/60">Loading recipe...</td>
+                        <td colSpan={3} className="text-center py-12 text-zinc-400 font-medium">Loading recipe...</td>
                       </tr>
                     ) : currentRecipe.length === 0 ? (
                       <tr>
-                        <td colSpan={3} className="text-center py-12">
-                          <PackageOpen className="w-12 h-12 text-brand-sage/20 mx-auto mb-3" />
-                          <p className="text-brand-sage/60">No raw material recipe for this product yet.</p>
+                        <td colSpan={3} className="text-center py-16">
+                          <div className="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <PackageOpen className="w-8 h-8 text-zinc-300" />
+                          </div>
+                          <p className="text-zinc-500 font-medium">No raw material recipe for this product yet.</p>
                         </td>
                       </tr>
                     ) : (
                       currentRecipe.map((item: any) => (
-                        <tr key={item.id} className="hover:bg-white/5 transition-colors">
-                          <td className="px-6 py-4 text-brand-cream font-medium">{item.material}</td>
+                        <tr key={item.id} className="hover:bg-zinc-50/80 transition-colors group">
+                          <td className="px-6 py-4 text-zinc-900 font-medium">{item.material}</td>
                           <td className="px-6 py-4">
-                            <span className="font-bold text-brand-warm text-base mr-1">{item.qty}</span>
-                            <span className="text-xs">{item.unit}</span>
+                            <span className="font-bold text-blue-600 text-base mr-1">{item.qty}</span>
+                            <span className="text-xs text-zinc-500 font-medium">{item.unit}</span>
                           </td>
                           <td className="px-6 py-4 text-right">
                             <button 
                               onClick={() => setConfirmDeleteId(item.id)}
-                              className="text-red-400/80 hover:text-red-400 hover:bg-red-400/10 p-2 rounded-lg transition" 
+                              className="text-zinc-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-lg transition opacity-0 group-hover:opacity-100" 
                               title="Remove Material"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -292,9 +294,9 @@ export default function RecipesPage() {
               </div>
             </>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center text-brand-sage/40">
-              <Beaker className="w-16 h-16 mb-4 opacity-20" />
-              <p>Select a product on the left to view the recipe</p>
+            <div className="flex-1 flex flex-col items-center justify-center text-zinc-400 bg-zinc-50/50">
+              <Beaker className="w-16 h-16 mb-4 text-zinc-200" />
+              <p className="font-medium">Select a product on the left to view the recipe</p>
             </div>
           )}
         </Card>

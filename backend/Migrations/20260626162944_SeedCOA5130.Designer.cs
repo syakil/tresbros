@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using backend.Data;
@@ -11,9 +12,11 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260626162944_SeedCOA5130")]
+    partial class SeedCOA5130
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -730,42 +733,6 @@ namespace backend.Migrations
                     b.ToTable("RnDRecipeIngredients");
                 });
 
-            modelBuilder.Entity("backend.Models.RnDTestHistory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<double>("ActualCost")
-                        .HasColumnType("double precision");
-
-                    b.Property<string>("IngredientsSnapshot")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Notes")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("RnDRecipeId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("TestVersion")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("TestedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RnDRecipeId");
-
-                    b.ToTable("RnDTestHistories");
-                });
-
             modelBuilder.Entity("backend.Models.Role", b =>
                 {
                     b.Property<int>("Id")
@@ -996,17 +963,6 @@ namespace backend.Migrations
                     b.Navigation("RnDRecipe");
                 });
 
-            modelBuilder.Entity("backend.Models.RnDTestHistory", b =>
-                {
-                    b.HasOne("backend.Models.RnDRecipe", "RnDRecipe")
-                        .WithMany("TestHistories")
-                        .HasForeignKey("RnDRecipeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("RnDRecipe");
-                });
-
             modelBuilder.Entity("backend.Models.User", b =>
                 {
                     b.HasOne("backend.Models.Role", "Role")
@@ -1055,8 +1011,6 @@ namespace backend.Migrations
             modelBuilder.Entity("backend.Models.RnDRecipe", b =>
                 {
                     b.Navigation("Ingredients");
-
-                    b.Navigation("TestHistories");
                 });
 #pragma warning restore 612, 618
         }

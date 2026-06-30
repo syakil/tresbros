@@ -96,6 +96,7 @@ namespace backend.Models
         public double Stock { get; set; }
         public double MinStock { get; set; }
         public string Unit { get; set; } = string.Empty;
+        public double CostPerUnit { get; set; } = 0;
         public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
         public ICollection<PurchaseItem> PurchaseItems { get; set; } = new List<PurchaseItem>();
         public ICollection<RecipeItem> RecipeItems { get; set; } = new List<RecipeItem>();
@@ -271,6 +272,22 @@ namespace backend.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public ICollection<RnDRecipeIngredient> Ingredients { get; set; } = new List<RnDRecipeIngredient>();
+        public ICollection<RnDTestHistory> TestHistories { get; set; } = new List<RnDTestHistory>();
+    }
+
+    public class RnDTestHistory
+    {
+        [Key]
+        public int Id { get; set; }
+        public int RnDRecipeId { get; set; }
+        public string TestVersion { get; set; } = string.Empty; // e.g., "Test #1"
+        public string IngredientsSnapshot { get; set; } = "[]"; // JSON string of ingredients used
+        public double ActualCost { get; set; } = 0;
+        public string Notes { get; set; } = string.Empty; // User feedback after tasting
+        public DateTime TestedAt { get; set; } = DateTime.UtcNow;
+
+        [ForeignKey("RnDRecipeId")]
+        public RnDRecipe? RnDRecipe { get; set; }
     }
 
     public class RnDRecipeIngredient

@@ -124,9 +124,9 @@ export default function InventoryPage() {
   return (
     <div className="flex flex-col gap-6 max-w-6xl mx-auto w-full">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-display font-bold text-brand-cream">Stock Management</h1>
+        <h1 className="text-3xl font-display font-bold text-zinc-900">Stock Management</h1>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <p className="text-brand-sage text-sm md:text-base">Monitor raw material availability and stock movement</p>
+          <p className="text-zinc-500 text-sm md:text-base">Monitor raw material availability and stock movement</p>
           <div className="flex gap-2 w-full md:w-auto">
             <Button variant="primary" className="shadow-md w-full md:w-auto justify-center" onClick={() => setShowAdd(!showAdd)}>
               <Plus className="w-4 h-4 mr-2" /> Add Raw Material
@@ -136,23 +136,23 @@ export default function InventoryPage() {
       </div>
 
       {showAdd && (
-        <Card variant="olive" className="flex flex-col md:flex-row gap-4 items-end bg-black/40 border border-brand-warm/30 mb-2">
+        <Card className="flex flex-col md:flex-row gap-4 items-end mb-2">
           <div className="flex-1 w-full">
-            <label className="text-xs text-brand-sage mb-1 block">Raw Material Name</label>
+            <label className="text-xs font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Raw Material Name</label>
             <input 
               type="text" 
               value={addName}
               onChange={(e) => setAddName(e.target.value)}
               placeholder="e.g., Vanilla Syrup" 
-              className="w-full bg-black/20 border border-white/10 text-brand-cream rounded-xl px-4 py-3 focus:outline-none focus:border-brand-warm focus:ring-1 focus:ring-brand-warm transition" 
+              className="w-full bg-white border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition" 
             />
           </div>
           <div className="w-full md:w-40">
-            <label className="text-xs text-brand-sage mb-1 block">Unit of Measurement</label>
+            <label className="text-xs font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Unit of Measurement</label>
             <CustomSelect
               value={addUnit}
               onChange={setAddUnit}
-              className="bg-black/20 border border-white/10 text-brand-cream rounded-xl px-4 py-3"
+              className="bg-white border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3"
               options={[
                 { value: 'gram', label: 'Gram (g)' },
                 { value: 'ml', label: 'Mililiter (ml)' },
@@ -161,16 +161,16 @@ export default function InventoryPage() {
             />
           </div>
           <div className="w-full md:w-40">
-            <label className="text-xs text-brand-sage mb-1 block">Minimum Stock Alert</label>
+            <label className="text-xs font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Minimum Stock Alert</label>
             <input 
               type="number" 
               value={addMinStock}
               onChange={(e) => setAddMinStock(e.target.value)}
               placeholder="e.g., 500" 
-              className="w-full bg-black/20 border border-white/10 text-brand-cream rounded-xl px-4 py-3 focus:outline-none focus:border-brand-warm focus:ring-1 focus:ring-brand-warm transition" 
+              className="w-full bg-white border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition" 
             />
           </div>
-          <Button variant="primary" className="w-full md:w-auto" onClick={handleAddMaterial} disabled={createMaterial.isPending}>
+          <Button variant="primary" className="w-full md:w-auto h-[46px]" onClick={handleAddMaterial} disabled={createMaterial.isPending}>
             {createMaterial.isPending ? 'Saving...' : 'Save'}
           </Button>
         </Card>
@@ -178,29 +178,27 @@ export default function InventoryPage() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-2">
         <Card 
-          variant="olive" 
           onClick={() => setFilterMode('all')}
-          className={`flex items-center gap-4 cursor-pointer transition-all ${filterMode === 'all' ? 'bg-black/80 ring-2 ring-brand-warm' : 'bg-black/40 hover:bg-black/60'}`}
+          className={`flex items-center gap-4 cursor-pointer transition-all ${filterMode === 'all' ? 'bg-white ring-2 ring-blue-500' : 'bg-white/80 hover:bg-white'} border border-zinc-200`}
         >
-          <div className="w-10 h-10 rounded-full bg-brand-warm/20 flex items-center justify-center">
-            <Boxes className="w-5 h-5 text-brand-warm" />
+          <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
+            <Boxes className="w-5 h-5 text-blue-600" />
           </div>
           <div>
-            <p className="text-brand-sage text-[10px] md:text-xs font-medium uppercase tracking-wider">Total Items</p>
-            <h3 className="text-xl font-display font-bold text-brand-cream">{materials.length} Items</h3>
+            <p className="text-zinc-500 text-[10px] md:text-xs font-medium uppercase tracking-wider">Total Items</p>
+            <h3 className="text-xl font-display font-bold text-zinc-900">{materials.length} Items</h3>
           </div>
         </Card>
         <Card 
-          variant="olive" 
           onClick={() => setFilterMode('low')}
-          className={`flex items-center gap-4 cursor-pointer transition-all border-red-500/20 ${filterMode === 'low' ? 'bg-red-900/60 ring-2 ring-red-400' : 'bg-red-900/20 hover:bg-red-900/40'}`}
+          className={`flex items-center gap-4 cursor-pointer transition-all border ${filterMode === 'low' ? 'bg-red-50 ring-2 ring-red-400 border-red-400' : 'bg-white hover:bg-red-50 border-zinc-200'}`}
         >
-          <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
-            <AlertTriangle className="w-5 h-5 text-red-400" />
+          <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+            <AlertTriangle className="w-5 h-5 text-red-600" />
           </div>
           <div>
-            <p className="text-brand-sage text-[10px] md:text-xs font-medium uppercase tracking-wider">Low Stock</p>
-            <h3 className="text-xl font-display font-bold text-brand-cream">
+            <p className="text-red-500 text-[10px] md:text-xs font-medium uppercase tracking-wider">Low Stock</p>
+            <h3 className="text-xl font-display font-bold text-red-700">
               {materials.filter((m: any) => m.stock <= m.minStock).length} Items
             </h3>
           </div>
@@ -214,15 +212,15 @@ export default function InventoryPage() {
           placeholder="Search raw material name..." 
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full md:w-80 bg-black/40 border border-white/10 text-brand-cream rounded-xl px-4 py-2.5 focus:outline-none focus:border-brand-warm focus:ring-1 focus:ring-brand-warm transition"
+          className="w-full md:w-80 bg-white border border-zinc-200 text-zinc-900 rounded-xl px-4 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
         />
       </div>
 
       {/* Mobile Compact List Layout (Hidden on Desktop) */}
-      <div className="md:hidden bg-black/40 border border-white/10 rounded-xl overflow-hidden divide-y divide-white/5">
-        {isLoading && <div className="text-center text-brand-sage p-4 text-sm">Loading data from database...</div>}
+      <div className="md:hidden bg-white border border-zinc-200 rounded-xl divide-y divide-zinc-100">
+        {isLoading && <div className="text-center text-zinc-500 p-4 text-sm">Loading data from database...</div>}
         {!isLoading && filteredMaterials.length === 0 && (
-          <div className="text-center text-brand-sage p-4 text-sm">
+          <div className="text-center text-zinc-500 p-4 text-sm">
             {materials.length === 0 ? "No raw material master data yet." : "No matching raw materials."}
           </div>
         )}
@@ -234,85 +232,87 @@ export default function InventoryPage() {
             <div key={item.id} className="flex flex-col">
               {/* Main Compact Row */}
               <div 
-                className={`p-3 flex items-center justify-between cursor-pointer transition-colors ${isExpanded ? 'bg-brand-sage/10' : 'hover:bg-white/5'}`}
+                className={`p-3 flex items-center justify-between cursor-pointer transition-colors ${isExpanded ? 'bg-blue-50' : 'hover:bg-zinc-50'}`}
                 onClick={() => setShowAdjust(isExpanded ? null : item.id)}
               >
                 {/* Info Kiri */}
                 <div className="flex flex-col flex-1 pr-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-brand-cream font-semibold text-sm leading-tight line-clamp-1">{item.name}</span>
-                    {isLowStock && <span className="bg-red-500/20 text-red-400 text-[9px] px-1.5 py-0.5 rounded-sm font-bold uppercase tracking-wider shrink-0">Low</span>}
+                    <span className="text-zinc-900 font-semibold text-sm leading-tight line-clamp-1">{item.name}</span>
+                    {isLowStock && <span className="bg-red-100 text-red-600 text-[9px] px-1.5 py-0.5 rounded-sm font-bold uppercase tracking-wider shrink-0">Low</span>}
                   </div>
                 </div>
 
                 {/* Stok Kanan */}
                 <div className="text-right shrink-0">
-                  <span className={`font-display font-bold text-base mr-1 ${isLowStock ? 'text-red-400' : 'text-brand-warm'}`}>{item.stock.toLocaleString('id-ID')}</span>
-                  <span className="text-[10px] text-brand-sage">{item.unit}</span>
+                  <span className={`font-display font-bold text-base mr-1 ${isLowStock ? 'text-red-600' : 'text-blue-600'}`}>{item.stock.toLocaleString('id-ID')}</span>
+                  <span className="text-[10px] text-zinc-500">{item.unit}</span>
+                  <div className="text-[10px] text-zinc-400 mt-0.5">Rp {item.costPerUnit?.toLocaleString('id-ID') || '0'} / {item.unit}</div>
                 </div>
               </div>
 
               {/* Collapsible Action Area */}
               {isExpanded && (
-                <div className="bg-black/60 p-3 flex flex-col gap-3 border-t border-white/5 shadow-inner">
+                <div className="bg-zinc-50 p-3 flex flex-col gap-3 border-t border-zinc-100 shadow-inner">
                   <button 
                     onClick={(e) => { e.stopPropagation(); setEditMaterialData(item); }} 
-                    className="w-full bg-brand-dark hover:bg-black py-2 rounded-lg text-brand-sage hover:text-brand-cream text-xs font-medium border border-white/5 transition"
+                    className="w-full bg-white hover:bg-zinc-100 py-2 rounded-lg text-zinc-600 hover:text-zinc-900 text-xs font-medium border border-zinc-200 transition shadow-sm"
                   >
                     Edit Master Data
                   </button>
                   
-                  <div className="bg-brand-dark/80 rounded-lg p-3 border border-white/5 flex flex-col gap-3">
-                    <h4 className="text-xs font-bold text-brand-cream border-b border-white/10 pb-1.5">Stock Mutation</h4>
+                  <div className="bg-white rounded-lg p-3 border border-zinc-200 flex flex-col gap-3 shadow-sm">
+                    <h4 className="text-xs font-bold text-zinc-800 border-b border-zinc-100 pb-1.5 uppercase tracking-wider">Stock Mutation</h4>
                     
                     <div className="flex gap-3">
                       <div className="w-1/3">
-                        <label className="text-[10px] text-brand-sage mb-1 block">Type</label>
+                        <label className="text-[10px] font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Type</label>
                         <select
                           value={adjustType}
                           onChange={(e) => setAdjustType(e.target.value)}
-                          className="w-full bg-black/60 border border-white/10 text-brand-cream rounded-md px-2 py-2 text-xs focus:outline-none focus:border-brand-warm"
+                          className="w-full bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-md px-2 py-2 text-xs focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                         >
                           <option value="in">In (+)</option>
                           <option value="out">Out (-)</option>
                         </select>
                       </div>
                       <div className="w-1/3">
-                        <label className="text-[10px] text-brand-sage mb-1 block">Qty</label>
+                        <label className="text-[10px] font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Qty</label>
                         <input 
                           type="number" 
                           value={adjustQty}
                           onChange={(e) => setAdjustQty(e.target.value)}
                           placeholder="0" 
-                          className="w-full bg-black/60 border border-white/10 text-brand-cream rounded-md px-2 py-2 text-xs focus:outline-none focus:border-brand-warm" 
+                          className="w-full bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-md px-2 py-2 text-xs focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
                         />
                       </div>
                       <div className="w-1/3">
-                        <label className="text-[10px] text-brand-sage mb-1 block">Total Price</label>
+                        <label className="text-[10px] font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Total Price</label>
                         <input 
                           type="number" 
-                          value={adjustPrice}
+                          value={adjustType === 'out' ? '' : adjustPrice}
                           onChange={(e) => setAdjustPrice(e.target.value)}
-                          placeholder="0" 
-                          className="w-full bg-black/60 border border-white/10 text-brand-cream rounded-md px-2 py-2 text-xs focus:outline-none focus:border-brand-warm" 
+                          placeholder={adjustType === 'out' ? "Auto" : "0"} 
+                          disabled={adjustType === 'out'}
+                          className={`w-full bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-md px-2 py-2 text-xs focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 ${adjustType === 'out' ? 'opacity-50 cursor-not-allowed bg-zinc-100' : ''}`} 
                         />
                       </div>
                     </div>
                     
                     <div>
-                      <label className="text-[10px] text-brand-sage mb-1 block">Notes / Reason</label>
+                      <label className="text-[10px] font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Notes / Reason</label>
                       <input 
                         type="text" 
                         value={adjustNotes}
                         onChange={(e) => setAdjustNotes(e.target.value)}
                         placeholder="e.g., Purchase/Spill" 
-                        className="w-full bg-black/60 border border-white/10 text-brand-cream rounded-md px-2 py-2 text-xs focus:outline-none focus:border-brand-warm" 
+                        className="w-full bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-md px-2 py-2 text-xs focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
                       />
                     </div>
                     
                     <Button 
                       variant="primary" 
-                      className="w-full mt-1 py-2 text-xs font-bold shadow-lg" 
+                      className="w-full mt-1 py-2 text-xs font-bold" 
                       onClick={() => handleAdjustMaterial(item.id)}
                       disabled={adjustMaterial.isPending}
                     >
@@ -327,24 +327,25 @@ export default function InventoryPage() {
       </div>
 
       {/* Desktop Table Layout (Hidden on Mobile) */}
-      <Card variant="olive" className="hidden md:block p-0 overflow-hidden shadow-xl border-white/10">
-        <table className="w-full text-left text-sm text-brand-sage min-w-[800px]">
-          <thead className="bg-black/40 text-brand-cream border-b border-white/10">
+      <Card className="hidden md:block p-0 border border-zinc-200 bg-white">
+        <table className="w-full text-left text-sm text-zinc-600 min-w-[800px]">
+          <thead className="bg-zinc-50 text-zinc-500 border-b border-zinc-200">
             <tr>
-              <th className="px-6 py-5 font-semibold">Raw Material Name</th>
-              <th className="px-6 py-5 font-semibold">Remaining Stock</th>
-              <th className="px-6 py-5 font-semibold text-right">Actions</th>
+              <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Raw Material Name</th>
+              <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Remaining Stock</th>
+              <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Avg Cost/Unit</th>
+              <th className="px-6 py-4 font-semibold text-right uppercase tracking-wider text-xs">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/5">
+          <tbody className="divide-y divide-zinc-100">
             {isLoading && (
               <tr>
-                <td colSpan={3} className="px-6 py-8 text-center text-brand-sage">Loading data from database...</td>
+                <td colSpan={4} className="px-6 py-8 text-center text-zinc-500">Loading data from database...</td>
               </tr>
             )}
             {!isLoading && filteredMaterials.length === 0 && (
               <tr>
-                <td colSpan={3} className="px-6 py-8 text-center text-brand-sage">
+                <td colSpan={4} className="px-6 py-8 text-center text-zinc-500">
                   {materials.length === 0 ? "No raw material master data yet." : "No raw materials match your filter or search."}
                 </td>
               </tr>
@@ -353,91 +354,108 @@ export default function InventoryPage() {
               const isLowStock = item.stock <= item.minStock;
               return (
                 <React.Fragment key={item.id}>
-                  <tr className="hover:bg-white/5 transition-colors">
-                    <td className="px-6 py-4 text-brand-cream font-medium text-base flex items-center gap-2">
-                      {item.name}
-                      {isLowStock && <span className="bg-red-500/20 text-red-400 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Low</span>}
+                  <tr className="hover:bg-zinc-50/50 group transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${isLowStock ? 'bg-red-100 text-red-600' : 'bg-blue-50 text-blue-600'}`}>
+                          <Boxes className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-zinc-900">{item.name}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-xs text-zinc-500">Min: {item.minStock} {item.unit}</span>
+                            {isLowStock && <span className="bg-red-100 text-red-600 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Low Stock</span>}
+                          </div>
+                        </div>
+                      </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`font-bold text-lg mr-1 ${isLowStock ? 'text-red-400' : 'text-brand-warm'}`}>{item.stock.toLocaleString('id-ID')}</span>
-                      <span className="text-xs">{item.unit}</span>
+                      <div className="flex items-baseline gap-1.5">
+                        <span className={`text-2xl font-display font-bold ${isLowStock ? 'text-red-600' : 'text-zinc-900'}`}>{item.stock.toLocaleString('id-ID')}</span>
+                        <span className="text-zinc-500 font-medium">{item.unit}</span>
+                      </div>
                     </td>
-                    <td className="px-6 py-4 text-right whitespace-nowrap">
-                      <button
-                        onClick={() => setEditMaterialData(item)}
-                        className="text-brand-sage hover:text-brand-warm bg-black/20 hover:bg-black/40 border border-white/5 px-3 py-1.5 rounded-lg transition text-xs font-medium mr-2"
-                      >
-                        Edit Data
-                      </button>
-                      <button
-                        onClick={() => setShowAdjust(showAdjust === item.id ? null : item.id)}
-                        className="text-brand-sage hover:text-brand-cream bg-black/20 hover:bg-black/40 border border-white/5 px-3 py-1.5 rounded-lg transition text-xs font-medium"
-                      >
-                        Adjust
-                      </button>
+                    <td className="px-6 py-4">
+                      <div className="text-zinc-900 font-medium">Rp {item.costPerUnit?.toLocaleString('id-ID') || '0'}</div>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button 
+                          variant="outline" 
+                          className="bg-white border-zinc-200 text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 shadow-sm"
+                          onClick={() => setEditMaterialData(item)}
+                        >
+                          Edit Data
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          className={`shadow-sm border-zinc-200 transition-colors ${showAdjust === item.id ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-white text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900'}`}
+                          onClick={() => setShowAdjust(showAdjust === item.id ? null : item.id)}
+                        >
+                          Adjust Stock
+                        </Button>
+                      </div>
                     </td>
                   </tr>
 
-                  {/* Row Adjust Stock (Collapsible) */}
+                  {/* Inline Adjust Stock Form */}
                   {showAdjust === item.id && (
-                    <tr className="bg-brand-dark/80 border-l-4 border-l-brand-warm border-y border-white/5">
-                      <td colSpan={3} className="px-6 py-6">
-                        <div className="bg-black/40 rounded-xl p-5 border border-white/5 flex flex-col gap-4">
-                          <h4 className="text-sm font-semibold text-brand-cream">Stock Mutation: {item.name}</h4>
-                          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
-                            <div className="md:col-span-1">
-                              <label className="text-xs text-brand-sage mb-1.5 block">Mutation Type</label>
-                              <CustomSelect
-                                value={adjustType}
-                                onChange={setAdjustType}
-                                className="bg-black/60 border border-white/10 text-brand-cream rounded-lg px-4 py-3"
-                                options={[
-                                  { value: 'in', label: 'Stock In (+)' },
-                                  { value: 'out', label: 'Stock Out (-)' }
-                                ]}
-                              />
-                            </div>
-                            <div className="md:col-span-1">
-                              <label className="text-xs text-brand-sage mb-1.5 block">Quantity ({item.unit})</label>
-                              <input 
-                                type="number" 
-                                value={adjustQty}
-                                onChange={(e) => setAdjustQty(e.target.value)}
-                                placeholder="0" 
-                                className="w-full bg-black/60 border border-white/10 text-brand-cream rounded-lg px-4 py-3 focus:outline-none focus:border-brand-warm" 
-                              />
-                            </div>
-                            <div className="md:col-span-1">
-                              <label className="text-xs text-brand-sage mb-1.5 block">Total Price (Rp)</label>
-                              <input 
-                                type="number" 
-                                value={adjustPrice}
-                                onChange={(e) => setAdjustPrice(e.target.value)}
-                                placeholder="0" 
-                                className="w-full bg-black/60 border border-white/10 text-brand-cream rounded-lg px-4 py-3 focus:outline-none focus:border-brand-warm" 
-                              />
-                            </div>
-                            <div className="md:col-span-2 flex gap-4 items-end">
-                              <div className="flex-1">
-                                <label className="text-xs text-brand-sage mb-1.5 block">Description / Reason</label>
-                                <input 
-                                  type="text" 
-                                  value={adjustNotes}
-                                  onChange={(e) => setAdjustNotes(e.target.value)}
-                                  placeholder="e.g., Purchase / Spill..." 
-                                  className="w-full bg-black/60 border border-white/10 text-brand-cream rounded-lg px-4 py-3 focus:outline-none focus:border-brand-warm" 
-                                />
-                              </div>
-                              <Button 
-                                variant="primary" 
-                                className="shrink-0 px-8 py-3 shadow-lg font-medium h-full" 
-                                onClick={() => handleAdjustMaterial(item.id)}
-                                disabled={adjustMaterial.isPending}
-                              >
-                                {adjustMaterial.isPending ? 'Saving...' : 'Save'}
-                              </Button>
-                            </div>
+                    <tr className="bg-zinc-50/50">
+                      <td colSpan={4} className="px-6 py-4 border-t border-zinc-100">
+                        <div className="bg-white rounded-xl p-5 shadow-sm border border-zinc-200 flex flex-col md:flex-row gap-4 items-end animate-in fade-in slide-in-from-top-4 duration-300">
+                          <div className="w-full md:w-48">
+                            <label className="text-xs font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Mutation Type</label>
+                            <CustomSelect
+                              value={adjustType}
+                              onChange={setAdjustType}
+                              className="bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3"
+                              options={[
+                                { value: 'in', label: 'Stock In (+)' },
+                                { value: 'out', label: 'Stock Out (-)' }
+                              ]}
+                            />
                           </div>
+                          <div className="w-full md:w-48">
+                            <label className="text-xs font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Quantity</label>
+                            <input 
+                              type="number" 
+                              value={adjustQty}
+                              onChange={(e) => setAdjustQty(e.target.value)}
+                              placeholder={`Qty in ${item.unit}`} 
+                              className="w-full bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
+                            />
+                          </div>
+                          <div className="w-full md:w-48">
+                            <label className="text-xs font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">
+                              Total Price {adjustType === 'out' && <span className="text-blue-500 text-[10px] lowercase normal-case">(Otomatis FIFO)</span>}
+                            </label>
+                            <input 
+                              type="number" 
+                              value={adjustType === 'out' ? '' : adjustPrice}
+                              onChange={(e) => setAdjustPrice(e.target.value)}
+                              placeholder={adjustType === 'out' ? "Dihitung sistem" : "Total Rp"}
+                              disabled={adjustType === 'out'}
+                              className={`w-full bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 ${adjustType === 'out' ? 'opacity-50 cursor-not-allowed bg-zinc-100' : ''}`} 
+                            />
+                          </div>
+                          <div className="flex-1 w-full">
+                            <label className="text-xs font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Notes / Reason</label>
+                            <input 
+                              type="text" 
+                              value={adjustNotes}
+                              onChange={(e) => setAdjustNotes(e.target.value)}
+                              placeholder="e.g., Purchase from supplier, Spill..." 
+                              className="w-full bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
+                            />
+                          </div>
+                          <Button 
+                            variant="primary" 
+                            className="w-full md:w-auto h-[46px]"
+                            onClick={() => handleAdjustMaterial(item.id)}
+                            disabled={adjustMaterial.isPending}
+                          >
+                            {adjustMaterial.isPending ? 'Saving...' : 'Save'}
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -449,29 +467,27 @@ export default function InventoryPage() {
         </table>
       </Card>
 
-      {/* Popup Edit Master Data */}
+      {/* Modal Edit Master Data */}
       {editMaterialData && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <Card variant="olive" className="w-full max-w-md bg-brand-dark border-white/10 p-6 flex flex-col gap-4 shadow-2xl">
-            <h2 className="text-xl font-display font-bold text-brand-cream">Edit Master Material</h2>
-            
-            <div>
-              <label className="text-xs text-brand-sage mb-1 block">Raw Material Name</label>
-              <input 
-                type="text" 
-                value={editMaterialData.name}
-                onChange={(e) => setEditMaterialData({...editMaterialData, name: e.target.value})}
-                className="w-full bg-black/20 border border-white/10 text-brand-cream rounded-xl px-4 py-3 focus:outline-none focus:border-brand-warm focus:ring-1 focus:ring-brand-warm transition" 
-              />
-            </div>
-            
-            <div className="flex gap-4">
-              <div className="w-1/2">
-                <label className="text-xs text-brand-sage mb-1 block">Satuan Ukur</label>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-md bg-white border border-zinc-200">
+            <h2 className="text-xl font-display font-bold text-zinc-900 mb-4">Edit Master Data</h2>
+            <div className="flex flex-col gap-4">
+              <div>
+                <label className="text-xs font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Raw Material Name</label>
+                <input 
+                  type="text" 
+                  value={editMaterialData.name}
+                  onChange={(e) => setEditMaterialData({...editMaterialData, name: e.target.value})}
+                  className="w-full bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Unit of Measurement</label>
                 <CustomSelect
                   value={editMaterialData.unit}
                   onChange={(val) => setEditMaterialData({...editMaterialData, unit: val})}
-                  className="bg-black/20 border border-white/10 text-brand-cream rounded-xl px-4 py-3"
+                  className="bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3"
                   options={[
                     { value: 'gram', label: 'Gram (g)' },
                     { value: 'ml', label: 'Mililiter (ml)' },
@@ -479,19 +495,18 @@ export default function InventoryPage() {
                   ]}
                 />
               </div>
-              <div className="w-1/2">
-                <label className="text-xs text-brand-sage mb-1 block">Low Stock Alert</label>
+              <div>
+                <label className="text-xs font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Minimum Stock Alert</label>
                 <input 
                   type="number" 
                   value={editMaterialData.minStock}
                   onChange={(e) => setEditMaterialData({...editMaterialData, minStock: e.target.value})}
-                  className="w-full bg-black/20 border border-white/10 text-brand-cream rounded-xl px-4 py-3 focus:outline-none focus:border-brand-warm focus:ring-1 focus:ring-brand-warm transition" 
+                  className="w-full bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
                 />
               </div>
             </div>
-
-            <div className="flex justify-end gap-3 mt-4">
-              <Button variant="outline" onClick={() => setEditMaterialData(null)}>Cancel</Button>
+            <div className="flex gap-3 mt-6 justify-end">
+              <Button variant="outline" onClick={() => setEditMaterialData(null)} className="bg-white border-zinc-200 hover:bg-zinc-50 text-zinc-700">Cancel</Button>
               <Button variant="primary" onClick={handleUpdateMaster} disabled={updateMasterMaterial.isPending}>
                 {updateMasterMaterial.isPending ? 'Saving...' : 'Save Changes'}
               </Button>

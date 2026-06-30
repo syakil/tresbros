@@ -83,6 +83,16 @@ namespace backend.Controllers
                             CreatedAt = DateTime.UtcNow
                         };
                         _context.MaterialBatches.Add(batch);
+
+                        // Update CostPerUnit (Weighted Average of Remaining Batches)
+                        var existingBatches = await _context.MaterialBatches
+                            .Where(b => b.MaterialId == material.Id && b.RemainingQty > 0)
+                            .ToListAsync();
+                        
+                        double totalValue = existingBatches.Sum(b => b.RemainingQty * b.UnitPrice) + item.Price;
+                        double totalStock = existingBatches.Sum(b => b.RemainingQty) + item.Quantity;
+                        
+                        material.CostPerUnit = totalStock > 0 ? totalValue / totalStock : 0;
                     }
                 }
             }
@@ -93,23 +103,25 @@ namespace backend.Controllers
             }
 
             // Create Journal Entry
-            var invAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "1140") ?? new ChartOfAccount { Code = "1140", Name = "Persediaan Bahan Baku", Type = "ASSET" };
-            var cashAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "1110") ?? new ChartOfAccount { Code = "1110", Name = "Kas Kecil", Type = "ASSET" };
+            var invAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "1140");
+            var cashAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "1110");
             
-            if (invAccount.Id == 0) _context.ChartOfAccounts.Add(invAccount);
-            if (cashAccount.Id == 0) _context.ChartOfAccounts.Add(cashAccount);
-
-            var journal = new JournalEntry 
+            if (invAccount != null && cashAccount != null)
             {
-                Date = DateTime.UtcNow,
-                Reference = purchase.PurchaseNo,
-                Description = $"Pembelian Bahan Baku {purchase.PurchaseNo}"
-            };
-            
-            journal.Lines.Add(new JournalEntryLine { Account = invAccount, Debit = purchase.TotalAmount, Credit = 0 });
-            journal.Lines.Add(new JournalEntryLine { Account = cashAccount, Debit = 0, Credit = purchase.TotalAmount });
-            
-            _context.JournalEntries.Add(journal);
+                var journal = new JournalEntry
+                {
+                    Date = DateTime.UtcNow,
+                    Reference = purchase.PurchaseNo,
+                    Description = $"Pembelian bahan baku {purchase.PurchaseNo}",
+                    Lines = new List<JournalEntryLine>()
+                };
+
+                // Debit Inventory, Credit Cash
+                journal.Lines.Add(new JournalEntryLine { Account = invAccount, Debit = purchase.TotalAmount, Credit = 0 });
+                journal.Lines.Add(new JournalEntryLine { Account = cashAccount, Debit = 0, Credit = purchase.TotalAmount });
+
+                _context.JournalEntries.Add(journal);
+            }
 
             await _context.SaveChangesAsync();
 

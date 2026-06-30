@@ -48,7 +48,7 @@ export function CustomSelect({ value, onChange, options, className = '', placeho
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute z-50 w-full mt-2 bg-white border border-zinc-200 rounded-xl shadow-lg py-2 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+        <div className="absolute top-full left-0 z-50 w-full mt-2 bg-white border border-zinc-200 rounded-xl shadow-lg py-2 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
           <ul className="max-h-60 overflow-y-auto">
             {options.map((option) => (
               <li

@@ -162,9 +162,9 @@ export async function GET(request: Request) {
       allIncomes: incomes.map((i: any) => ({ id: `I-${i.id}`, date: i.date, description: `Pemasukan Manual: ${i.description}`, amount: i.amount, type: 'IN' })),
       allExpenses: expenses.map((e: any) => ({ id: `E-${e.id}`, date: e.date, description: `Pengeluaran: ${e.description}`, amount: e.amount, type: 'OUT' }))
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Dashboard API Error:", error);
-    if (error?.message === "Unauthorized") return NextResponse.json({ error: "Unauthorized" }, { status: 401 }); if (error?.message === "Unauthorized") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (error?.message === "Unauthorized") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

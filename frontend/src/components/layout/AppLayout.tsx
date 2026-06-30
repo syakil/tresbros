@@ -47,6 +47,31 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       : "text-zinc-400 hover:text-white hover:bg-zinc-800";
   };
 
+  const getPageTitle = (path: string) => {
+    if (path === '/') return 'Dashboard';
+    if (path.startsWith('/pos')) return 'Point of Sale';
+    if (path.startsWith('/kds')) return 'Kitchen Display';
+    if (path.includes('/rnd')) return 'Research & Development';
+    if (path.includes('/recipes')) return 'Recipes & BOM';
+    if (path.includes('/items')) return 'Product Data';
+    if (path.includes('/coupons')) return 'Discount Coupons';
+    if (path.includes('/incomes')) return 'Incomes';
+    if (path.includes('/expenses')) return 'Expenses';
+    if (path.includes('/accounting/coa')) return 'Chart of Accounts';
+    if (path.includes('/accounting/journals')) return 'Financial Journals';
+    if (path.includes('/accounting/ledger')) return 'General Ledger';
+    if (path.includes('/accounting/profit-loss')) return 'Profit & Loss';
+    if (path.includes('/settings')) return 'System Settings';
+    if (path.includes('/users')) return 'User Management';
+    if (path.includes('/roles')) return 'Role Management';
+    if (path.includes('/inventory')) return 'Stock Management';
+    if (path.includes('/purchases')) return 'Material Purchases';
+    
+    // Fallback
+    const segments = path.replace('/admin/', '').replace(/^\//, '').split('/');
+    return segments[0].replace('-', ' ');
+  };
+
   return (
     <div className="flex h-screen bg-zinc-100 overflow-hidden font-sans text-zinc-900 relative print:h-auto print:block print:bg-white print:text-black">
       
@@ -212,7 +237,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <Menu className="w-5 h-5" />
             </button>
             <h2 className="font-display text-xl font-semibold capitalize text-zinc-900">
-              {pathname === '/' ? 'Dashboard' : pathname.replace('/admin/', '').replace('/', '')}
+              {getPageTitle(pathname)}
             </h2>
           </div>
           <div className="flex items-center gap-4">

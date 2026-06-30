@@ -107,50 +107,95 @@ namespace backend.Controllers
             material.LastUpdated = DateTime.UtcNow;
             _context.Entry(material).State = EntityState.Modified;
 
-            // Create Journal Entry
-            if (request.TotalPrice > 0)
+            double actualJournalAmount = 0;
+
+            if (request.AdjustType == "in")
             {
-                var invAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "1140");
-                if (invAccount == null)
+                var batch = new MaterialBatch 
                 {
-                    invAccount = new ChartOfAccount { Code = "1140", Name = "Persediaan Bahan Baku", Type = "ASSET", IsActive = true };
-                    _context.ChartOfAccounts.Add(invAccount);
-                }
-
-                var adjAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "5130");
-                if (adjAccount == null)
-                {
-                    adjAccount = new ChartOfAccount { Code = "5130", Name = "Penyesuaian Persediaan", Type = "EXPENSE", IsActive = true };
-                    _context.ChartOfAccounts.Add(adjAccount);
-                }
-
-                string refCode = $"ADJ-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString().Substring(0, 4)}".ToUpper();
-                string desc = string.IsNullOrEmpty(request.Notes) ? $"Penyesuaian Stok {material.Name}" : request.Notes;
-
-                var journal = new JournalEntry
-                {
-                    Date = DateTime.UtcNow,
-                    Reference = refCode,
-                    Description = desc,
-                    Lines = new List<JournalEntryLine>()
+                    MaterialId = material.Id,
+                    OriginalQty = request.Quantity,
+                    RemainingQty = request.Quantity,
+                    UnitPrice = request.Quantity > 0 ? request.TotalPrice / request.Quantity : 0,
+                    CreatedAt = DateTime.UtcNow
                 };
-
-                if (request.AdjustType == "in")
+                _context.MaterialBatches.Add(batch);
+                actualJournalAmount = request.TotalPrice;
+            }
+            else // out
+            {
+                double remainingToDeduct = request.Quantity;
+                var activeBatches = await _context.MaterialBatches
+                    .Where(b => b.MaterialId == material.Id && b.RemainingQty > 0)
+                    .OrderBy(b => b.CreatedAt)
+                    .ToListAsync();
+                
+                foreach (var batch in activeBatches)
                 {
-                    // Stock increases: Debit Inventory, Credit Adjustment Account
-                    journal.Lines.Add(new JournalEntryLine { Account = invAccount, Debit = request.TotalPrice, Credit = 0 });
-                    journal.Lines.Add(new JournalEntryLine { Account = adjAccount, Debit = 0, Credit = request.TotalPrice });
+                    if (remainingToDeduct <= 0) break;
+                    
+                    double deductFromBatch = Math.Min(batch.RemainingQty, remainingToDeduct);
+                    batch.RemainingQty -= deductFromBatch;
+                    remainingToDeduct -= deductFromBatch;
+                    actualJournalAmount += deductFromBatch * batch.UnitPrice;
                 }
-                else
+                
+                // If there's still remainingToDeduct (no batches left), we fallback to CostPerUnit
+                if (remainingToDeduct > 0)
                 {
-                    // Stock decreases: Debit Adjustment Account, Credit Inventory
-                    journal.Lines.Add(new JournalEntryLine { Account = adjAccount, Debit = request.TotalPrice, Credit = 0 });
-                    journal.Lines.Add(new JournalEntryLine { Account = invAccount, Debit = 0, Credit = request.TotalPrice });
+                    actualJournalAmount += remainingToDeduct * material.CostPerUnit;
                 }
-
-                _context.JournalEntries.Add(journal);
             }
 
+            // Create Journal Entry
+            if (actualJournalAmount > 0)
+            {
+                var invAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "1140");
+                var adjAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "5130");
+
+                if (invAccount != null && adjAccount != null)
+                {
+                    string dateStr = DateTime.UtcNow.ToString("yyMMdd");
+                    int count = await _context.JournalEntries.CountAsync(j => j.Reference.StartsWith("ST" + dateStr));
+                    string refCode = $"ST{dateStr}{(count + 1).ToString("D4")}";
+                    string desc = string.IsNullOrEmpty(request.Notes) ? $"Penyesuaian Stok {material.Name}" : request.Notes;
+
+                    var journal = new JournalEntry
+                    {
+                        Date = DateTime.UtcNow,
+                        Reference = refCode,
+                        Description = desc,
+                        Lines = new List<JournalEntryLine>()
+                    };
+
+                    if (request.AdjustType == "in")
+                    {
+                        // Stock increases: Debit Inventory, Credit Adjustment Account
+                        journal.Lines.Add(new JournalEntryLine { Account = invAccount, Debit = actualJournalAmount, Credit = 0 });
+                        journal.Lines.Add(new JournalEntryLine { Account = adjAccount, Debit = 0, Credit = actualJournalAmount });
+                    }
+                    else
+                    {
+                        // Stock decreases: Debit Adjustment Account, Credit Inventory
+                        journal.Lines.Add(new JournalEntryLine { Account = adjAccount, Debit = actualJournalAmount, Credit = 0 });
+                        journal.Lines.Add(new JournalEntryLine { Account = invAccount, Debit = 0, Credit = actualJournalAmount });
+                    }
+
+                    _context.JournalEntries.Add(journal);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            // Update CostPerUnit (Weighted Average of Remaining Batches) after save
+            var allActiveBatches = await _context.MaterialBatches
+                .Where(b => b.MaterialId == material.Id && b.RemainingQty > 0)
+                .ToListAsync();
+            
+            double totalValue = allActiveBatches.Sum(b => b.RemainingQty * b.UnitPrice);
+            double totalStock = allActiveBatches.Sum(b => b.RemainingQty);
+            
+            material.CostPerUnit = totalStock > 0 ? totalValue / totalStock : 0;
             await _context.SaveChangesAsync();
 
             return Ok(material);

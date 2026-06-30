@@ -6,35 +6,60 @@ import axios from 'axios';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Save, ArrowLeft, Plus, Trash2, CheckCircle } from 'lucide-react';
+import { Save, ArrowLeft, Plus, Trash2, CheckCircle, X, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { CustomSelect } from '@/components/ui/CustomSelect';
 
-export default function RnDDetailPage({ params }: { params: { id: string } }) {
+export default function RnDDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
+  const { id } = React.use(params);
   const [recipe, setRecipe] = useState<any>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
+  const [toastMessage, setToastMessage] = useState<{text: string, type: 'success'|'error'|'warning'} | null>(null);
+  const [showPromoteConfirm, setShowPromoteConfirm] = useState(false);
+  const [promoteForm, setPromoteForm] = useState({ price: '', category: 'Coffee' });
+  const [historyToApply, setHistoryToApply] = useState<number | null>(null);
+
+  const showToast = (text: string, type: 'success' | 'error' | 'warning' = 'success') => {
+    setToastMessage({ text, type });
+    setTimeout(() => setToastMessage(null), 3000);
+  };
 
   const { data: materials } = useQuery({
     queryKey: ['materials'],
     queryFn: async () => {
       const res = await axios.get('/api/materials');
-      return res.data;
+      return res.data?.$values || res.data || [];
     }
   });
 
   useEffect(() => {
     const fetchRecipe = async () => {
       try {
-        const res = await axios.get(`/api/rnd/${params.id}`);
-        setRecipe(res.data);
+        const res = await axios.get(`/api/rnd/${id}`);
+        const recipeData = res.data;
+        if (recipeData.ingredients && recipeData.ingredients.$values) {
+          recipeData.ingredients = recipeData.ingredients.$values;
+        }
+        if (recipeData.testHistories && recipeData.testHistories.$values) {
+          recipeData.testHistories = recipeData.testHistories.$values;
+        }
+        
+        // Sort test histories by TestedAt desc
+        if (recipeData.testHistories) {
+          recipeData.testHistories.sort((a: any, b: any) => new Date(b.testedAt).getTime() - new Date(a.testedAt).getTime());
+        }
+
+        setRecipe(recipeData);
       } catch (e) {
-        alert("Recipe not found");
+        showToast("Recipe not found", "error");
         router.push('/admin/rnd');
       }
     };
     fetchRecipe();
-  }, [params.id, router]);
+  }, [id, router]);
 
   if (!recipe) return <div className="p-6">Loading data...</div>;
 
@@ -43,32 +68,133 @@ export default function RnDDetailPage({ params }: { params: { id: string } }) {
     try {
       // Hitung ulang targetCost berdasarkan ingredients
       const newActualCost = recipe.ingredients?.reduce((acc: number, ing: any) => acc + (ing.quantity * ing.costPerUnit), 0) || 0;
-      const updatedRecipe = { ...recipe, actualCost: newActualCost };
+      const updatedRecipe = { 
+        ...recipe, 
+        actualCost: newActualCost,
+        ingredients: recipe.ingredients?.map((ing: any) => ({
+          id: ing.id,
+          materialId: ing.materialId,
+          quantity: ing.quantity,
+          unit: ing.unit,
+          costPerUnit: ing.costPerUnit,
+          rnDRecipeId: recipe.id
+        }))
+      };
 
       await axios.put(`/api/rnd/${recipe.id}`, updatedRecipe);
       setRecipe(updatedRecipe);
-      alert('Saved!');
+      showToast('Saved!', 'success');
     } catch(e) {
-      alert('Failed to save');
+      showToast('Failed to save', 'error');
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handlePromote = async () => {
-    if (confirm("Promote this recipe to a real product? Price and category will need to be configured later on the Products page.")) {
-      try {
-        await axios.post(`/api/rnd/${recipe.id}/promote`, { price: 0, categoryId: 1 }); // Default category 1
-        alert('Recipe promoted to Product successfully!');
-        router.push('/admin/items');
-      } catch(e) {
-        alert('Failed to promote');
-      }
+  const handleTestRecipe = async () => {
+    setIsTesting(true);
+    try {
+      const newActualCost = recipe.ingredients?.reduce((acc: number, ing: any) => acc + (ing.quantity * ing.costPerUnit), 0) || 0;
+      const updatedRecipe = { 
+        ...recipe, 
+        actualCost: newActualCost,
+        ingredients: recipe.ingredients?.map((ing: any) => ({
+          id: ing.id,
+          materialId: ing.materialId,
+          quantity: ing.quantity,
+          unit: ing.unit,
+          costPerUnit: ing.costPerUnit,
+          rnDRecipeId: recipe.id
+        }))
+      };
+
+      // Save first
+      await axios.put(`/api/rnd/${recipe.id}`, updatedRecipe);
+
+      // Run Test (Deducts stock)
+      await axios.post(`/api/rnd/${recipe.id}/test`);
+      showToast('Test executed! Stock deducted.', 'success');
+      
+      // Refresh
+      const freshRes = await axios.get(`/api/rnd/${id}`);
+      const recipeData = freshRes.data;
+      if (recipeData.ingredients && recipeData.ingredients.$values) recipeData.ingredients = recipeData.ingredients.$values;
+      if (recipeData.testHistories && recipeData.testHistories.$values) recipeData.testHistories = recipeData.testHistories.$values;
+      if (recipeData.testHistories) recipeData.testHistories.sort((a: any, b: any) => new Date(b.testedAt).getTime() - new Date(a.testedAt).getTime());
+      
+      setRecipe(recipeData);
+    } catch(e: any) {
+      const errResponse = e.response?.data;
+      const errMsg = typeof errResponse === 'string' ? errResponse : (errResponse?.error || 'Failed to test recipe');
+      showToast(errMsg, 'error');
+    } finally {
+      setIsTesting(false);
+    }
+  };
+
+  const handleUpdateTestNotes = async (historyId: number, notes: string) => {
+    try {
+      await axios.put(`/api/rnd/history/${historyId}`, { notes });
+      showToast('Tasting notes saved', 'success');
+    } catch(e: any) {
+      const errResponse = e.response?.data;
+      const errMsg = typeof errResponse === 'string' ? errResponse : (errResponse?.error || 'Failed to save notes');
+      showToast(errMsg, 'error');
+    }
+  };
+
+  const handleApplyHistory = (historyId: number) => {
+    setHistoryToApply(historyId);
+  };
+
+  const confirmApplyHistory = async () => {
+    if (historyToApply === null) return;
+    try {
+      await axios.post(`/api/rnd/${recipe.id}/apply-history/${historyToApply}`);
+      showToast('Recipe reverted to test version', 'success');
+      
+      const freshRes = await axios.get(`/api/rnd/${id}`);
+      const recipeData = freshRes.data;
+      if (recipeData.ingredients && recipeData.ingredients.$values) recipeData.ingredients = recipeData.ingredients.$values;
+      if (recipeData.testHistories && recipeData.testHistories.$values) recipeData.testHistories = recipeData.testHistories.$values;
+      if (recipeData.testHistories) recipeData.testHistories.sort((a: any, b: any) => new Date(b.testedAt).getTime() - new Date(a.testedAt).getTime());
+      setRecipe(recipeData);
+
+    } catch(e: any) {
+      const errResponse = e.response?.data;
+      const errMsg = typeof errResponse === 'string' ? errResponse : (errResponse?.error || 'Failed to apply version');
+      showToast(errMsg, 'error');
+    } finally {
+      setHistoryToApply(null);
+    }
+  };
+
+  const handlePromote = () => {
+    setPromoteForm({ price: recipe?.targetCost?.toString() || '0', category: 'Coffee' });
+    setShowPromoteConfirm(true);
+  };
+
+  const confirmPromote = async () => {
+    setShowPromoteConfirm(false);
+    try {
+      await axios.post(`/api/rnd/${recipe.id}/promote`, { 
+        price: parseFloat(promoteForm.price) || 0, 
+        categoryName: promoteForm.category 
+      }); 
+      showToast('Recipe promoted to Product successfully!', 'success');
+      router.push('/admin/items');
+    } catch(e: any) {
+      const errResponse = e.response?.data;
+      const errMsg = typeof errResponse === 'string' ? errResponse : (errResponse?.error || 'Failed to promote');
+      showToast(errMsg, 'error');
     }
   };
 
   const addIngredient = () => {
-    if (!materials || materials.length === 0) return;
+    if (!materials || materials.length === 0) {
+      showToast("No raw materials available. Please add some on the Materials page first.", "warning");
+      return;
+    }
     const defaultMaterial = materials[0];
     
     setRecipe({
@@ -110,6 +236,20 @@ export default function RnDDetailPage({ params }: { params: { id: string } }) {
 
   return (
     <div className="p-6 max-w-4xl mx-auto pb-24">
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className={`fixed top-4 right-4 z-[100] px-4 py-3 rounded-lg shadow-lg border animate-in slide-in-from-top-2 fade-in duration-300 flex items-center gap-3
+          ${toastMessage.type === 'success' ? 'bg-emerald-500 border-emerald-600 text-white' : 
+            toastMessage.type === 'error' ? 'bg-red-500 border-red-600 text-white' : 
+            'bg-amber-500 border-amber-600 text-white'}`}
+        >
+          {toastMessage.type === 'success' ? <CheckCircle className="w-5 h-5" /> : 
+           toastMessage.type === 'error' ? <X className="w-5 h-5" /> : 
+           <AlertTriangle className="w-5 h-5" />}
+          <p className="font-medium text-sm">{toastMessage.text}</p>
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
           <Link href="/admin/rnd" className="p-2 bg-white border border-zinc-200 rounded-lg hover:bg-zinc-50 text-zinc-500">
@@ -158,16 +298,17 @@ export default function RnDDetailPage({ params }: { params: { id: string } }) {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-zinc-700 mb-1">Status</label>
-                <select 
+                <CustomSelect 
                   className="w-full border border-zinc-200 rounded-lg p-2.5 text-sm bg-white"
                   value={recipe.status}
-                  onChange={(e) => setRecipe({...recipe, status: e.target.value})}
-                >
-                  <option value="Draft">Draft</option>
-                  <option value="Tested">Tested</option>
-                  <option value="Approved">Approved</option>
-                  <option value="Rejected">Rejected</option>
-                </select>
+                  onChange={(val) => setRecipe({...recipe, status: val})}
+                  options={[
+                    { value: 'Draft', label: 'Draft' },
+                    { value: 'Tested', label: 'Tested' },
+                    { value: 'Approved', label: 'Approved' },
+                    { value: 'Rejected', label: 'Rejected' }
+                  ]}
+                />
               </div>
               <div>
                 <Input 
@@ -195,9 +336,14 @@ export default function RnDDetailPage({ params }: { params: { id: string } }) {
       <Card className="p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-bold">Raw Material Simulation (COGS)</h2>
-          <Button onClick={addIngredient} variant="secondary" className="py-1.5 px-3 text-sm">
-            <Plus className="w-4 h-4 mr-1" /> Add Material
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={handleTestRecipe} disabled={isTesting || !recipe.ingredients?.length} className="py-1.5 px-3 text-sm bg-brand-sage hover:bg-brand-sage/90 text-white border-none shadow-md shadow-brand-sage/20">
+              {isTesting ? 'Testing...' : 'Test & Deduct Stock'}
+            </Button>
+            <Button onClick={addIngredient} variant="secondary" className="py-1.5 px-3 text-sm border-zinc-200">
+              <Plus className="w-4 h-4 mr-1" /> Add Material
+            </Button>
+          </div>
         </div>
 
         <table className="w-full text-sm text-left mb-4">
@@ -215,15 +361,12 @@ export default function RnDDetailPage({ params }: { params: { id: string } }) {
             {recipe.ingredients?.map((ing: any, idx: number) => (
               <tr key={idx}>
                 <td className="px-3 py-2">
-                  <select 
-                    className="w-full border border-zinc-200 rounded-md p-1.5 text-sm"
-                    value={ing.materialId}
-                    onChange={(e) => updateIngredient(idx, 'materialId', e.target.value)}
-                  >
-                    {materials?.map((m: any) => (
-                      <option key={m.id} value={m.id}>{m.name}</option>
-                    ))}
-                  </select>
+                  <CustomSelect 
+                    className="w-full border border-zinc-200 rounded-md p-1.5 text-sm bg-white"
+                    value={ing.materialId.toString()}
+                    onChange={(val) => updateIngredient(idx, 'materialId', val)}
+                    options={materials?.map((m: any) => ({ value: m.id.toString(), label: m.name })) || []}
+                  />
                 </td>
                 <td className="px-3 py-2">
                   <input 
@@ -261,6 +404,126 @@ export default function RnDDetailPage({ params }: { params: { id: string } }) {
           </tfoot>
         </table>
       </Card>
+
+      {/* Test History Section */}
+      <Card className="p-6 mt-6">
+        <h2 className="text-lg font-bold mb-4">Test History & Reviews</h2>
+        {(!recipe.testHistories || recipe.testHistories.length === 0) ? (
+          <div className="text-zinc-500 text-sm text-center py-6 bg-zinc-50 rounded-lg border border-dashed border-zinc-200">No tests have been run yet. Add materials and click "Test & Deduct Stock".</div>
+        ) : (
+          <div className="space-y-4">
+            {recipe.testHistories.map((test: any) => (
+              <div key={test.id} className="border border-zinc-200 rounded-xl p-4 bg-white shadow-sm flex flex-col md:flex-row gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h3 className="font-bold text-zinc-900 bg-zinc-100 px-2 py-0.5 rounded text-sm">{test.testVersion}</h3>
+                    <p className="text-xs text-zinc-500">{new Date(test.testedAt).toLocaleString()}</p>
+                  </div>
+                  <label className="text-xs font-semibold text-zinc-600 block mb-1 uppercase tracking-wider">Tasting Notes / Feedback</label>
+                  <textarea
+                    className="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-none focus:border-blue-500 bg-zinc-50"
+                    rows={2}
+                    placeholder="E.g., Too sweet, needs more salt..."
+                    defaultValue={test.notes}
+                    onBlur={(e) => handleUpdateTestNotes(test.id, e.target.value)}
+                  />
+                </div>
+                <div className="md:w-48 text-right flex flex-col justify-between items-end border-t md:border-t-0 md:border-l border-zinc-100 pt-4 md:pt-0 md:pl-4">
+                  <div>
+                    <p className="text-[10px] uppercase font-bold text-zinc-400">Total Material Cost</p>
+                    <p className="font-bold text-brand-sage text-lg">Rp {test.actualCost.toLocaleString('id-ID')}</p>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    className="text-xs py-1 h-8 mt-2 w-full border-blue-200 text-blue-600 hover:bg-blue-50"
+                    onClick={() => handleApplyHistory(test.id)}
+                  >
+                    Use this version
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
+      {/* Custom Confirm Modal for Promote */}
+      {showPromoteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-6">
+              <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center mb-4">
+                <CheckCircle className="w-6 h-6 text-blue-600" />
+              </div>
+              <h3 className="text-lg font-bold text-zinc-900 mb-2">Promote to Menu?</h3>
+              <p className="text-zinc-500 text-sm leading-relaxed mb-4">
+                You are about to promote <span className="font-semibold text-zinc-700">{recipe.name}</span> to a real product. Please specify its initial selling price and category.
+              </p>
+              
+              <div className="space-y-4 mb-6">
+                <div>
+                  <label className="block text-xs font-medium text-zinc-500 mb-1">Selling Price (Rp)</label>
+                  <Input 
+                    type="number" 
+                    value={promoteForm.price} 
+                    onChange={e => setPromoteForm({...promoteForm, price: e.target.value})} 
+                    placeholder="e.g. 25000"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-zinc-500 mb-1">Category</label>
+                  <CustomSelect
+                    value={promoteForm.category}
+                    onChange={(val) => setPromoteForm({...promoteForm, category: val})}
+                    options={[
+                      { label: "Coffee", value: "Coffee" },
+                      { label: "Non-Coffee", value: "Non-Coffee" },
+                      { label: "Tea", value: "Tea" },
+                      { label: "Food", value: "Food" },
+                      { label: "Snack", value: "Snack" }
+                    ]}
+                    className="bg-white border border-zinc-200 text-zinc-900 rounded-lg px-3 py-2 flex items-center h-10 w-full"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 justify-end">
+                <Button variant="outline" onClick={() => setShowPromoteConfirm(false)} className="flex-1 border-zinc-200 text-zinc-600 hover:bg-zinc-50">
+                  Cancel
+                </Button>
+                <Button onClick={confirmPromote} className="flex-1 bg-blue-600 hover:bg-blue-700">
+                  Yes, Promote it!
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Confirm Modal for Revert Recipe */}
+      {historyToApply !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-6">
+              <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center mb-4">
+                <AlertTriangle className="w-6 h-6 text-amber-500" />
+              </div>
+              <h3 className="text-lg font-bold text-zinc-900 mb-2">Revert Recipe?</h3>
+              <p className="text-zinc-500 text-sm leading-relaxed mb-6">
+                Are you sure you want to revert the recipe ingredients to this test version? This will overwrite the current material composition for this recipe.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <Button variant="outline" onClick={() => setHistoryToApply(null)} className="flex-1 border-zinc-200 text-zinc-600 hover:bg-zinc-50">
+                  Cancel
+                </Button>
+                <Button onClick={confirmApplyHistory} className="flex-1 bg-brand-sage hover:bg-brand-sage/90 border-none shadow-md shadow-brand-sage/20 text-white">
+                  Yes, Revert it
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -63,8 +63,8 @@ export default function CouponsPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-end">
         <div>
-          <h1 className="font-display font-bold text-3xl mb-2">Discount Coupons</h1>
-          <p className="text-brand-sage text-sm">Manage promo codes and coupons for customers.</p>
+          <h1 className="font-display font-bold text-3xl mb-2 text-zinc-900">Discount Coupons</h1>
+          <p className="text-zinc-500 text-sm">Manage promo codes and coupons for customers.</p>
         </div>
         <Button onClick={() => setShowForm(!showForm)} className="flex gap-2">
           {showForm ? 'Cancel' : <><Plus className="w-4 h-4" /> Add Coupon</>}
@@ -74,43 +74,43 @@ export default function CouponsPage() {
       {showForm && (
         <Card className="p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label className="block text-sm text-brand-sage mb-1">Coupon Code</label>
-                <input required type="text" className="w-full bg-black/20 border border-white/10 rounded-lg p-2.5 text-white focus:outline-none focus:border-brand-warm" 
+                <label className="block text-sm text-zinc-700 font-medium mb-1.5">Coupon Code</label>
+                <input required type="text" className="w-full bg-white border border-zinc-200 rounded-xl p-3 text-zinc-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition placeholder:text-zinc-400" 
                   value={formData.code} onChange={e => setFormData({...formData, code: e.target.value.toUpperCase()})} placeholder="PROMO30" />
               </div>
               <div>
-                <label className="block text-sm text-brand-sage mb-1">Discount Type</label>
-                <select className="w-full bg-black/20 border border-white/10 rounded-lg p-2.5 text-white focus:outline-none focus:border-brand-warm [&>option]:bg-brand-dark" 
+                <label className="block text-sm text-zinc-700 font-medium mb-1.5">Discount Type</label>
+                <select className="w-full bg-white border border-zinc-200 rounded-xl p-3 text-zinc-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition [&>option]:bg-white" 
                   value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})}>
                   <option value="PERCENTAGE">Percentage (%)</option>
                   <option value="NOMINAL">Nominal (Rp)</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm text-brand-sage mb-1">Discount Value</label>
-                <input required type="number" className="w-full bg-black/20 border border-white/10 rounded-lg p-2.5 text-white focus:outline-none focus:border-brand-warm" 
+                <label className="block text-sm text-zinc-700 font-medium mb-1.5">Discount Value</label>
+                <input required type="number" className="w-full bg-white border border-zinc-200 rounded-xl p-3 text-zinc-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition placeholder:text-zinc-400" 
                   value={formData.value} onChange={e => setFormData({...formData, value: e.target.value})} placeholder={formData.type === 'PERCENTAGE' ? "30" : "15000"} />
               </div>
               <div>
-                <label className="block text-sm text-brand-sage mb-1">Maximum Discount (Rp) <span className="text-xs opacity-50">(Optional)</span></label>
-                <input type="number" className="w-full bg-black/20 border border-white/10 rounded-lg p-2.5 text-white focus:outline-none focus:border-brand-warm" 
+                <label className="block text-sm text-zinc-700 font-medium mb-1.5">Maximum Discount (Rp) <span className="text-xs opacity-60 font-normal">(Optional)</span></label>
+                <input type="number" className="w-full bg-white border border-zinc-200 rounded-xl p-3 text-zinc-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition placeholder:text-zinc-400 disabled:bg-zinc-50 disabled:text-zinc-400" 
                   value={formData.maxDiscount} onChange={e => setFormData({...formData, maxDiscount: e.target.value})} placeholder="e.g., 10000" disabled={formData.type === 'NOMINAL'} />
               </div>
               <div>
-                <label className="block text-sm text-brand-sage mb-1">Minimum Purchase (Rp)</label>
-                <input required type="number" className="w-full bg-black/20 border border-white/10 rounded-lg p-2.5 text-white focus:outline-none focus:border-brand-warm" 
+                <label className="block text-sm text-zinc-700 font-medium mb-1.5">Minimum Purchase (Rp)</label>
+                <input required type="number" className="w-full bg-white border border-zinc-200 rounded-xl p-3 text-zinc-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition placeholder:text-zinc-400" 
                   value={formData.minPurchase} onChange={e => setFormData({...formData, minPurchase: e.target.value})} />
               </div>
               <div>
-                <label className="block text-sm text-brand-sage mb-1">Coupon Quota</label>
-                <input required type="number" className="w-full bg-black/20 border border-white/10 rounded-lg p-2.5 text-white focus:outline-none focus:border-brand-warm" 
+                <label className="block text-sm text-zinc-700 font-medium mb-1.5">Coupon Quota</label>
+                <input required type="number" className="w-full bg-white border border-zinc-200 rounded-xl p-3 text-zinc-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition placeholder:text-zinc-400" 
                   value={formData.maxUsage} onChange={e => setFormData({...formData, maxUsage: e.target.value})} />
               </div>
             </div>
-            <div className="flex justify-end pt-4 border-t border-white/10">
-              <Button type="submit" variant="primary" disabled={createMutation.isPending}>Save Coupon</Button>
+            <div className="flex justify-end pt-5 border-t border-zinc-100 mt-4">
+              <Button type="submit" variant="primary" className="py-2.5 px-6 rounded-xl font-medium" disabled={createMutation.isPending}>Save Coupon</Button>
             </div>
           </form>
         </Card>
@@ -120,43 +120,43 @@ export default function CouponsPage() {
         {isLoading ? <p>Loading...</p> : coupons.map((coupon: any) => (
           <Card key={coupon.id} className={`p-5 flex flex-col justify-between transition-opacity ${coupon.isActive ? '' : 'opacity-50'}`}>
             <div>
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center gap-2 bg-brand-warm/20 px-3 py-1 rounded-md text-brand-warm font-bold font-mono tracking-widest border border-brand-warm/30">
+              <div className="flex justify-between items-start mb-5">
+                <div className="flex items-center gap-2 bg-blue-50 px-3 py-1.5 rounded-lg text-blue-700 font-bold font-mono tracking-widest border border-blue-200">
                   <Tag className="w-4 h-4" />
                   {coupon.code}
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={() => toggleMutation.mutate({ id: coupon.id, isActive: !coupon.isActive })} className="p-2 hover:bg-white/10 rounded-lg transition-colors" title={coupon.isActive ? 'Deactivate' : 'Activate'}>
-                    <Power className={`w-4 h-4 ${coupon.isActive ? 'text-brand-sage' : 'text-red-400'}`} />
+                  <button onClick={() => toggleMutation.mutate({ id: coupon.id, isActive: !coupon.isActive })} className="p-2 hover:bg-zinc-100 text-zinc-400 rounded-lg transition-colors" title={coupon.isActive ? 'Deactivate' : 'Activate'}>
+                    <Power className={`w-4 h-4 ${coupon.isActive ? 'text-zinc-400' : 'text-red-500'}`} />
                   </button>
-                  <button onClick={() => { if(confirm('Delete this coupon?')) deleteMutation.mutate(coupon.id) }} className="p-2 hover:bg-red-500/10 hover:text-red-400 rounded-lg transition-colors">
+                  <button onClick={() => { if(confirm('Delete this coupon?')) deleteMutation.mutate(coupon.id) }} className="p-2 hover:bg-red-50 text-zinc-400 hover:text-red-500 rounded-lg transition-colors">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
               
-              <div className="space-y-1 mb-6">
-                <p className="text-2xl font-display font-bold text-brand-cream">
+              <div className="space-y-1.5 mb-6">
+                <p className="text-3xl font-display font-bold text-zinc-900">
                   {coupon.type === 'PERCENTAGE' ? `${coupon.value}% OFF` : formatRupiah(coupon.value)}
                 </p>
                 {coupon.type === 'PERCENTAGE' && coupon.maxDiscount && (
-                  <p className="text-xs text-brand-sage">Max discount: {formatRupiah(coupon.maxDiscount)}</p>
+                  <p className="text-sm text-zinc-500">Max discount: {formatRupiah(coupon.maxDiscount)}</p>
                 )}
-                <p className="text-xs text-brand-sage">Min. purchase: {formatRupiah(coupon.minPurchase)}</p>
+                <p className="text-sm text-zinc-500">Min. purchase: {formatRupiah(coupon.minPurchase)}</p>
               </div>
             </div>
 
-            <div className="border-t border-white/10 pt-3 flex justify-between items-center text-xs">
-              <span className="text-brand-sage/70">Used</span>
-              <span className="font-bold text-brand-cream">
-                {coupon.currentUsage} <span className="text-brand-sage font-normal">/ {coupon.maxUsage}</span>
+            <div className="border-t border-zinc-100 pt-4 flex justify-between items-center text-sm">
+              <span className="text-zinc-500 font-medium">Used</span>
+              <span className="font-bold text-zinc-900">
+                {coupon.currentUsage} <span className="text-zinc-400 font-medium">/ {coupon.maxUsage}</span>
               </span>
             </div>
             
             {/* Progress bar */}
-            <div className="w-full bg-black/40 h-1.5 rounded-full mt-2 overflow-hidden">
+            <div className="w-full bg-zinc-100 h-2 rounded-full mt-3 overflow-hidden">
               <div 
-                className={`h-full rounded-full ${coupon.currentUsage >= coupon.maxUsage ? 'bg-red-400' : 'bg-brand-sage'}`} 
+                className={`h-full rounded-full transition-all ${coupon.currentUsage >= coupon.maxUsage ? 'bg-red-500' : 'bg-blue-500'}`} 
                 style={{ width: `${Math.min(100, (coupon.currentUsage / coupon.maxUsage) * 100)}%` }}
               ></div>
             </div>
