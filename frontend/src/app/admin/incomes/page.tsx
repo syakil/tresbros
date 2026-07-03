@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { CustomSelect } from '@/components/ui/CustomSelect';
 import { Plus, Trash2, ReceiptText, Search, ChevronLeft, ChevronRight, Edit, ImageIcon, X, TrendingUp } from 'lucide-react';
 
 export default function IncomesPage() {
@@ -23,6 +24,10 @@ export default function IncomesPage() {
   const [imageUrl, setImageUrl] = useState<string>('');
   const [uploading, setUploading] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+
+  // COA mapping states
+  const [accountId, setAccountId] = useState<string>('');
+  const [paymentAccountId, setPaymentAccountId] = useState<string>('');
 
   // Search & Pagination States
   const [searchQuery, setSearchQuery] = useState('');
@@ -46,6 +51,20 @@ export default function IncomesPage() {
     }
   });
 
+  const { data: coas = [] } = useQuery<any[]>({
+    queryKey: ['coas'],
+    queryFn: async () => {
+      const res = await axios.get('/api/accounting/coa');
+      return res.data;
+    }
+  });
+
+  const revenueAccounts = coas.filter((c: any) => c.type === 'REVENUE' && c.isActive);
+  const assetAccounts = coas.filter((c: any) => c.type === 'ASSET' && c.code !== '1140' && c.isActive);
+
+  const revenueOptions = revenueAccounts.map((c: any) => ({ value: c.id.toString(), label: `${c.code} - ${c.name}` }));
+  const assetOptions = assetAccounts.map((c: any) => ({ value: c.id.toString(), label: `${c.code} - ${c.name}` }));
+
   const resetForm = () => {
     setDescription('');
     setAmount('');
@@ -53,10 +72,12 @@ export default function IncomesPage() {
     setSelectedFile(null);
     setImageUrl('');
     setEditingId(null);
+    setAccountId('');
+    setPaymentAccountId('');
   };
 
   const createIncome = useMutation({
-    mutationFn: async (newIncome: { description: string; amount: number; date: string; imageUrl?: string }) => {
+    mutationFn: async (newIncome: { description: string; amount: number; date: string; imageUrl?: string; accountId?: number | null; paymentAccountId?: number | null }) => {
       await axios.post('/api/incomes', newIncome);
     },
     onSuccess: () => {
@@ -70,7 +91,7 @@ export default function IncomesPage() {
   });
 
   const updateIncome = useMutation({
-    mutationFn: async (updatedIncome: { id: number; description: string; amount: number; date: string; imageUrl?: string }) => {
+    mutationFn: async (updatedIncome: { id: number; description: string; amount: number; date: string; imageUrl?: string; accountId?: number | null; paymentAccountId?: number | null }) => {
       const { id, ...data } = updatedIncome;
       await axios.put(`/api/incomes/${id}`, data);
     },
@@ -125,14 +146,18 @@ export default function IncomesPage() {
         description,
         amount: parseFloat(amount),
         date: new Date(date).toISOString(),
-        imageUrl: uploadedUrl
+        imageUrl: uploadedUrl,
+        accountId: accountId ? parseInt(accountId) : null,
+        paymentAccountId: paymentAccountId ? parseInt(paymentAccountId) : null
       });
     } else {
       createIncome.mutate({
         description,
         amount: parseFloat(amount),
         date: new Date(date).toISOString(),
-        imageUrl: uploadedUrl
+        imageUrl: uploadedUrl,
+        accountId: accountId ? parseInt(accountId) : null,
+        paymentAccountId: paymentAccountId ? parseInt(paymentAccountId) : null
       });
     }
   };
@@ -148,6 +173,8 @@ export default function IncomesPage() {
     
     setImageUrl(inc.imageUrl || '');
     setSelectedFile(null);
+    setAccountId(inc.accountId ? inc.accountId.toString() : '');
+    setPaymentAccountId(inc.paymentAccountId ? inc.paymentAccountId.toString() : '');
   };
 
   const formatRupiah = (num: number) => {
@@ -270,6 +297,26 @@ export default function IncomesPage() {
               />
             </div>
             <div>
+              <label className="block text-sm font-medium text-zinc-700 mb-1">Income Category (COA)</label>
+              <CustomSelect
+                value={accountId}
+                onChange={setAccountId}
+                options={revenueOptions}
+                placeholder="-- Select Income Account --"
+                className="bg-white border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3 text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-zinc-700 mb-1">Deposit To (COA)</label>
+              <CustomSelect
+                value={paymentAccountId}
+                onChange={setPaymentAccountId}
+                options={assetOptions}
+                placeholder="-- Select Destination Account --"
+                className="bg-white border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3 text-sm"
+              />
+            </div>
+            <div>
               <label className="block text-sm font-medium text-zinc-700 mb-1">Proof (Optional)</label>
               <input
                 type="file"
@@ -353,8 +400,20 @@ export default function IncomesPage() {
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
                           <span className="font-medium text-zinc-900">{inc.description}</span>
+                          <div className="flex flex-wrap gap-1.5 mt-1">
+                            {inc.account && (
+                              <span className="inline-flex items-center bg-zinc-100 text-zinc-700 px-2 py-0.5 rounded text-[10px] font-semibold border border-zinc-200">
+                                Category: {inc.account.code} - {inc.account.name}
+                              </span>
+                            )}
+                            {inc.paymentAccount && (
+                              <span className="inline-flex items-center bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-[10px] font-semibold border border-blue-100">
+                                Deposited to: {inc.paymentAccount.code} - {inc.paymentAccount.name}
+                              </span>
+                            )}
+                          </div>
                           {inc.imageUrl && (
-                            <a href={inc.imageUrl} target="_blank" rel="noreferrer" className="text-blue-600 text-xs mt-1 flex items-center gap-1 hover:text-blue-700 w-fit font-medium">
+                            <a href={inc.imageUrl} target="_blank" rel="noreferrer" className="text-blue-600 text-xs mt-1.5 flex items-center gap-1 hover:text-blue-700 w-fit font-medium">
                               <ImageIcon className="w-3.5 h-3.5" /> View Proof
                             </a>
                           )}

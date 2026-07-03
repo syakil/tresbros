@@ -190,12 +190,14 @@ namespace backend.Controllers
                 var cashOrReceivableCode = order.PaymentMethod == "MIDTRANS" ? "1120" : "1110";
                 var cashAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == cashOrReceivableCode) ?? new ChartOfAccount { Code = cashOrReceivableCode, Name = order.PaymentMethod == "MIDTRANS" ? "Piutang Midtrans" : "Kas Kecil", Type = "ASSET" };
                 var salesAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "4110") ?? new ChartOfAccount { Code = "4110", Name = "Pendapatan Penjualan", Type = "REVENUE" };
+                var discountAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "4120") ?? new ChartOfAccount { Code = "4120", Name = "Diskon & Promo", Type = "REVENUE" };
                 var cogsAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "5110") ?? new ChartOfAccount { Code = "5110", Name = "HPP", Type = "EXPENSE" };
                 var inventoryAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "1140") ?? new ChartOfAccount { Code = "1140", Name = "Persediaan Bahan Baku", Type = "ASSET" };
                 var taxAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "2120") ?? new ChartOfAccount { Code = "2120", Name = "Hutang Pajak (PB1)", Type = "LIABILITY" };
 
                 if (cashAccount.Id == 0) _context.ChartOfAccounts.Add(cashAccount);
                 if (salesAccount.Id == 0) _context.ChartOfAccounts.Add(salesAccount);
+                if (discountAccount.Id == 0) _context.ChartOfAccounts.Add(discountAccount);
                 if (cogsAccount.Id == 0) _context.ChartOfAccounts.Add(cogsAccount);
                 if (inventoryAccount.Id == 0) _context.ChartOfAccounts.Add(inventoryAccount);
                 if (taxAccount.Id == 0) _context.ChartOfAccounts.Add(taxAccount);
@@ -204,7 +206,7 @@ namespace backend.Controllers
                 bool isTaxEnabled = taxSetting?.Value == "true";
                 
                 double taxAmount = isTaxEnabled ? order.TotalAmount - (order.TotalAmount / 1.11) : 0;
-                double salesRevenue = order.TotalAmount - taxAmount;
+                double salesRevenue = (order.TotalAmount - taxAmount) + order.DiscountAmount;
 
                 var journal = new JournalEntry 
                 {
@@ -217,6 +219,11 @@ namespace backend.Controllers
                 journal.Lines.Add(new JournalEntryLine { Account = cashAccount, Debit = order.TotalAmount, Credit = 0 });
                 journal.Lines.Add(new JournalEntryLine { Account = salesAccount, Debit = 0, Credit = salesRevenue });
                 
+                if (order.DiscountAmount > 0)
+                {
+                    journal.Lines.Add(new JournalEntryLine { Account = discountAccount, Debit = order.DiscountAmount, Credit = 0 });
+                }
+
                 if (isTaxEnabled && taxAmount > 0)
                 {
                     journal.Lines.Add(new JournalEntryLine { Account = taxAccount, Debit = 0, Credit = taxAmount });

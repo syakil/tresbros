@@ -128,9 +128,9 @@ export default function UsersPage() {
   return (
     <div className="flex flex-col gap-6 max-w-6xl mx-auto w-full">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-display font-bold text-brand-cream">User Management</h1>
+        <h1 className="text-3xl font-display font-bold text-zinc-900">User Management</h1>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <p className="text-brand-sage text-sm md:text-base">Manage cashier and administrator access accounts</p>
+          <p className="text-zinc-500 text-sm md:text-base">Manage cashier and administrator access accounts</p>
           <Button variant="primary" className="shadow-md w-full md:w-auto justify-center" onClick={() => { resetForm(); setShowForm(true); }}>
             <Plus className="w-4 h-4 mr-2" /> Add User
           </Button>
@@ -138,59 +138,59 @@ export default function UsersPage() {
       </div>
 
       {showForm && (
-        <Card variant="olive" className="relative z-20 bg-black/40 border-brand-warm/30 animate-in fade-in slide-in-from-top-4">
-          <h2 className="text-lg font-bold text-brand-cream mb-4 border-b border-white/10 pb-2">
+        <Card className="relative z-20 bg-white border border-zinc-200 shadow-md p-6 rounded-2xl animate-in fade-in slide-in-from-top-4">
+          <h2 className="text-lg font-bold text-zinc-900 mb-4 border-b border-zinc-100 pb-2">
             {editData ? 'Edit User Data' : 'Add New User'}
           </h2>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs text-brand-sage mb-1 block">Username</label>
+                <label className="text-xs font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Username</label>
                 <input 
                   type="text" 
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="e.g., cashier1" 
-                  className="w-full bg-black/20 border border-white/10 text-brand-cream rounded-xl px-4 py-3 focus:outline-none focus:border-brand-warm transition" 
+                  className="w-full bg-white border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition" 
                 />
               </div>
               <div>
-                <label className="text-xs text-brand-sage mb-1 block">Full Name</label>
+                <label className="text-xs font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Full Name</label>
                 <input 
                   type="text" 
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="e.g., John Doe" 
-                  className="w-full bg-black/20 border border-white/10 text-brand-cream rounded-xl px-4 py-3 focus:outline-none focus:border-brand-warm transition" 
+                  className="w-full bg-white border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition" 
                 />
               </div>
               <div>
-                <label className="text-xs text-brand-sage mb-1 block">Password</label>
+                <label className="text-xs font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Password</label>
                 <input 
                   type="text" 
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={editData ? "Leave empty if you don't want to change" : "Password for login"} 
-                  className="w-full bg-black/20 border border-white/10 text-brand-cream rounded-xl px-4 py-3 focus:outline-none focus:border-brand-warm transition" 
+                  className="w-full bg-white border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition" 
                 />
               </div>
               <div className="flex gap-4">
                 <div className="flex-1">
-                  <label className="text-xs text-brand-sage mb-1 block">Role</label>
+                  <label className="text-xs font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Role</label>
                   <CustomSelect
                     value={roleId.toString()}
                     onChange={(v) => setRoleId(Number(v))}
-                    className="bg-black/20 border border-white/10 text-brand-cream rounded-xl px-4 py-3"
+                    className="bg-white border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3"
                     options={roles.map((r: any) => ({ value: r.id.toString(), label: r.name }))}
                     placeholder="Select Role"
                   />
                 </div>
                 <div className="w-24">
-                  <label className="text-xs text-brand-sage mb-1 block">Active Status</label>
+                  <label className="text-xs font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Active Status</label>
                   <CustomSelect
                     value={isActive ? "true" : "false"}
                     onChange={(v) => setIsActive(v === "true")}
-                    className="bg-black/20 border border-white/10 text-brand-cream rounded-xl px-4 py-3"
+                    className="bg-white border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3"
                     options={[
                       { value: "true", label: 'Active' },
                       { value: "false", label: 'Inactive' }
@@ -210,66 +210,66 @@ export default function UsersPage() {
         </Card>
       )}
 
-      <Card variant="olive" className="p-0 overflow-hidden shadow-xl border-white/10">
+      <Card className="p-0 overflow-hidden shadow-sm border border-zinc-200 bg-white rounded-2xl">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-brand-sage min-w-[800px]">
-            <thead className="bg-black/40 text-brand-cream border-b border-white/10">
+          <table className="w-full text-left text-sm text-zinc-600 min-w-[800px]">
+            <thead className="bg-zinc-50 text-zinc-500 text-xs font-semibold uppercase tracking-wider border-b border-zinc-200">
               <tr>
-                <th className="px-6 py-5 font-semibold">Username</th>
-                <th className="px-6 py-5 font-semibold">Full Name</th>
-                <th className="px-6 py-5 font-semibold">Role / Access</th>
-                <th className="px-6 py-5 font-semibold">Status</th>
-                <th className="px-6 py-5 font-semibold text-right">Actions</th>
+                <th className="px-6 py-4">Username</th>
+                <th className="px-6 py-4">Full Name</th>
+                <th className="px-6 py-4">Role / Access</th>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-zinc-100">
               {isLoading && (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-brand-sage">Loading user data...</td>
+                  <td colSpan={5} className="px-6 py-8 text-center text-zinc-500">Loading user data...</td>
                 </tr>
               )}
               {!isLoading && users.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-brand-sage">
+                  <td colSpan={5} className="px-6 py-8 text-center text-zinc-500">
                     No registered users yet.
                   </td>
                 </tr>
               )}
               {users.map((user: any) => (
-                <tr key={user.id} className="hover:bg-white/5 transition-colors">
-                  <td className="px-6 py-4 font-mono font-medium text-brand-warm">
+                <tr key={user.id} className="hover:bg-zinc-50 transition-colors">
+                  <td className="px-6 py-4 font-mono font-bold text-blue-600">
                     {user.username}
                   </td>
-                  <td className="px-6 py-4 text-brand-cream font-medium">
+                  <td className="px-6 py-4 text-zinc-900 font-medium">
                     {user.fullName}
                   </td>
                   <td className="px-6 py-4">
                     {user.role ? (
-                      <span className="inline-flex items-center gap-1.5 bg-brand-warm/20 text-brand-warm px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider">
+                      <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider border border-blue-100">
                         <ShieldAlert className="w-3.5 h-3.5" /> {user.role.name}
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 bg-white/10 text-brand-sage px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider">
+                      <span className="inline-flex items-center gap-1.5 bg-zinc-100 text-zinc-500 px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider border border-zinc-200">
                         <Users className="w-3.5 h-3.5" /> None
                       </span>
                     )}
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${user.isActive ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${user.isActive ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
                       {user.isActive ? 'Active' : 'Inactive'}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right whitespace-nowrap">
                     <button
                       onClick={() => handleEditClick(user)}
-                      className="text-brand-sage hover:text-brand-cream bg-black/20 hover:bg-black/40 border border-white/5 p-2 rounded-lg transition mr-2"
+                      className="p-2 bg-zinc-50 hover:bg-zinc-100 text-zinc-600 hover:text-zinc-950 rounded-lg transition-colors border border-zinc-200 mr-2"
                       title="Edit"
                     >
                       <Pencil className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handleDelete(user.id, user.username)}
-                      className="text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 p-2 rounded-lg transition"
+                      className="p-2 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 rounded-lg transition border border-red-200"
                       title="Delete"
                     >
                       <Trash2 className="w-4 h-4" />

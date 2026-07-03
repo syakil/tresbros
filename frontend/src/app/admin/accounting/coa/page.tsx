@@ -25,54 +25,54 @@ export default function CoaPage() {
     }
   };
 
-  if (loading) return <div className="p-6 text-brand-cream">Loading Chart of Accounts...</div>;
+  if (loading) return <div className="p-6 text-zinc-500">Loading Chart of Accounts...</div>;
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-display font-bold text-brand-cream">Chart of Accounts</h1>
-          <p className="text-brand-sage">Manage system financial accounts</p>
+          <h1 className="text-3xl font-display font-bold text-zinc-900">Chart of Accounts</h1>
+          <p className="text-zinc-500">Manage system financial accounts</p>
         </div>
         <Button variant="primary">
           <Plus className="w-4 h-4 mr-2" /> Add Account
         </Button>
       </div>
 
-      <Card className="p-0 overflow-hidden">
+      <Card className="p-0 overflow-hidden border border-zinc-200 bg-white">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="bg-black/40 text-brand-sage text-sm border-b border-white/5">
+            <thead className="bg-zinc-50 text-zinc-500 text-xs font-semibold uppercase tracking-wider border-b border-zinc-200">
               <tr>
-                <th className="p-4 font-medium">Code</th>
-                <th className="p-4 font-medium">Account Name</th>
-                <th className="p-4 font-medium">Type</th>
-                <th className="p-4 font-medium text-right">Actions</th>
+                <th className="p-4">Code</th>
+                <th className="p-4">Account Name</th>
+                <th className="p-4">Type</th>
+                <th className="p-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5 text-brand-cream text-sm">
+            <tbody className="divide-y divide-zinc-100 text-zinc-700 text-sm">
               {coas.map((coa) => (
-                <tr key={coa.id} className="hover:bg-black/20 transition-colors">
-                  <td className="p-4 font-mono font-bold text-brand-warm">{coa.code}</td>
-                  <td className="p-4">{coa.name}</td>
+                <tr key={coa.id} className="hover:bg-zinc-50 transition-colors">
+                  <td className="p-4 font-mono font-bold text-blue-600">{coa.code}</td>
+                  <td className="p-4 text-zinc-900">{coa.name}</td>
                   <td className="p-4">
-                    <span className="px-2 py-1 bg-brand-sage/20 text-brand-sage rounded text-xs font-bold">
+                    <span className="px-2.5 py-1 bg-zinc-100 text-zinc-700 rounded text-xs font-bold">
                       {coa.type}
                     </span>
                   </td>
                   <td className="p-4 text-right flex justify-end gap-2">
-                    <button className="p-2 bg-black/40 hover:bg-brand-olive rounded-lg transition-colors border border-white/5">
-                      <Edit2 className="w-4 h-4 text-brand-cream" />
+                    <button className="p-2 bg-zinc-50 hover:bg-zinc-100 text-zinc-600 hover:text-zinc-950 rounded-lg transition-colors border border-zinc-200">
+                      <Edit2 className="w-4 h-4" />
                     </button>
-                    <button className="p-2 bg-black/40 hover:bg-red-500/80 rounded-lg transition-colors border border-white/5">
-                      <Trash2 className="w-4 h-4 text-white" />
+                    <button className="p-2 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 rounded-lg transition-colors border border-red-200">
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </td>
                 </tr>
               ))}
               {coas.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="p-8 text-center text-brand-sage">No accounts registered yet.</td>
+                  <td colSpan={4} className="p-8 text-center text-zinc-500">No accounts registered yet.</td>
                 </tr>
               )}
             </tbody>

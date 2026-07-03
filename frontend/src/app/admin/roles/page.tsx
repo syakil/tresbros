@@ -125,13 +125,12 @@ export default function RolesPage() {
       deleteRole.mutate(id);
     }
   };
-
   return (
     <div className="flex flex-col gap-6 max-w-6xl mx-auto w-full">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-display font-bold text-brand-cream">Role Management</h1>
+        <h1 className="text-3xl font-display font-bold text-zinc-900">Role Management</h1>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <p className="text-brand-sage text-sm md:text-base">Manage access rights and system roles</p>
+          <p className="text-zinc-500 text-sm md:text-base">Manage access rights and system roles</p>
           <Button variant="primary" className="shadow-md w-full md:w-auto justify-center" onClick={() => { resetForm(); setShowForm(true); }}>
             <Plus className="w-4 h-4 mr-2" /> Add Role
           </Button>
@@ -139,42 +138,42 @@ export default function RolesPage() {
       </div>
 
       {showForm && (
-        <Card variant="olive" className="bg-black/40 border-brand-warm/30 animate-in fade-in slide-in-from-top-4">
-          <h2 className="text-lg font-bold text-brand-cream mb-4 border-b border-white/10 pb-2">
+        <Card className="relative z-20 bg-white border border-zinc-200 shadow-md p-6 rounded-2xl animate-in fade-in slide-in-from-top-4">
+          <h2 className="text-lg font-bold text-zinc-900 mb-4 border-b border-zinc-100 pb-2">
             {editData ? 'Edit Role Data' : 'Add New Role'}
           </h2>
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs text-brand-sage mb-1 block">Role Name</label>
+                <label className="text-xs font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Role Name</label>
                 <input 
                   type="text" 
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g., Branch Manager" 
-                  className="w-full bg-black/20 border border-white/10 text-brand-cream rounded-xl px-4 py-3 focus:outline-none focus:border-brand-warm transition" 
+                  className="w-full bg-white border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition" 
                 />
               </div>
               <div>
-                <label className="text-xs text-brand-sage mb-1 block">Short Description</label>
+                <label className="text-xs font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Short Description</label>
                 <input 
                   type="text" 
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Optional" 
-                  className="w-full bg-black/20 border border-white/10 text-brand-cream rounded-xl px-4 py-3 focus:outline-none focus:border-brand-warm transition" 
+                  className="w-full bg-white border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition" 
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-xs text-brand-sage mb-3 block">Select Menu Access Rights</label>
+              <label className="text-xs font-semibold text-zinc-600 mb-3 block uppercase tracking-wider">Select Menu Access Rights</label>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {MODULES.map(mod => (
-                  <label key={mod.id} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition ${permissions.includes(mod.id) ? 'bg-brand-warm/10 border-brand-warm text-brand-cream' : 'bg-black/20 border-white/10 text-brand-sage hover:bg-white/5'}`}>
+                  <label key={mod.id} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition ${permissions.includes(mod.id) ? 'bg-blue-50 border-blue-500 text-blue-900' : 'bg-white border-zinc-200 text-zinc-600 hover:bg-zinc-50'}`}>
                     <input 
                       type="checkbox" 
-                      className="w-4 h-4 rounded accent-brand-warm"
+                      className="w-4 h-4 rounded accent-blue-600"
                       checked={permissions.includes(mod.id)}
                       onChange={() => togglePermission(mod.id)}
                     />
@@ -184,7 +183,7 @@ export default function RolesPage() {
               </div>
             </div>
             
-            <div className="flex justify-end gap-3 mt-2 border-t border-white/10 pt-4">
+            <div className="flex justify-end gap-3 mt-2 border-t border-zinc-100 pt-4">
               <Button type="button" variant="outline" onClick={resetForm}>Cancel</Button>
               <Button type="submit" variant="primary" disabled={createRole.isPending || updateRole.isPending}>
                 {createRole.isPending || updateRole.isPending ? 'Saving...' : 'Save Role'}
@@ -194,26 +193,26 @@ export default function RolesPage() {
         </Card>
       )}
 
-      <Card variant="olive" className="p-0 overflow-hidden shadow-xl border-white/10">
+      <Card className="p-0 overflow-hidden shadow-sm border border-zinc-200 bg-white rounded-2xl">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-brand-sage min-w-[800px]">
-            <thead className="bg-black/40 text-brand-cream border-b border-white/10">
+          <table className="w-full text-left text-sm text-zinc-600 min-w-[800px]">
+            <thead className="bg-zinc-50 text-zinc-500 text-xs font-semibold uppercase tracking-wider border-b border-zinc-200">
               <tr>
-                <th className="px-6 py-5 font-semibold w-1/4">Role Name</th>
-                <th className="px-6 py-5 font-semibold w-1/3">Description</th>
-                <th className="px-6 py-5 font-semibold text-center w-1/4">Number of Menu Accesses</th>
-                <th className="px-6 py-5 font-semibold text-right">Actions</th>
+                <th className="px-6 py-4 font-semibold w-1/4">Role Name</th>
+                <th className="px-6 py-4 font-semibold w-1/3">Description</th>
+                <th className="px-6 py-4 font-semibold text-center w-1/4">Number of Menu Accesses</th>
+                <th className="px-6 py-4 font-semibold text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-zinc-100">
               {isLoading && (
                 <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-brand-sage">Loading role data...</td>
+                  <td colSpan={4} className="px-6 py-8 text-center text-zinc-500">Loading role data...</td>
                 </tr>
               )}
               {!isLoading && roles.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-brand-sage">
+                  <td colSpan={4} className="px-6 py-8 text-center text-zinc-500">
                     No registered roles yet.
                   </td>
                 </tr>
@@ -223,31 +222,31 @@ export default function RolesPage() {
                 try { perms = JSON.parse(role.permissions || '[]'); } catch {}
                 
                 return (
-                  <tr key={role.id} className="hover:bg-white/5 transition-colors">
+                  <tr key={role.id} className="hover:bg-zinc-50 transition-colors">
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center gap-2 text-brand-warm font-bold uppercase tracking-wider text-sm">
-                        <ClipboardList className="w-4 h-4" /> {role.name}
+                      <span className="inline-flex items-center gap-2 text-blue-600 font-bold uppercase tracking-wider text-sm">
+                        <ClipboardList className="w-4.5 h-4.5 text-blue-500" /> {role.name}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-brand-cream/80">
+                    <td className="px-6 py-4 text-zinc-700">
                       {role.description || '-'}
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <span className="bg-black/40 border border-white/10 px-3 py-1 rounded-full text-xs font-medium">
+                      <span className="bg-zinc-100 border border-zinc-200 text-zinc-700 px-3 py-1 rounded-full text-xs font-medium">
                         {perms.length} Allowed Menus
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right whitespace-nowrap">
                       <button
                         onClick={() => handleEditClick(role)}
-                        className="text-brand-sage hover:text-brand-cream bg-black/20 hover:bg-black/40 border border-white/5 p-2 rounded-lg transition mr-2"
+                        className="p-2 bg-zinc-50 hover:bg-zinc-100 text-zinc-600 hover:text-zinc-950 rounded-lg transition-colors border border-zinc-200 mr-2"
                         title="Edit"
                       >
                         <Pencil className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(role.id, role.name)}
-                        className="text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 p-2 rounded-lg transition"
+                        className="p-2 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 rounded-lg transition border border-red-200"
                         title="Delete"
                       >
                         <Trash2 className="w-4 h-4" />

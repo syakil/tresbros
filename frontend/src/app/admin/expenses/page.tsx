@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { CustomSelect } from '@/components/ui/CustomSelect';
 import { Plus, Trash2, ReceiptText, Search, ChevronLeft, ChevronRight, Edit, ImageIcon, X } from 'lucide-react';
 
 export default function ExpensesPage() {
@@ -23,6 +24,10 @@ export default function ExpensesPage() {
   const [imageUrl, setImageUrl] = useState<string>('');
   const [uploading, setUploading] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+
+  // COA mapping states
+  const [accountId, setAccountId] = useState<string>('');
+  const [paymentAccountId, setPaymentAccountId] = useState<string>('');
 
   // Search & Pagination States
   const [searchQuery, setSearchQuery] = useState('');
@@ -46,6 +51,20 @@ export default function ExpensesPage() {
     }
   });
 
+  const { data: coas = [] } = useQuery<any[]>({
+    queryKey: ['coas'],
+    queryFn: async () => {
+      const res = await axios.get('/api/accounting/coa');
+      return res.data;
+    }
+  });
+
+  const expenseAccounts = coas.filter((c: any) => c.type === 'EXPENSE' && c.isActive);
+  const assetAccounts = coas.filter((c: any) => c.type === 'ASSET' && c.code !== '1140' && c.isActive);
+
+  const expenseOptions = expenseAccounts.map((c: any) => ({ value: c.id.toString(), label: `${c.code} - ${c.name}` }));
+  const assetOptions = assetAccounts.map((c: any) => ({ value: c.id.toString(), label: `${c.code} - ${c.name}` }));
+
   const resetForm = () => {
     setDescription('');
     setAmount('');
@@ -53,10 +72,12 @@ export default function ExpensesPage() {
     setSelectedFile(null);
     setImageUrl('');
     setEditingId(null);
+    setAccountId('');
+    setPaymentAccountId('');
   };
 
   const createExpense = useMutation({
-    mutationFn: async (newExpense: { description: string; amount: number; date: string; imageUrl?: string }) => {
+    mutationFn: async (newExpense: { description: string; amount: number; date: string; imageUrl?: string; accountId?: number | null; paymentAccountId?: number | null }) => {
       await axios.post('/api/expenses', newExpense);
     },
     onSuccess: () => {
@@ -70,7 +91,7 @@ export default function ExpensesPage() {
   });
 
   const updateExpense = useMutation({
-    mutationFn: async (updatedExpense: { id: number; description: string; amount: number; date: string; imageUrl?: string }) => {
+    mutationFn: async (updatedExpense: { id: number; description: string; amount: number; date: string; imageUrl?: string; accountId?: number | null; paymentAccountId?: number | null }) => {
       const { id, ...data } = updatedExpense;
       await axios.put(`/api/expenses/${id}`, data);
     },
@@ -125,14 +146,18 @@ export default function ExpensesPage() {
         description,
         amount: parseFloat(amount),
         date: new Date(date).toISOString(),
-        imageUrl: uploadedUrl
+        imageUrl: uploadedUrl,
+        accountId: accountId ? parseInt(accountId) : null,
+        paymentAccountId: paymentAccountId ? parseInt(paymentAccountId) : null
       });
     } else {
       createExpense.mutate({
         description,
         amount: parseFloat(amount),
         date: new Date(date).toISOString(),
-        imageUrl: uploadedUrl
+        imageUrl: uploadedUrl,
+        accountId: accountId ? parseInt(accountId) : null,
+        paymentAccountId: paymentAccountId ? parseInt(paymentAccountId) : null
       });
     }
   };
@@ -148,6 +173,8 @@ export default function ExpensesPage() {
     
     setImageUrl(exp.imageUrl || '');
     setSelectedFile(null);
+    setAccountId(exp.accountId ? exp.accountId.toString() : '');
+    setPaymentAccountId(exp.paymentAccountId ? exp.paymentAccountId.toString() : '');
   };
 
   const formatRupiah = (num: number) => {
@@ -273,6 +300,26 @@ export default function ExpensesPage() {
               </div>
             </div>
             <div>
+              <label className="block text-sm font-medium text-zinc-700 mb-1">Expense Category (COA)</label>
+              <CustomSelect
+                value={accountId}
+                onChange={setAccountId}
+                options={expenseOptions}
+                placeholder="-- Select Expense Account --"
+                className="bg-white border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3 text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-zinc-700 mb-1">Paid From (COA)</label>
+              <CustomSelect
+                value={paymentAccountId}
+                onChange={setPaymentAccountId}
+                options={assetOptions}
+                placeholder="-- Select Payment/Cash Account --"
+                className="bg-white border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3 text-sm"
+              />
+            </div>
+            <div>
               <label className="block text-sm font-medium text-zinc-700 mb-1">Payment Proof / Receipt (Optional)</label>
               <input
                 type="file"
@@ -355,6 +402,18 @@ export default function ExpensesPage() {
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
                           <span className="font-medium text-zinc-900">{exp.description}</span>
+                          <div className="flex flex-wrap gap-1.5 mt-1">
+                            {exp.account && (
+                              <span className="inline-flex items-center bg-zinc-100 text-zinc-700 px-2 py-0.5 rounded text-[10px] font-semibold border border-zinc-200">
+                                Category: {exp.account.code} - {exp.account.name}
+                              </span>
+                            )}
+                            {exp.paymentAccount && (
+                              <span className="inline-flex items-center bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-[10px] font-semibold border border-blue-100">
+                                Paid via: {exp.paymentAccount.code} - {exp.paymentAccount.name}
+                              </span>
+                            )}
+                          </div>
                           {exp.imageUrl && (
                             <a href={exp.imageUrl} target="_blank" rel="noreferrer" className="text-blue-500 text-xs mt-1.5 flex items-center gap-1.5 hover:text-blue-700 hover:underline w-fit font-medium">
                               <ImageIcon className="w-3.5 h-3.5" /> View Proof

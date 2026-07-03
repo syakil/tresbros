@@ -160,29 +160,29 @@ export default function PurchasesPage() {
       {/* Toast Notification */}
       {toastMessage && (
         <div className={`fixed top-4 right-4 z-[100] px-4 py-3 rounded-lg shadow-lg border animate-in slide-in-from-top-2 fade-in duration-300 flex items-center gap-3
-          ${toastMessage.type === 'success' ? 'bg-brand-olive/95 border-brand-sage/50 text-brand-cream' : 'bg-red-900/95 border-red-500/50 text-red-200'}`}
+          ${toastMessage.type === 'success' ? 'bg-emerald-600 border-emerald-500 text-white' : 'bg-red-600 border-red-500 text-white'}`}
         >
-          {toastMessage.type === 'success' ? <ShoppingCart className="w-5 h-5" /> : <X className="w-5 h-5" />}
+          {toastMessage.type === 'success' ? <ShoppingCart className="w-5 h-5 text-white" /> : <X className="w-5 h-5 text-white" />}
           <p className="font-medium text-sm">{toastMessage.text}</p>
         </div>
       )}
 
       {/* Konfirmasi Batal PO */}
       {confirmCancelId && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <Card variant="olive" className="w-full max-w-md bg-[#1C1F1D] border-red-500/30 shadow-2xl p-6 flex flex-col gap-4 text-center">
-            <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-2 text-red-400">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-zinc-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <Card className="w-full max-w-md bg-white border border-zinc-200 shadow-2xl p-6 flex flex-col gap-4 text-center rounded-2xl">
+            <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-2 text-red-600">
               <Trash2 className="w-6 h-6" />
             </div>
-            <h3 className="text-xl font-display font-bold text-brand-cream">Cancel Transaction?</h3>
-            <p className="text-sm text-brand-sage">
+            <h3 className="text-xl font-display font-bold text-zinc-900">Cancel Transaction?</h3>
+            <p className="text-sm text-zinc-500">
               Are you sure you want to cancel this Purchase Order? Raw material stocks associated with this transaction will be reduced automatically. This action cannot be undone.
             </p>
             <div className="flex gap-3 justify-center mt-4">
               <Button variant="outline" onClick={() => setConfirmCancelId(null)}>Back</Button>
               <Button 
                 variant="primary" 
-                className="bg-red-500 hover:bg-red-600 text-white border-none shadow-[0_4px_20px_rgba(239,68,68,0.4)] hover:-translate-y-0.5 transition-all"
+                className="bg-red-600 hover:bg-red-700 text-white border-none shadow-[0_4px_20px_rgba(220,38,38,0.4)] hover:-translate-y-0.5 transition-all"
                 onClick={confirmAction}
                 disabled={cancelPurchase.isPending}
               >
@@ -194,9 +194,9 @@ export default function PurchasesPage() {
       )}
 
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-display font-bold text-brand-cream">Raw Material Purchase</h1>
+        <h1 className="text-3xl font-display font-bold text-zinc-900">Raw Material Purchase</h1>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <p className="text-brand-sage text-sm md:text-base">Record raw material purchase transactions (Purchase Orders) from suppliers</p>
+          <p className="text-zinc-500 text-sm md:text-base">Record raw material purchase transactions (Purchase Orders) from suppliers</p>
           <Button variant="primary" className="shadow-md w-full md:w-auto justify-center" onClick={() => setShowAdd(!showAdd)}>
             <Plus className="w-4 h-4 mr-2" /> Create New Purchase
           </Button>
@@ -204,41 +204,41 @@ export default function PurchasesPage() {
       </div>
 
       {showAdd && (
-        <Card variant="olive" className="bg-black/40 border border-brand-warm/30 mb-2">
+        <Card className="bg-white border border-zinc-200 shadow-md p-6 flex flex-col gap-6 rounded-2xl">
           <div className="flex flex-col gap-6">
-            <div className="flex justify-between items-center border-b border-white/10 pb-4">
-              <h3 className="font-semibold text-brand-cream flex items-center gap-2">
-                <ShoppingCart className="w-5 h-5 text-brand-warm" />
+            <div className="flex justify-between items-center border-b border-zinc-100 pb-4">
+              <h3 className="font-semibold text-zinc-900 flex items-center gap-2">
+                <ShoppingCart className="w-5 h-5 text-blue-600" />
                 New Purchase Input Form
               </h3>
-              <p className="text-sm text-brand-sage">PO-{new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 10)}</p>
+              <p className="text-sm text-zinc-400 font-mono">PO-{new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 10)}</p>
             </div>
 
             <div className="flex flex-col md:flex-row gap-6">
               <div className="w-full md:w-1/2">
-                <label className="text-xs text-brand-sage mb-1.5 block">Supplier / Store Name</label>
+                <label className="text-xs font-semibold text-zinc-600 mb-1.5 block uppercase tracking-wider">Supplier / Store Name</label>
                 <input
                   type="text"
                   value={supplier}
                   onChange={(e) => setSupplier(e.target.value)}
                   placeholder="e.g., PT Kopi Maju Jaya"
-                  className="w-full bg-black/20 border border-white/10 text-brand-cream rounded-xl px-4 py-3 focus:outline-none focus:border-brand-warm"
+                  className="w-full bg-white border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
                 />
               </div>
 
               <div className="w-full md:w-1/2">
-                <label className="text-xs text-brand-sage mb-1.5 block">Upload Receipt Photo (Optional)</label>
+                <label className="text-xs font-semibold text-zinc-600 mb-1.5 block uppercase tracking-wider">Upload Receipt Photo (Optional)</label>
                 <div className="flex items-center gap-4">
-                  <label className="cursor-pointer bg-black/40 hover:bg-black/60 border border-white/10 text-brand-cream rounded-xl px-4 py-3 flex items-center gap-2 transition-colors w-full md:w-auto justify-center">
-                    <UploadCloud className="w-4 h-4 text-brand-warm" />
+                  <label className="cursor-pointer bg-white hover:bg-zinc-50 border border-zinc-200 text-zinc-700 rounded-xl px-4 py-3 flex items-center gap-2 transition-colors w-full md:w-auto justify-center shadow-sm">
+                    <UploadCloud className="w-4 h-4 text-blue-600" />
                     <span className="text-sm">{receiptFile ? 'Change File' : 'Choose Image File'}</span>
                     <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
                   </label>
                   {receiptFile && (
                     <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <ImageIcon className="w-4 h-4 text-brand-sage shrink-0" />
-                      <span className="text-xs text-brand-sage truncate">{receiptFile.name}</span>
-                      <button onClick={() => { setReceiptFile(null); setReceiptBase64(''); }} className="text-red-400 hover:text-red-300 ml-auto">
+                      <ImageIcon className="w-4 h-4 text-zinc-500 shrink-0" />
+                      <span className="text-xs text-zinc-500 truncate">{receiptFile.name}</span>
+                      <button onClick={() => { setReceiptFile(null); setReceiptBase64(''); }} className="text-red-500 hover:text-red-700 ml-auto">
                         <X className="w-4 h-4" />
                       </button>
                     </div>
@@ -248,12 +248,12 @@ export default function PurchasesPage() {
             </div>
 
             <div className="space-y-3">
-              <label className="text-xs text-brand-sage block border-b border-white/5 pb-2">Purchase Item Details</label>
+              <label className="text-xs font-semibold text-zinc-500 block border-b border-zinc-100 pb-2 uppercase tracking-wider">Purchase Item Details</label>
 
               {purchaseItems.map((item, index) => (
-                <div key={index} className="flex flex-col md:flex-row gap-3 items-start md:items-end bg-black/20 p-4 rounded-xl border border-white/5 relative">
+                <div key={index} className="flex flex-col md:flex-row gap-3 items-start md:items-end bg-zinc-50 p-4 rounded-xl border border-zinc-200 relative">
                   <div className="flex-1 w-full">
-                    <label className="text-[10px] uppercase tracking-wider text-brand-sage mb-1 block">Raw Material</label>
+                    <label className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1 font-semibold">Raw Material</label>
                     <CustomSelect
                       value={item.materialId}
                       onChange={(val) => {
@@ -261,7 +261,7 @@ export default function PurchasesPage() {
                         newItems[index].materialId = val;
                         setPurchaseItems(newItems);
                       }}
-                      className="bg-black/40 border border-white/10 text-brand-cream rounded-lg px-3 py-2.5"
+                      className="bg-white border border-zinc-200 text-zinc-900 rounded-lg px-3 py-2.5"
                       options={[
                         { value: '', label: 'Select Raw Material' },
                         ...materials.map((m: any) => ({ value: m.id.toString(), label: `${m.name} (${m.unit})` }))
@@ -269,7 +269,7 @@ export default function PurchasesPage() {
                     />
                   </div>
                   <div className="w-full md:w-32">
-                    <label className="text-[10px] uppercase tracking-wider text-brand-sage mb-1 block">Quantity</label>
+                    <label className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1 font-semibold">Quantity</label>
                     <input
                       type="number"
                       value={item.qty}
@@ -279,11 +279,11 @@ export default function PurchasesPage() {
                         setPurchaseItems(newItems);
                       }}
                       placeholder="0"
-                      className="w-full bg-black/40 border border-white/10 text-brand-cream rounded-lg px-3 py-2.5 focus:outline-none focus:border-brand-warm"
+                      className="w-full bg-white border border-zinc-200 text-zinc-900 rounded-lg px-3 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                     />
                   </div>
                   <div className="w-full md:w-48">
-                    <label className="text-[10px] uppercase tracking-wider text-brand-sage mb-1 block">Total Purchase Price (Rp)</label>
+                    <label className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1 font-semibold">Total Purchase Price (Rp)</label>
                     <input
                       type="number"
                       value={item.price}
@@ -293,7 +293,7 @@ export default function PurchasesPage() {
                         setPurchaseItems(newItems);
                       }}
                       placeholder="0"
-                      className="w-full bg-black/40 border border-white/10 text-brand-cream rounded-lg px-3 py-2.5 focus:outline-none focus:border-brand-warm"
+                      className="w-full bg-white border border-zinc-200 text-zinc-900 rounded-lg px-3 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                     />
                   </div>
                   
@@ -301,7 +301,7 @@ export default function PurchasesPage() {
                   {purchaseItems.length > 1 && (
                     <button 
                       onClick={() => removeLineItem(index)}
-                      className="absolute top-2 right-2 md:relative md:top-auto md:right-auto md:mb-1 w-8 h-8 md:w-10 md:h-10 shrink-0 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg flex items-center justify-center transition border border-red-500/20"
+                      className="absolute top-2 right-2 md:relative md:top-auto md:right-auto md:mb-1 w-8 h-8 md:w-10 md:h-10 shrink-0 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg flex items-center justify-center transition border border-red-200"
                       title="Delete Row"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -310,21 +310,21 @@ export default function PurchasesPage() {
                 </div>
               ))}
 
-              <Button variant="outline" className="w-full md:w-auto mt-2 text-sm py-2" onClick={addLineItem}>
+              <Button variant="outline" className="w-full md:w-auto mt-2 text-sm py-2 text-zinc-600 border-zinc-200 hover:bg-zinc-50" onClick={addLineItem}>
                 <Plus className="w-4 h-4 mr-2" /> Add Item Row
               </Button>
             </div>
 
-            <div className="flex justify-end p-4 bg-brand-dark/50 rounded-xl border border-white/5">
+            <div className="flex justify-end p-4 bg-zinc-50 rounded-xl border border-zinc-200">
                <div className="text-right">
-                  <p className="text-xs text-brand-sage mb-1 uppercase tracking-wider font-bold">Total Purchase</p>
-                  <p className="text-2xl font-display font-bold text-brand-warm">
+                  <p className="text-xs text-zinc-500 mb-1 uppercase tracking-wider font-bold">Total Purchase</p>
+                  <p className="text-2xl font-display font-bold text-blue-600">
                     Rp {purchaseItems.reduce((acc, curr) => acc + (Number(curr.price) || 0), 0).toLocaleString('id-ID')}
                   </p>
                </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+            <div className="flex justify-end gap-3 pt-4 border-t border-zinc-100">
               <Button variant="outline" onClick={() => setShowAdd(false)}>
                 Cancel
               </Button>
@@ -337,72 +337,72 @@ export default function PurchasesPage() {
       )}
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-2">
-        <Card variant="olive" className="flex items-center gap-4 bg-black/40 p-4">
-          <div className="w-10 h-10 rounded-full bg-brand-warm/20 flex items-center justify-center shrink-0">
-            <FileText className="w-5 h-5 text-brand-warm" />
+        <Card className="flex items-center gap-4 bg-white border border-zinc-200 shadow-sm p-4">
+          <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+            <FileText className="w-5 h-5 text-blue-600" />
           </div>
           <div>
-            <p className="text-brand-sage text-[10px] md:text-xs font-medium uppercase tracking-wider">Total PO This Month</p>
-            <h3 className="text-lg md:text-xl font-display font-bold text-brand-cream">{thisMonthPurchases.length} Transactions</h3>
+            <p className="text-zinc-500 text-[10px] md:text-xs font-semibold uppercase tracking-wider">Total PO This Month</p>
+            <h3 className="text-lg md:text-xl font-display font-bold text-zinc-900">{thisMonthPurchases.length} Transactions</h3>
           </div>
         </Card>
-        <Card variant="olive" className="flex items-center gap-4 bg-black/40 p-4">
-          <div className="w-10 h-10 rounded-full bg-brand-olive/50 flex items-center justify-center border border-brand-sage/30 shrink-0">
-            <Building2 className="w-5 h-5 text-brand-sage" />
+        <Card className="flex items-center gap-4 bg-white border border-zinc-200 shadow-sm p-4">
+          <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
+            <Building2 className="w-5 h-5 text-emerald-600" />
           </div>
           <div>
-            <p className="text-brand-sage text-[10px] md:text-xs font-medium uppercase tracking-wider">Expenses This Month</p>
-            <h3 className="text-lg md:text-xl font-display font-bold text-brand-cream">Rp {totalPengeluaranBulanIni.toLocaleString('id-ID')}</h3>
+            <p className="text-zinc-500 text-[10px] md:text-xs font-semibold uppercase tracking-wider">Expenses This Month</p>
+            <h3 className="text-lg md:text-xl font-display font-bold text-zinc-900">Rp {totalPengeluaranBulanIni.toLocaleString('id-ID')}</h3>
           </div>
         </Card>
       </div>
 
-      <Card variant="olive" className="p-0 overflow-hidden shadow-xl border-white/10">
-        <div className="p-4 border-b border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-black/20">
-          <h3 className="font-semibold text-brand-cream">Recent Purchase History</h3>
+      <Card className="p-0 overflow-hidden shadow-sm border border-zinc-200 bg-white rounded-2xl">
+        <div className="p-4 border-b border-zinc-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-zinc-50">
+          <h3 className="font-semibold text-zinc-900">Recent Purchase History</h3>
           <div className="relative w-full md:w-auto">
-            <Search className="w-4 h-4 text-brand-sage absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="Search PO or Supplier..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-black/40 border border-white/10 text-sm text-brand-cream rounded-lg pl-9 pr-4 py-2 focus:outline-none focus:border-brand-warm w-full md:w-64"
+              className="bg-white border border-zinc-200 text-sm text-zinc-900 rounded-xl pl-9 pr-4 py-2 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 w-full md:w-64"
             />
           </div>
         </div>
 
         {/* Mobile View: Compact Cards */}
-        <div className="md:hidden flex flex-col bg-black/40 divide-y divide-white/5">
-          {isLoadingPurchases && <div className="p-6 text-center text-brand-sage text-sm">Loading data...</div>}
+        <div className="md:hidden flex flex-col bg-white divide-y divide-zinc-100">
+          {isLoadingPurchases && <div className="p-6 text-center text-zinc-500 text-sm">Loading data...</div>}
           {!isLoadingPurchases && filteredPurchases.length === 0 && (
-            <div className="p-6 text-center text-brand-sage text-sm">No transactions found.</div>
+            <div className="p-6 text-center text-zinc-500 text-sm">No transactions found.</div>
           )}
           {filteredPurchases.map((po: any) => (
-            <div key={po.id} className="p-4 flex flex-col gap-2" onClick={() => setSelectedPO(po)}>
+            <div key={po.id} className="p-4 flex flex-col gap-2 hover:bg-zinc-50 transition-colors cursor-pointer" onClick={() => setSelectedPO(po)}>
               <div className="flex justify-between items-start">
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs text-brand-warm font-bold">{po.purchaseNo}</span>
+                  <span className="font-mono text-xs text-blue-600 font-bold">{po.purchaseNo}</span>
                   {po.status === 'CANCELLED' && (
-                    <span className="bg-red-500/20 text-red-400 text-[8px] px-1.5 py-0.5 rounded-sm font-bold uppercase tracking-wider">Cancelled</span>
+                    <span className="bg-red-50 text-red-600 text-[8px] px-1.5 py-0.5 rounded-sm font-bold uppercase tracking-wider">Cancelled</span>
                   )}
                 </div>
-                <span className="bg-brand-sage/20 text-brand-sage text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
-                  Detail <ChevronRight className="inline w-3 h-3 ml-0.5" />
+                <span className="bg-zinc-100 text-zinc-600 text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider flex items-center">
+                  Detail <ChevronRight className="w-3 h-3 ml-0.5" />
                 </span>
               </div>
-              <p className="font-medium text-brand-cream text-lg">{po.supplierName}</p>
+              <p className="font-semibold text-zinc-900 text-base">{po.supplierName}</p>
               <div className="flex justify-between items-center text-sm mt-1">
-                <span className="flex items-center gap-1.5 text-brand-sage text-xs">
-                  <Calendar className="w-3 h-3" /> {new Date(po.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                <span className="flex items-center gap-1.5 text-zinc-500 text-xs">
+                  <Calendar className="w-3 h-3 text-zinc-400" /> {new Date(po.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </span>
-                <span className="flex items-center gap-1.5 text-brand-sage text-xs">
-                  {po.receiptUrl && <ImageIcon className="w-3 h-3 text-brand-warm" />} {po.items.length} Item
+                <span className="flex items-center gap-1.5 text-zinc-500 text-xs">
+                  {po.receiptUrl && <ImageIcon className="w-3 h-3 text-blue-500" />} {po.items.length} Item
                 </span>
               </div>
-              <div className="mt-2 bg-black/20 p-2.5 rounded-lg border border-white/5 flex justify-between items-center">
-                <span className="text-[10px] uppercase tracking-wider text-brand-sage font-bold">Total Purchase</span>
-                <span className="font-bold text-brand-cream">Rp {po.totalAmount.toLocaleString('id-ID')}</span>
+              <div className="mt-2 bg-zinc-50 p-2.5 rounded-lg border border-zinc-200 flex justify-between items-center">
+                <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-bold">Total Purchase</span>
+                <span className="font-bold text-zinc-900">Rp {po.totalAmount.toLocaleString('id-ID')}</span>
               </div>
             </div>
           ))}
@@ -410,51 +410,51 @@ export default function PurchasesPage() {
 
         {/* Desktop View: Table */}
         <div className="hidden md:block overflow-x-auto">
-          <table className="w-full text-left text-sm text-brand-sage min-w-[800px]">
-            <thead className="bg-black/40 text-brand-cream border-b border-white/10">
+          <table className="w-full text-left text-sm text-zinc-600 min-w-[800px]">
+            <thead className="bg-zinc-50 text-zinc-500 border-b border-zinc-200">
               <tr>
-                <th className="px-6 py-5 font-semibold w-40">PO No</th>
-                <th className="px-6 py-5 font-semibold">Supplier</th>
-                <th className="px-6 py-5 font-semibold">Date</th>
-                <th className="px-6 py-5 font-semibold">Shopping Items</th>
-                <th className="px-6 py-5 font-semibold text-right">Total Amount</th>
-                <th className="px-6 py-5 font-semibold text-center">Status</th>
+                <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs w-40">PO No</th>
+                <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Supplier</th>
+                <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Date</th>
+                <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Shopping Items</th>
+                <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs text-right">Total Amount</th>
+                <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs text-center">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-zinc-100">
               {isLoadingPurchases && (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center">Loading data...</td>
+                  <td colSpan={6} className="px-6 py-8 text-center text-zinc-500">Loading data...</td>
                 </tr>
               )}
               {!isLoadingPurchases && filteredPurchases.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center">No transactions found.</td>
+                  <td colSpan={6} className="px-6 py-8 text-center text-zinc-500">No transactions found.</td>
                 </tr>
               )}
               {filteredPurchases.map((po: any) => (
-                <tr key={po.id} className="hover:bg-white/5 transition-colors cursor-pointer" onClick={() => setSelectedPO(po)}>
-                  <td className="px-6 py-4 font-mono text-xs text-brand-warm">{po.purchaseNo}</td>
-                  <td className="px-6 py-4 text-brand-cream font-medium flex items-center gap-2">
+                <tr key={po.id} className="hover:bg-zinc-50 transition-colors cursor-pointer text-zinc-700" onClick={() => setSelectedPO(po)}>
+                  <td className="px-6 py-4 font-mono text-xs text-blue-600 font-bold">{po.purchaseNo}</td>
+                  <td className="px-6 py-4 text-zinc-900 font-medium flex items-center gap-2">
                     {po.supplierName}
-                    {po.receiptUrl && <span title="Has Receipt"><ImageIcon className="w-3 h-3 text-brand-warm shrink-0" /></span>}
+                    {po.receiptUrl && <span title="Has Receipt"><ImageIcon className="w-3.5 h-3.5 text-blue-500 shrink-0" /></span>}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
-                      <Calendar className="w-3 h-3" /> {new Date(po.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      <Calendar className="w-3 h-3 text-zinc-400" /> {new Date(po.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </div>
                   </td>
                   <td className="px-6 py-4">{po.items.length} Types of Materials</td>
-                  <td className="px-6 py-4 text-right font-semibold text-brand-cream">
+                  <td className="px-6 py-4 text-right font-semibold text-zinc-900">
                     Rp {po.totalAmount.toLocaleString('id-ID')}
                   </td>
                   <td className="px-6 py-4 text-center">
                     {po.status === 'CANCELLED' ? (
-                      <span className="bg-red-500/20 text-red-400 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider inline-block">
+                      <span className="bg-red-50 text-red-600 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider inline-block">
                         Cancelled
                       </span>
                     ) : (
-                      <span className="bg-brand-sage/20 text-brand-sage text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider inline-block">
+                      <span className="bg-emerald-50 text-emerald-600 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider inline-block">
                         Completed
                       </span>
                     )}
@@ -468,21 +468,21 @@ export default function PurchasesPage() {
 
       {/* Modal Detail PO */}
       {selectedPO && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <Card variant="olive" className="w-full max-w-2xl bg-[#1C1F1D] border-brand-warm/30 shadow-2xl max-h-[90vh] overflow-hidden flex flex-col p-0">
-            <div className="p-4 border-b border-white/10 flex justify-between items-center bg-black/20 shrink-0">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <Card className="w-full max-w-2xl bg-white border border-zinc-200 shadow-2xl max-h-[90vh] overflow-hidden flex flex-col p-0 rounded-2xl">
+            <div className="p-4 border-b border-zinc-200 flex justify-between items-center bg-zinc-50 shrink-0">
               <div>
-                <h3 className="font-semibold text-brand-cream text-lg">Purchase Details</h3>
+                <h3 className="font-semibold text-zinc-900 text-lg">Purchase Details</h3>
                 <div className="flex items-center gap-2 mt-1">
-                  <p className="text-xs text-brand-warm font-mono">{selectedPO.purchaseNo}</p>
+                  <p className="text-xs text-blue-600 font-mono font-bold">{selectedPO.purchaseNo}</p>
                   {selectedPO.status === 'CANCELLED' && (
-                    <span className="bg-red-500/20 text-red-400 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Cancelled</span>
+                    <span className="bg-red-50 text-red-600 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Cancelled</span>
                   )}
                 </div>
               </div>
               <button 
                 onClick={() => setSelectedPO(null)}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-brand-sage transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-400 hover:text-zinc-600 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -492,40 +492,40 @@ export default function PurchasesPage() {
             <div className="overflow-y-auto p-4 md:p-6 flex flex-col gap-6">
               
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-black/20 p-4 rounded-xl border border-white/5">
-                  <p className="text-[10px] uppercase tracking-wider text-brand-sage mb-1">Supplier Name</p>
-                  <p className="font-medium text-brand-cream">{selectedPO.supplierName}</p>
+                <div className="bg-zinc-50 p-4 rounded-xl border border-zinc-200">
+                  <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1 font-semibold">Supplier Name</p>
+                  <p className="font-medium text-zinc-900">{selectedPO.supplierName}</p>
                 </div>
-                <div className="bg-black/20 p-4 rounded-xl border border-white/5">
-                  <p className="text-[10px] uppercase tracking-wider text-brand-sage mb-1">Transaction Time</p>
-                  <p className="font-medium text-brand-cream">{new Date(selectedPO.createdAt).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}</p>
+                <div className="bg-zinc-50 p-4 rounded-xl border border-zinc-200">
+                  <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1 font-semibold">Transaction Time</p>
+                  <p className="font-medium text-zinc-900">{new Date(selectedPO.createdAt).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}</p>
                 </div>
               </div>
 
               <div>
-                <p className="text-xs uppercase tracking-wider text-brand-sage mb-3 font-bold border-b border-white/10 pb-2">Item Details</p>
-                <div className="bg-black/20 rounded-xl border border-white/5 overflow-hidden">
-                  <table className="w-full text-left text-sm text-brand-sage">
-                    <thead className="bg-black/40 text-brand-cream border-b border-white/10">
+                <p className="text-xs uppercase tracking-wider text-zinc-500 mb-3 font-bold border-b border-zinc-200 pb-2">Item Details</p>
+                <div className="bg-white rounded-xl border border-zinc-200 overflow-hidden">
+                  <table className="w-full text-left text-sm text-zinc-600">
+                    <thead className="bg-zinc-50 text-zinc-500 border-b border-zinc-200">
                       <tr>
-                        <th className="px-4 py-3 font-semibold">Raw Material</th>
-                        <th className="px-4 py-3 font-semibold text-right">Quantity</th>
-                        <th className="px-4 py-3 font-semibold text-right">Price</th>
+                        <th className="px-4 py-3 font-semibold text-xs uppercase tracking-wider">Raw Material</th>
+                        <th className="px-4 py-3 font-semibold text-right text-xs uppercase tracking-wider">Quantity</th>
+                        <th className="px-4 py-3 font-semibold text-right text-xs uppercase tracking-wider">Price</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5">
+                    <tbody className="divide-y divide-zinc-100 text-zinc-700">
                       {selectedPO.items.map((item: any) => (
                         <tr key={item.id}>
-                          <td className="px-4 py-3 text-brand-cream">{item.material?.name || `Material #${item.materialId}`}</td>
-                          <td className="px-4 py-3 text-right">{item.quantity} <span className="text-xs text-brand-sage">{item.material?.unit}</span></td>
-                          <td className="px-4 py-3 text-right">Rp {item.price.toLocaleString('id-ID')}</td>
+                          <td className="px-4 py-3 text-zinc-900">{item.material?.name || `Material #${item.materialId}`}</td>
+                          <td className="px-4 py-3 text-right">{item.quantity} <span className="text-xs text-zinc-500">{item.material?.unit}</span></td>
+                          <td className="px-4 py-3 text-right font-medium">Rp {item.price.toLocaleString('id-ID')}</td>
                         </tr>
                       ))}
                     </tbody>
-                    <tfoot className="bg-black/40 border-t border-white/10">
+                    <tfoot className="bg-zinc-50 border-t border-zinc-200">
                       <tr>
-                        <th colSpan={2} className="px-4 py-3 text-right font-bold text-brand-cream uppercase text-xs">Total Purchase</th>
-                        <th className="px-4 py-3 text-right font-bold text-brand-warm">Rp {selectedPO.totalAmount.toLocaleString('id-ID')}</th>
+                        <th colSpan={2} className="px-4 py-3 text-right font-bold text-zinc-900 uppercase text-xs">Total Purchase</th>
+                        <th className="px-4 py-3 text-right font-bold text-blue-600">Rp {selectedPO.totalAmount.toLocaleString('id-ID')}</th>
                       </tr>
                     </tfoot>
                   </table>
@@ -534,27 +534,27 @@ export default function PurchasesPage() {
 
               {selectedPO.receiptUrl && (
                 <div>
-                  <p className="text-xs uppercase tracking-wider text-brand-sage mb-3 font-bold border-b border-white/10 pb-2">Receipt Photo</p>
-                  <div className="rounded-xl border border-white/10 overflow-hidden bg-black/40 flex justify-center">
+                  <p className="text-xs uppercase tracking-wider text-zinc-500 mb-3 font-bold border-b border-zinc-200 pb-2">Receipt Photo</p>
+                  <div className="rounded-xl border border-zinc-200 overflow-hidden bg-zinc-50 flex justify-center p-2">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={selectedPO.receiptUrl} alt="Purchase Receipt" className="max-w-full max-h-[400px] object-contain" />
+                    <img src={selectedPO.receiptUrl} alt="Purchase Receipt" className="max-w-full max-h-[400px] object-contain rounded-lg border border-zinc-100" />
                   </div>
                 </div>
               )}
               {!selectedPO.receiptUrl && (
-                <div className="bg-brand-sage/10 text-brand-sage p-4 rounded-xl text-center text-sm border border-brand-sage/20 border-dashed">
+                <div className="bg-zinc-50 text-zinc-500 p-4 rounded-xl text-center text-sm border border-zinc-200 border-dashed">
                   No receipt photo attached to this transaction.
                 </div>
               )}
 
             </div>
             
-            <div className="p-4 border-t border-white/10 bg-black/20 shrink-0 flex justify-end gap-3">
+            <div className="p-4 border-t border-zinc-200 bg-zinc-50 shrink-0 flex justify-end gap-3">
               <Button variant="outline" onClick={() => setSelectedPO(null)}>Close</Button>
               {selectedPO.status !== 'CANCELLED' && (
                 <Button 
                   variant="outline" 
-                  className="border-red-500/50 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+                  className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 font-medium"
                   onClick={() => handleCancelPO(selectedPO.id)}
                   disabled={cancelPurchase.isPending}
                 >
@@ -565,7 +565,6 @@ export default function PurchasesPage() {
           </Card>
         </div>
       )}
-
     </div>
   );
 }

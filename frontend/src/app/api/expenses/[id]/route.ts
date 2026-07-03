@@ -27,7 +27,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     }
 
     const data = await request.json();
-    const { description, amount, date, imageUrl } = data;
+    const { description, amount, date, imageUrl, accountId, paymentAccountId } = data;
 
     if (!description || !amount) {
       return NextResponse.json({ error: "Description and amount are required" }, { status: 400 });
@@ -40,7 +40,9 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       description,
       amount: parseFloat(amount),
       date: date ? new Date(date).toISOString() : existingExpense.date,
-      imageUrl: imageUrl !== undefined ? imageUrl : existingExpense.imageUrl
+      imageUrl: imageUrl !== undefined ? imageUrl : existingExpense.imageUrl,
+      accountId: accountId !== undefined ? (accountId ? parseInt(accountId) : null) : existingExpense.accountId,
+      paymentAccountId: paymentAccountId !== undefined ? (paymentAccountId ? parseInt(paymentAccountId) : null) : existingExpense.paymentAccountId
     });
 
     return NextResponse.json(expense || { success: true });

@@ -45,21 +45,21 @@ export default function SettingsPage() {
     }
   };
 
-  if (loading) return <div className="p-6 text-brand-cream">Loading settings...</div>;
+  if (loading) return <div className="p-6 text-zinc-500">Loading settings...</div>;
 
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-display font-bold text-brand-cream">System Settings</h1>
-        <p className="text-brand-sage">Restaurant operations and tax configuration</p>
+        <h1 className="text-3xl font-display font-bold text-zinc-900">System Settings</h1>
+        <p className="text-zinc-500">Restaurant operations and tax configuration</p>
       </div>
 
-      <Card className="p-6 max-w-2xl">
-        <h2 className="text-xl font-bold text-brand-cream mb-4">Tax Settings (PB1)</h2>
-        <div className="flex items-center justify-between p-4 bg-black/20 rounded-xl border border-white/5">
+      <Card className="p-6 max-w-2xl border border-zinc-200 bg-white">
+        <h2 className="text-xl font-bold text-zinc-900 mb-4">Tax Settings (PB1)</h2>
+        <div className="flex items-center justify-between p-4 bg-zinc-50 rounded-xl border border-zinc-200">
           <div>
-            <h3 className="font-semibold text-brand-cream">Enable 11% Tax</h3>
-            <p className="text-sm text-brand-sage mt-1">
+            <h3 className="font-semibold text-zinc-900">Enable 11% Tax</h3>
+            <p className="text-sm text-zinc-500 mt-1">
               If enabled, the system will automatically calculate an 11% tax (PB1) on every sales transaction in POS and Mobile.
             </p>
           </div>
@@ -70,7 +70,7 @@ export default function SettingsPage() {
               checked={taxEnabled}
               onChange={(e) => setTaxEnabled(e.target.checked)}
             />
-            <div className="w-14 h-7 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-brand-cream after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-brand-warm"></div>
+            <div className="w-14 h-7 bg-zinc-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-600"></div>
           </label>
         </div>
 

@@ -50,16 +50,16 @@ export default function LedgerPage() {
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-display font-bold text-brand-cream">General Ledger</h1>
-          <p className="text-brand-sage">Transaction history per account</p>
+          <h1 className="text-3xl font-display font-bold text-zinc-900">General Ledger</h1>
+          <p className="text-zinc-500">Transaction history per account</p>
         </div>
       </div>
 
-      <Card className="p-4 flex flex-wrap gap-4 items-end bg-black/40 border border-white/5">
+      <Card className="p-4 flex flex-wrap gap-4 items-end bg-white border border-zinc-200 shadow-sm">
         <div className="flex-1 min-w-[200px]">
-          <label className="block text-brand-sage text-sm mb-1">Select Account</label>
+          <label className="block text-zinc-650 text-sm mb-1">Select Account</label>
           <select 
-            className="w-full bg-black border border-white/10 rounded-lg p-2 text-brand-cream"
+            className="w-full bg-white border border-zinc-200 rounded-lg p-2 text-zinc-900 focus:outline-none focus:border-blue-500"
             value={accountId}
             onChange={(e) => setAccountId(e.target.value)}
           >
@@ -68,19 +68,19 @@ export default function LedgerPage() {
           </select>
         </div>
         <div>
-          <label className="block text-brand-sage text-sm mb-1">From Date</label>
+          <label className="block text-zinc-650 text-sm mb-1">From Date</label>
           <input 
             type="date" 
-            className="bg-black border border-white/10 rounded-lg p-2 text-brand-cream"
+            className="bg-white border border-zinc-200 rounded-lg p-2 text-zinc-900 focus:outline-none focus:border-blue-500 cursor-pointer"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
           />
         </div>
         <div>
-          <label className="block text-brand-sage text-sm mb-1">To Date</label>
+          <label className="block text-zinc-650 text-sm mb-1">To Date</label>
           <input 
             type="date" 
-            className="bg-black border border-white/10 rounded-lg p-2 text-brand-cream"
+            className="bg-white border border-zinc-200 rounded-lg p-2 text-zinc-900 focus:outline-none focus:border-blue-500 cursor-pointer"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
           />
@@ -91,33 +91,37 @@ export default function LedgerPage() {
       </Card>
 
       {ledgerData && (
-        <Card className="p-0 overflow-hidden">
-          <div className="p-4 border-b border-white/5 bg-black/20">
-            <h2 className="text-xl font-bold text-brand-warm">{ledgerData.account.code} - {ledgerData.account.name}</h2>
-            <p className="text-brand-sage text-sm">Type: {ledgerData.account.type}</p>
+        <Card className="p-0 overflow-hidden border border-zinc-200 bg-white rounded-2xl shadow-sm">
+          <div className="p-4 border-b border-zinc-200 bg-zinc-50">
+            <h2 className="text-xl font-bold text-zinc-900">{ledgerData.account.code} - {ledgerData.account.name}</h2>
+            <p className="text-zinc-500 text-sm">Type: {ledgerData.account.type}</p>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left">
-              <thead className="bg-black/40 text-brand-sage text-sm border-b border-white/5">
+              <thead className="bg-zinc-50 text-zinc-500 text-xs font-semibold uppercase tracking-wider border-b border-zinc-200">
                 <tr>
-                  <th className="p-4 font-medium">Date</th>
-                  <th className="p-4 font-medium">Reference</th>
-                  <th className="p-4 font-medium">Debit</th>
-                  <th className="p-4 font-medium">Credit</th>
-                  <th className="p-4 font-medium text-right">Balance Change</th>
+                  <th className="p-4">Date</th>
+                  <th className="p-4">Reference</th>
+                  <th className="p-4">Debit</th>
+                  <th className="p-4">Credit</th>
+                  <th className="p-4 text-right">Balance Change</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5 text-brand-cream text-sm">
+              <tbody className="divide-y divide-zinc-100 text-zinc-700 text-sm">
                 {ledgerData.lines.map((line: any, i: number) => {
                   const isDebit = line.debit > 0;
                   const isCredit = line.credit > 0;
                   return (
-                    <tr key={line.id} className="hover:bg-black/20 transition-colors">
-                      <td className="p-4">{new Date(line.journalEntry?.date).toLocaleDateString('id-ID')}</td>
-                      <td className="p-4">{line.journalEntry?.reference} <br/><span className="text-xs text-brand-sage">{line.journalEntry?.description}</span></td>
-                      <td className="p-4 text-green-400">{isDebit ? `Rp ${line.debit.toLocaleString('id-ID')}` : '-'}</td>
-                      <td className="p-4 text-red-400">{isCredit ? `Rp ${line.credit.toLocaleString('id-ID')}` : '-'}</td>
-                      <td className="p-4 text-right font-mono text-brand-warm">
+                    <tr key={line.id} className="hover:bg-zinc-50 transition-colors">
+                      <td className="p-4 text-zinc-600">{new Date(line.journalEntry?.date).toLocaleDateString('id-ID')}</td>
+                      <td className="p-4 text-zinc-900 font-medium">
+                        {line.journalEntry?.reference} 
+                        <br/>
+                        <span className="text-xs text-zinc-500">{line.journalEntry?.description}</span>
+                      </td>
+                      <td className="p-4 text-emerald-600 font-medium">{isDebit ? `Rp ${line.debit.toLocaleString('id-ID')}` : '-'}</td>
+                      <td className="p-4 text-red-600 font-medium">{isCredit ? `Rp ${line.credit.toLocaleString('id-ID')}` : '-'}</td>
+                      <td className="p-4 text-right font-mono font-bold text-blue-600">
                         {isDebit ? '+' : '-'}{Math.abs(line.debit - line.credit).toLocaleString('id-ID')}
                       </td>
                     </tr>
@@ -125,7 +129,7 @@ export default function LedgerPage() {
                 })}
                 {ledgerData.lines.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="p-8 text-center text-brand-sage">No transactions in this period.</td>
+                    <td colSpan={5} className="p-8 text-center text-zinc-500">No transactions in this period.</td>
                   </tr>
                 )}
               </tbody>

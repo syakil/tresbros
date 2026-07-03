@@ -75,6 +75,14 @@ namespace backend.Models
         public string? ImageUrl { get; set; }
         public DateTime Date { get; set; } = DateTime.UtcNow;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public int? AccountId { get; set; }
+        [ForeignKey("AccountId")]
+        public ChartOfAccount? Account { get; set; }
+
+        public int? PaymentAccountId { get; set; }
+        [ForeignKey("PaymentAccountId")]
+        public ChartOfAccount? PaymentAccount { get; set; }
     }
 
     public class Income
@@ -86,6 +94,14 @@ namespace backend.Models
         public string? ImageUrl { get; set; }
         public DateTime Date { get; set; } = DateTime.UtcNow;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public int? AccountId { get; set; }
+        [ForeignKey("AccountId")]
+        public ChartOfAccount? Account { get; set; }
+
+        public int? PaymentAccountId { get; set; }
+        [ForeignKey("PaymentAccountId")]
+        public ChartOfAccount? PaymentAccount { get; set; }
     }
 
     public class Material
