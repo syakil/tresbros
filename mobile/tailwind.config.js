@@ -5,11 +5,11 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'brand-olive': '#4B5A3A',
-        'brand-sage': '#7D8F6A',
-        'brand-cream': '#F3EDE1',
-        'brand-warm': '#A16B3D',
-        'brand-dark': '#3A2B1F',
+        'brand-olive': '#18181B',
+        'brand-sage': '#A1A1AA',
+        'brand-cream': '#FFFFFF',
+        'brand-warm': '#2563EB',
+        'brand-dark': '#09090B',
       },
     },
   },

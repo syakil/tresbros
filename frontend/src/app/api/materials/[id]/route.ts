@@ -16,6 +16,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         name,
         unit,
         minStock: Number(minStock),
+        stock: body.stock !== undefined ? Number(body.stock) : existingMaterial.stock,
+        costPerUnit: body.costPerUnit !== undefined ? Number(body.costPerUnit) : existingMaterial.costPerUnit,
       });
       return NextResponse.json(updatedMaterial || { success: true });
     }

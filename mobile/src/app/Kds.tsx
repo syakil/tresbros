@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Modal, Alert, useWindowDimensions } from 'react-native';
-import axios from 'axios';
+import { api } from '../lib/api';
 import { Clock, ChefHat, CheckCircle2, User, X } from 'lucide-react-native';
-
-import { API_URL } from '../lib/api';
 
 interface OrderItem {
   id: number;
@@ -28,6 +26,7 @@ interface Order {
   status: 'TODO' | 'IN_PROGRESS' | 'DONE' | 'TAKEN';
   createdAt: string;
   items: OrderItem[];
+  queueNumber?: string | number | null;
 }
 
 // Timer Component
@@ -60,7 +59,7 @@ export function Kds() {
 
   const fetchOrders = async () => {
     try {
-      const res = await axios.get(`${API_URL}/orders`);
+      const res = await api.get('/orders');
       setOrders(res.data);
     } catch (error) {
       console.error("Failed to fetch orders:", error);
@@ -77,7 +76,7 @@ export function Kds() {
 
   const updateStatus = async (id: number, status: string) => {
     try {
-      await axios.patch(`${API_URL}/orders/${id}`, { status });
+      await api.patch(`/orders/${id}`, { status });
       fetchOrders();
     } catch (error) {
       Alert.alert('Error', 'Gagal update status pesanan');
@@ -143,13 +142,13 @@ export function Kds() {
           <Text className="font-bold text-brand-warm text-xl mr-2">Antrian: {order.queueNumber}</Text>
           {order.customerName && (
             <View className="flex-row items-center bg-black/30 px-2 py-1 rounded-lg">
-              <User size={12} color="#F3EDE1" />
+              <User size={12} color="#FFFFFF" />
               <Text className="text-xs text-brand-cream ml-1">{order.customerName}</Text>
             </View>
           )}
         </View>
         <View className="flex-row items-center bg-black/20 px-2 py-1.5 rounded-full">
-          <Clock size={12} color="#7D8F6A" />
+          <Clock size={12} color="#A1A1AA" />
           <Timer createdAt={order.createdAt} />
         </View>
       </View>
@@ -166,7 +165,7 @@ export function Kds() {
             className="bg-brand-olive flex-row justify-center items-center py-3 rounded-xl shadow-md"
             onPress={() => updateStatus(order.id, 'IN_PROGRESS')}
           >
-            <ChefHat size={16} color="#F3EDE1" className="mr-2" />
+            <ChefHat size={16} color="#FFFFFF" className="mr-2" />
             <Text className="text-brand-cream font-bold ml-2">Mulai Masak</Text>
           </TouchableOpacity>
         )}
@@ -175,8 +174,8 @@ export function Kds() {
             className="bg-brand-warm flex-row justify-center items-center py-3 rounded-xl shadow-md"
             onPress={() => updateStatus(order.id, 'DONE')}
           >
-            <CheckCircle2 size={16} color="#2A2A2A" className="mr-2" />
-            <Text className="text-brand-dark font-bold ml-2">Selesai Masak</Text>
+            <CheckCircle2 size={16} color="#FFFFFF" className="mr-2" />
+            <Text className="text-brand-cream font-bold ml-2">Selesai Masak</Text>
           </TouchableOpacity>
         )}
         {order.status === 'DONE' && (
@@ -184,7 +183,7 @@ export function Kds() {
             className="bg-transparent border border-brand-sage flex-row justify-center items-center py-3 rounded-xl"
             onPress={() => updateStatus(order.id, 'TAKEN')}
           >
-            <CheckCircle2 size={16} color="#7D8F6A" className="mr-2" />
+            <CheckCircle2 size={16} color="#A1A1AA" className="mr-2" />
             <Text className="text-brand-sage font-bold ml-2">Sudah Diambil</Text>
           </TouchableOpacity>
         )}
@@ -269,11 +268,11 @@ export function Kds() {
       {/* Modal Recipe */}
       <Modal visible={!!selectedRecipeItem} transparent animationType="fade">
         <View className="flex-1 bg-black/70 justify-center items-center px-4">
-          <View className="bg-[#1A1A1A] w-full max-w-[400px] rounded-3xl border border-white/10 shadow-2xl overflow-hidden">
+          <View className="bg-[#18181B] w-full max-w-[400px] rounded-3xl border border-white/10 shadow-2xl overflow-hidden">
             <View className="flex-row justify-between items-center p-5 bg-black/20 border-b border-white/5">
               <Text className="font-bold text-xl text-brand-cream">Resep Masakan</Text>
               <TouchableOpacity onPress={() => setSelectedRecipeItem(null)} className="p-1">
-                <X size={24} color="#7D8F6A" />
+                <X size={24} color="#A1A1AA" />
               </TouchableOpacity>
             </View>
             

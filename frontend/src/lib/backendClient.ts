@@ -1,15 +1,20 @@
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 
 // Fallback to http://localhost:5052 if not defined in .env
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:5052';
 
 const getAuthHeaders = async () => {
   try {
+    const headerStore = await headers();
+    const authHeader = headerStore.get('authorization');
+    if (authHeader) {
+      return { 'Authorization': authHeader };
+    }
+
     const cookieStore = await cookies();
     const token = cookieStore.get('tresbros_token')?.value;
     return token ? { 'Authorization': `Bearer ${token}` } : {};
   } catch (error) {
-    // cookies() throws if called from Client Components without transitioning to Server Components.
     return {};
   }
 };

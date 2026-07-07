@@ -12,7 +12,7 @@ export function Payment({ route, navigation }: any) {
         startInLoadingState={true}
         renderLoading={() => (
           <ActivityIndicator 
-            color="#A16B3D" 
+            color="#2563EB" 
             size="large" 
             style={styles.loading}
           />
@@ -30,7 +30,7 @@ export function Payment({ route, navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#3A2B1F',
+    backgroundColor: '#09090B',
   },
   loading: {
     position: 'absolute',

@@ -14,7 +14,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Token tidak diterima dari server.' }, { status: 401 });
     }
 
-    const response = NextResponse.json({ user, success: true });
+    const response = NextResponse.json({ user, token, success: true });
 
     // Set HttpOnly cookie
     response.cookies.set({

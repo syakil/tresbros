@@ -5,13 +5,195 @@ import axios from 'axios';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Boxes, ArrowDownToLine, ArrowUpFromLine, RefreshCw, AlertTriangle, Plus } from 'lucide-react';
+import { Boxes, ArrowDownToLine, ArrowUpFromLine, RefreshCw, AlertTriangle, Plus, CheckCircle2, X } from 'lucide-react';
 import { CustomSelect } from '@/components/ui/CustomSelect';
+
+interface MaterialBatchesSectionProps {
+  materialId: number;
+  unit: string;
+  showAlert: (text: string, type?: 'error' | 'success') => void;
+}
+
+function MaterialBatchesSection({ materialId, unit, showAlert }: MaterialBatchesSectionProps) {
+  const queryClient = useQueryClient();
+  const [editingBatchId, setEditingBatchId] = useState<number | null>(null);
+  
+  // State form edit batch
+  const [editOrigQty, setEditOrigQty] = useState('');
+  const [editRemQty, setEditRemQty] = useState('');
+  const [editUnitPrice, setEditUnitPrice] = useState('');
+
+  const { data: batches = [], isLoading } = useQuery({
+    queryKey: ['material-batches', materialId],
+    queryFn: async () => {
+      const { data } = await axios.get(`/api/materials/${materialId}/batches`);
+      return data;
+    }
+  });
+
+  const updateBatchMutation = useMutation({
+    mutationFn: async (payload: { batchId: number; originalQty: number; remainingQty: number; unitPrice: number }) => {
+      const { data } = await axios.put(`/api/materials/${materialId}/batches`, payload);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['material-batches', materialId] });
+      queryClient.invalidateQueries({ queryKey: ['materials'] });
+      setEditingBatchId(null);
+      showAlert("Batch updated successfully!", "success");
+    }
+  });
+
+  const handleStartEdit = (batch: any) => {
+    setEditingBatchId(batch.id);
+    setEditOrigQty(batch.originalQty.toString());
+    setEditRemQty(batch.remainingQty.toString());
+    setEditUnitPrice(batch.unitPrice.toString());
+  };
+
+  const handleSaveEdit = (batchId: number) => {
+    if (!editOrigQty || !editRemQty || !editUnitPrice) {
+      showAlert("All fields are required!", "error");
+      return;
+    }
+    updateBatchMutation.mutate({
+      batchId,
+      originalQty: parseFloat(editOrigQty),
+      remainingQty: parseFloat(editRemQty),
+      unitPrice: parseFloat(editUnitPrice)
+    });
+  };
+
+  if (isLoading) {
+    return <div className="text-zinc-500 text-xs py-4 text-center">Loading batch details...</div>;
+  }
+
+  return (
+    <div className="bg-zinc-50 rounded-xl p-4 border border-zinc-200 flex flex-col gap-3 shadow-sm h-full">
+      <div className="flex items-center justify-between border-b border-zinc-200 pb-2">
+        <h4 className="text-xs font-bold text-zinc-800 uppercase tracking-wider">Detail Stok Masuk (FIFO Batches)</h4>
+        <span className="text-[10px] text-zinc-600 font-bold bg-zinc-200 px-2 py-0.5 rounded-full">{batches.length} Batch</span>
+      </div>
+
+      {batches.length === 0 ? (
+        <div className="text-zinc-500 text-xs text-center py-6">No batch details found. Edit master data or adjust stock to create a batch.</div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs text-zinc-600 min-w-[320px]">
+            <thead className="text-zinc-500 border-b border-zinc-200">
+              <tr>
+                <th className="py-2 font-semibold">Tgl Masuk</th>
+                <th className="py-2 font-semibold">Stok Awal</th>
+                <th className="py-2 font-semibold">Sisa Stok</th>
+                <th className="py-2 font-semibold">Harga Beli</th>
+                <th className="py-2 font-semibold text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-100">
+              {batches.map((batch: any) => {
+                const isEditing = editingBatchId === batch.id;
+                const formattedDate = new Date(batch.createdAt).toLocaleDateString('id-ID', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                });
+
+                return (
+                  <tr key={batch.id} className="hover:bg-zinc-100/50">
+                    <td className="py-2 pr-2 whitespace-nowrap text-zinc-500 text-[10px]">{formattedDate}</td>
+                    <td className="py-2 pr-2">
+                      {isEditing ? (
+                        <input
+                          type="number"
+                          value={editOrigQty}
+                          onChange={(e) => setEditOrigQty(e.target.value)}
+                          className="w-16 bg-white border border-zinc-300 rounded px-1.5 py-0.5 text-zinc-900 text-[11px] focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        />
+                      ) : (
+                        <span>{batch.originalQty.toLocaleString('id-ID')} {unit}</span>
+                      )}
+                    </td>
+                    <td className="py-2 pr-2">
+                      {isEditing ? (
+                        <input
+                          type="number"
+                          value={editRemQty}
+                          onChange={(e) => setEditRemQty(e.target.value)}
+                          className="w-16 bg-white border border-zinc-300 rounded px-1.5 py-0.5 text-zinc-900 text-[11px] focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        />
+                      ) : (
+                        <span className={`font-semibold ${batch.remainingQty > 0 ? 'text-zinc-900' : 'text-zinc-400'}`}>
+                          {batch.remainingQty.toLocaleString('id-ID')} {unit}
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-2 pr-2">
+                      {isEditing ? (
+                        <input
+                          type="number"
+                          value={editUnitPrice}
+                          onChange={(e) => setEditUnitPrice(e.target.value)}
+                          className="w-20 bg-white border border-zinc-300 rounded px-1.5 py-0.5 text-zinc-900 text-[11px] focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        />
+                      ) : (
+                        <span>Rp {batch.unitPrice.toLocaleString('id-ID')}</span>
+                      )}
+                    </td>
+                    <td className="py-2 text-right">
+                      {isEditing ? (
+                        <div className="flex justify-end gap-1">
+                          <button
+                            onClick={() => handleSaveEdit(batch.id)}
+                            disabled={updateBatchMutation.isPending}
+                            className="bg-green-600 hover:bg-green-700 text-white px-2 py-0.5 rounded text-[10px] font-bold shadow-sm transition"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={() => setEditingBatchId(null)}
+                            className="bg-zinc-200 hover:bg-zinc-300 text-zinc-700 px-2 py-0.5 rounded text-[10px] font-bold transition"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleStartEdit(batch)}
+                          className="text-blue-600 hover:text-blue-800 hover:underline font-bold text-[10px]"
+                        >
+                          Edit
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function InventoryPage() {
   const queryClient = useQueryClient();
   const [showAdjust, setShowAdjust] = useState<number | null>(null);
   const [showAdd, setShowAdd] = useState(false);
+
+  // State untuk Custom Alert
+  const [alertMsg, setAlertMsg] = useState<{ text: string; type: 'error' | 'success' } | null>(null);
+
+  // Helper untuk menampilkan alert
+  const showAlert = (text: string, type: 'error' | 'success' = 'error') => {
+    setAlertMsg({ text, type });
+    // Auto-dismiss after 4 seconds
+    setTimeout(() => {
+      setAlertMsg(null);
+    }, 4000);
+  };
   
   // State form tambah bahan baku
   const [addName, setAddName] = useState('');
@@ -50,6 +232,7 @@ export default function InventoryPage() {
       setAddName('');
       setAddMinStock('');
       setAddUnit('gram');
+      showAlert("Material created successfully!", "success");
     }
   });
 
@@ -64,13 +247,15 @@ export default function InventoryPage() {
       });
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['materials'] });
+      queryClient.invalidateQueries({ queryKey: ['material-batches', variables.id] });
       setShowAdjust(null);
       setAdjustQty('');
       setAdjustPrice('');
       setAdjustNotes('');
       setAdjustType('in');
+      showAlert("Stock mutation saved successfully!", "success");
     }
   });
 
@@ -80,18 +265,22 @@ export default function InventoryPage() {
         action: 'update_master',
         name: payload.name,
         unit: payload.unit,
-        minStock: payload.minStock
+        minStock: payload.minStock,
+        stock: payload.stock !== undefined ? Number(payload.stock) : undefined,
+        costPerUnit: payload.costPerUnit !== undefined ? Number(payload.costPerUnit) : undefined
       });
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['materials'] });
+      queryClient.invalidateQueries({ queryKey: ['material-batches', variables.id] });
       setEditMaterialData(null);
+      showAlert("Material master updated successfully!", "success");
     }
   });
 
   const handleAddMaterial = () => {
-    if (!addName) return alert("Raw material name is required!");
+    if (!addName) return showAlert("Raw material name is required!", "error");
     createMaterial.mutate({
       name: addName,
       unit: addUnit,
@@ -100,7 +289,7 @@ export default function InventoryPage() {
   };
 
   const handleAdjustMaterial = (id: number) => {
-    if (!adjustQty) return alert("Quantity is required!");
+    if (!adjustQty) return showAlert("Quantity is required!", "error");
     adjustMaterial.mutate({
       id,
       type: adjustType,
@@ -111,7 +300,7 @@ export default function InventoryPage() {
   };
 
   const handleUpdateMaster = () => {
-    if (!editMaterialData?.name) return alert("Name is required!");
+    if (!editMaterialData?.name) return showAlert("Name is required!", "error");
     updateMasterMaterial.mutate(editMaterialData);
   };
 
@@ -253,13 +442,16 @@ export default function InventoryPage() {
 
               {/* Collapsible Action Area */}
               {isExpanded && (
-                <div className="bg-zinc-50 p-3 flex flex-col gap-3 border-t border-zinc-100 shadow-inner">
+                <div className="bg-zinc-50 p-3 flex flex-col gap-3 border-t border-zinc-100 shadow-inner animate-in fade-in slide-in-from-top-4 duration-300">
                   <button 
                     onClick={(e) => { e.stopPropagation(); setEditMaterialData(item); }} 
                     className="w-full bg-white hover:bg-zinc-100 py-2 rounded-lg text-zinc-600 hover:text-zinc-900 text-xs font-medium border border-zinc-200 transition shadow-sm"
                   >
                     Edit Master Data
                   </button>
+                  
+                  {/* Detail Batches */}
+                  <MaterialBatchesSection materialId={item.id} unit={item.unit} showAlert={showAlert} />
                   
                   <div className="bg-white rounded-lg p-3 border border-zinc-200 flex flex-col gap-3 shadow-sm">
                     <h4 className="text-xs font-bold text-zinc-800 border-b border-zinc-100 pb-1.5 uppercase tracking-wider">Stock Mutation</h4>
@@ -310,14 +502,22 @@ export default function InventoryPage() {
                       />
                     </div>
                     
-                    <Button 
-                      variant="primary" 
-                      className="w-full mt-1 py-2 text-xs font-bold" 
-                      onClick={() => handleAdjustMaterial(item.id)}
-                      disabled={adjustMaterial.isPending}
-                    >
-                      {adjustMaterial.isPending ? 'Saving...' : 'Save Mutation'}
-                    </Button>
+                    <div className="flex gap-3 mt-1">
+                      <button 
+                        onClick={() => setShowAdjust(null)}
+                        className="flex-1 bg-white border border-zinc-200 hover:bg-zinc-50 text-zinc-700 py-2 rounded-lg text-xs font-bold transition shadow-sm"
+                      >
+                        Cancel
+                      </button>
+                      <Button 
+                        variant="primary" 
+                        className="flex-1 py-2 text-xs font-bold justify-center" 
+                        onClick={() => handleAdjustMaterial(item.id)}
+                        disabled={adjustMaterial.isPending}
+                      >
+                        {adjustMaterial.isPending ? 'Saving...' : 'Save Mutation'}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -402,60 +602,78 @@ export default function InventoryPage() {
                   {showAdjust === item.id && (
                     <tr className="bg-zinc-50/50">
                       <td colSpan={4} className="px-6 py-4 border-t border-zinc-100">
-                        <div className="bg-white rounded-xl p-5 shadow-sm border border-zinc-200 flex flex-col md:flex-row gap-4 items-end animate-in fade-in slide-in-from-top-4 duration-300">
-                          <div className="w-full md:w-48">
-                            <label className="text-xs font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Mutation Type</label>
-                            <CustomSelect
-                              value={adjustType}
-                              onChange={setAdjustType}
-                              className="bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3"
-                              options={[
-                                { value: 'in', label: 'Stock In (+)' },
-                                { value: 'out', label: 'Stock Out (-)' }
-                              ]}
-                            />
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 animate-in fade-in slide-in-from-top-4 duration-300">
+                          {/* Left column: batch details */}
+                          <MaterialBatchesSection materialId={item.id} unit={item.unit} showAlert={showAlert} />
+
+                          {/* Right column: stock adjustment */}
+                          <div className="bg-white rounded-xl p-5 shadow-sm border border-zinc-200 flex flex-col gap-4">
+                            <h4 className="text-xs font-bold text-zinc-800 border-b border-zinc-100 pb-1.5 uppercase tracking-wider">Stock Mutation (Penyesuaian Stok)</h4>
+                            <div className="flex flex-col sm:flex-row gap-3 items-end">
+                              <div className="w-full sm:w-1/3">
+                                <label className="text-xs font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Mutation Type</label>
+                                <CustomSelect
+                                  value={adjustType}
+                                  onChange={setAdjustType}
+                                  className="bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3"
+                                  options={[
+                                    { value: 'in', label: 'Stock In (+)' },
+                                    { value: 'out', label: 'Stock Out (-)' }
+                                  ]}
+                                />
+                              </div>
+                              <div className="w-full sm:w-1/3">
+                                <label className="text-xs font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Quantity</label>
+                                <input 
+                                  type="number" 
+                                  value={adjustQty}
+                                  onChange={(e) => setAdjustQty(e.target.value)}
+                                  placeholder={`Qty in ${item.unit}`} 
+                                  className="w-full bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
+                                />
+                              </div>
+                              <div className="w-full sm:w-1/3">
+                                <label className="text-xs font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">
+                                  Total Price {adjustType === 'out' && <span className="text-blue-500 text-[10px] lowercase normal-case">(Otomatis FIFO)</span>}
+                                </label>
+                                <input 
+                                  type="number" 
+                                  value={adjustType === 'out' ? '' : adjustPrice}
+                                  onChange={(e) => setAdjustPrice(e.target.value)}
+                                  placeholder={adjustType === 'out' ? "Dihitung sistem" : "Total Rp"}
+                                  disabled={adjustType === 'out'}
+                                  className={`w-full bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 ${adjustType === 'out' ? 'opacity-50 cursor-not-allowed bg-zinc-100' : ''}`} 
+                                />
+                              </div>
+                            </div>
+                            <div className="w-full">
+                              <label className="text-xs font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Notes / Reason</label>
+                              <input 
+                                type="text" 
+                                value={adjustNotes}
+                                onChange={(e) => setAdjustNotes(e.target.value)}
+                                placeholder="e.g., Purchase from supplier, Spill..." 
+                                className="w-full bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
+                              />
+                            </div>
+                            <div className="flex gap-3 mt-auto">
+                              <Button 
+                                variant="outline" 
+                                className="flex-1 bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 h-[46px] justify-center"
+                                onClick={() => setShowAdjust(null)}
+                              >
+                                Cancel
+                              </Button>
+                              <Button 
+                                variant="primary" 
+                                className="flex-1 h-[46px] justify-center"
+                                onClick={() => handleAdjustMaterial(item.id)}
+                                disabled={adjustMaterial.isPending}
+                              >
+                                {adjustMaterial.isPending ? 'Saving...' : 'Save Mutation'}
+                              </Button>
+                            </div>
                           </div>
-                          <div className="w-full md:w-48">
-                            <label className="text-xs font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Quantity</label>
-                            <input 
-                              type="number" 
-                              value={adjustQty}
-                              onChange={(e) => setAdjustQty(e.target.value)}
-                              placeholder={`Qty in ${item.unit}`} 
-                              className="w-full bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
-                            />
-                          </div>
-                          <div className="w-full md:w-48">
-                            <label className="text-xs font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">
-                              Total Price {adjustType === 'out' && <span className="text-blue-500 text-[10px] lowercase normal-case">(Otomatis FIFO)</span>}
-                            </label>
-                            <input 
-                              type="number" 
-                              value={adjustType === 'out' ? '' : adjustPrice}
-                              onChange={(e) => setAdjustPrice(e.target.value)}
-                              placeholder={adjustType === 'out' ? "Dihitung sistem" : "Total Rp"}
-                              disabled={adjustType === 'out'}
-                              className={`w-full bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 ${adjustType === 'out' ? 'opacity-50 cursor-not-allowed bg-zinc-100' : ''}`} 
-                            />
-                          </div>
-                          <div className="flex-1 w-full">
-                            <label className="text-xs font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Notes / Reason</label>
-                            <input 
-                              type="text" 
-                              value={adjustNotes}
-                              onChange={(e) => setAdjustNotes(e.target.value)}
-                              placeholder="e.g., Purchase from supplier, Spill..." 
-                              className="w-full bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
-                            />
-                          </div>
-                          <Button 
-                            variant="primary" 
-                            className="w-full md:w-auto h-[46px]"
-                            onClick={() => handleAdjustMaterial(item.id)}
-                            disabled={adjustMaterial.isPending}
-                          >
-                            {adjustMaterial.isPending ? 'Saving...' : 'Save'}
-                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -504,6 +722,24 @@ export default function InventoryPage() {
                   className="w-full bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
                 />
               </div>
+              <div>
+                <label className="text-xs font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Current Stock Quantity</label>
+                <input 
+                  type="number" 
+                  value={editMaterialData.stock}
+                  onChange={(e) => setEditMaterialData({...editMaterialData, stock: e.target.value})}
+                  className="w-full bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Average Cost per Unit (Rp)</label>
+                <input 
+                  type="number" 
+                  value={editMaterialData.costPerUnit}
+                  onChange={(e) => setEditMaterialData({...editMaterialData, costPerUnit: e.target.value})}
+                  className="w-full bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
+                />
+              </div>
             </div>
             <div className="flex gap-3 mt-6 justify-end">
               <Button variant="outline" onClick={() => setEditMaterialData(null)} className="bg-white border-zinc-200 hover:bg-zinc-50 text-zinc-700">Cancel</Button>
@@ -512,6 +748,27 @@ export default function InventoryPage() {
               </Button>
             </div>
           </Card>
+        </div>
+      )}
+
+      {/* Floating Toast Alert */}
+      {alertMsg && (
+        <div className="fixed bottom-6 right-6 z-50 animate-in fade-in slide-in-from-bottom-5 duration-300">
+          <div className={`flex items-center gap-3 px-5 py-4 rounded-2xl shadow-xl border text-sm font-semibold backdrop-blur-md ${
+            alertMsg.type === 'success' 
+              ? 'bg-emerald-500/95 border-emerald-400 text-white' 
+              : 'bg-rose-500/95 border-rose-400 text-white'
+          }`}>
+            {alertMsg.type === 'success' ? (
+              <CheckCircle2 className="w-5 h-5 text-white shrink-0" />
+            ) : (
+              <AlertTriangle className="w-5 h-5 text-white shrink-0" />
+            )}
+            <span>{alertMsg.text}</span>
+            <button onClick={() => setAlertMsg(null)} className="ml-3 opacity-80 hover:opacity-100 transition">
+              <X className="w-4 h-4 text-white" />
+            </button>
+          </div>
         </div>
       )}
     </div>

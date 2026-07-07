@@ -3,10 +3,9 @@ import { View, Text, TextInput, TouchableOpacity, ScrollView, FlatList, Alert, M
 import { useCartStore, Product } from '../store/useCartStore';
 import { ShoppingCart, Search, Coffee, Pizza, Plus, Minus, Trash2, User, Tag, ReceiptText } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
-import axios from 'axios';
 import { WebView } from 'react-native-webview';
 
-import { API_URL } from '../lib/api';
+import { API_URL, api } from '../lib/api';
 
 export function Pos() {
   const navigation = useNavigation<any>();
@@ -52,11 +51,11 @@ export function Pos() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await axios.get(`${API_URL}/products`);
+        const res = await api.get('/products');
         setProducts(res.data);
         
         try {
-          const taxRes = await axios.get(`${API_URL}/settings/TAX_ENABLED`);
+          const taxRes = await api.get('/settings/TAX_ENABLED');
           setTaxEnabled(taxRes.data.value === 'true');
         } catch(e) {
           console.log('Tax setting not found, defaulting to true');
@@ -74,7 +73,7 @@ export function Pos() {
 
   const fetchPendingOrders = async () => {
     try {
-      const res = await axios.get(`${API_URL}/orders`);
+      const res = await api.get('/orders');
       const pending = res.data.filter((o: any) => o.paymentMethod === 'MIDTRANS' && o.paymentStatus === 'pending' && o.status === 'TODO');
       setPendingOrders(pending);
     } catch (error) {
@@ -98,7 +97,7 @@ export function Pos() {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
   };
 
-  const getCategoryIcon = (cat: string, size = 20, color = "#F3EDE1") => {
+  const getCategoryIcon = (cat: string, size = 20, color = "#FFFFFF") => {
     if (cat === 'Makanan') return <Pizza size={size} color={color} />;
     return <Coffee size={size} color={color} />;
   };
@@ -107,7 +106,7 @@ export function Pos() {
     if (!couponInput) return;
     setIsValidatingCoupon(true);
     try {
-      const res = await axios.post(`${API_URL}/coupons/validate`, {
+      const res = await api.post('/coupons/validate', {
         code: couponInput,
         subtotal: getSubtotal()
       });
@@ -129,7 +128,7 @@ export function Pos() {
   const processPayment = async (method: 'CASH' | 'MIDTRANS' = paymentMethod) => {
     try {
       setIsProcessing(true);
-      const res = await axios.post(`${API_URL}/orders`, {
+      const res = await api.post('/orders', {
         customerName: customerName,
         totalAmount: getTotal(),
         couponCode: appliedCoupon?.code || null,
@@ -166,7 +165,7 @@ export function Pos() {
     <ScrollView className="flex-1 px-4" showsVerticalScrollIndicator={false}>
       {items.length === 0 ? (
         <View className="flex-1 items-center justify-center mt-10 opacity-50">
-          <ShoppingCart size={48} color="#7D8F6A" className="mb-4" />
+          <ShoppingCart size={48} color="#A1A1AA" className="mb-4" />
           <Text className="text-brand-sage font-medium">Belum ada pesanan</Text>
           <Text className="text-brand-sage/60 text-xs mt-1">Pilih menu untuk mulai menambahkan</Text>
         </View>
@@ -189,11 +188,11 @@ export function Pos() {
 
               <View className="flex-row items-center bg-black/40 rounded-xl border border-white/5 p-1">
                 <TouchableOpacity onPress={() => updateQuantity(item.cartItemId, item.quantity - 1)} className="w-8 h-8 items-center justify-center rounded-lg">
-                  <Minus size={16} color="#7D8F6A" />
+                  <Minus size={16} color="#A1A1AA" />
                 </TouchableOpacity>
                 <Text className="text-brand-cream font-bold w-6 text-center">{item.quantity}</Text>
                 <TouchableOpacity onPress={() => updateQuantity(item.cartItemId, item.quantity + 1)} className="w-8 h-8 bg-brand-warm/20 items-center justify-center rounded-lg">
-                  <Plus size={16} color="#D4A373" />
+                  <Plus size={16} color="#3B82F6" />
                 </TouchableOpacity>
               </View>
             </View>
@@ -258,7 +257,7 @@ export function Pos() {
         <View className="flex-row items-center justify-between px-4 py-3 bg-brand-dark z-20 border-b border-white/5">
           <View className="flex-row items-center gap-3">
             <View className="w-10 h-10 rounded-full bg-brand-warm/20 items-center justify-center border border-brand-warm/30">
-              <Coffee size={20} color="#D4A373" />
+              <Coffee size={20} color="#3B82F6" />
             </View>
             <View>
               <Text className="font-bold text-lg text-brand-cream leading-tight">Tresbros</Text>
@@ -282,10 +281,10 @@ export function Pos() {
             </TouchableOpacity>
           )}
           <View className="flex-row items-center bg-white/5 border border-white/10 rounded-xl px-4 py-2">
-            <Search size={20} color="#7D8F6A" />
+            <Search size={20} color="#A1A1AA" />
             <TextInput
               placeholder="Cari menu produk..."
-              placeholderTextColor="#7D8F6A"
+              placeholderTextColor="#A1A1AA"
               className="flex-1 text-brand-cream ml-3 h-10 py-0"
               underlineColorAndroid="transparent"
               value={searchQuery}
@@ -330,7 +329,7 @@ export function Pos() {
                 className={`bg-brand-olive/5 border border-brand-olive/20 rounded-2xl p-4 justify-between shadow-sm active:bg-brand-olive/10 ${isLandscape && !isDesktop ? 'w-[31%]' : 'w-[48%]'}`}
               >
                 <View className="w-10 h-10 bg-black/30 rounded-full items-center justify-center mb-4">
-                  {getCategoryIcon(item.category, 20, "#FAEDCD")}
+                  {getCategoryIcon(item.category, 20, "#3B82F6")}
                 </View>
                 <Text className="font-medium text-brand-cream text-[15px] leading-tight" numberOfLines={2}>
                   {item.name}
@@ -340,14 +339,14 @@ export function Pos() {
                     {formatRupiah(item.price)}
                   </Text>
                   <View className="w-7 h-7 rounded-full bg-brand-warm/10 items-center justify-center border border-brand-warm/30">
-                    <Plus size={16} color="#D4A373" />
+                    <Plus size={16} color="#3B82F6" />
                   </View>
                 </View>
               </TouchableOpacity>
             )}
             ListEmptyComponent={
               <View className="flex-1 items-center justify-center mt-20">
-                <Search size={48} color="#7D8F6A" opacity={0.3} className="mb-4" />
+                <Search size={48} color="#A1A1AA" opacity={0.3} className="mb-4" />
                 <Text className="text-brand-sage">Produk tidak ditemukan</Text>
               </View>
             }
@@ -364,7 +363,7 @@ export function Pos() {
           >
             <View className="flex-row items-center gap-3">
               <View className="relative">
-                <ShoppingCart size={24} color="#1c140d" />
+                <ShoppingCart size={24} color="#FFFFFF" />
                 {items.length > 0 && (
                   <View className="absolute -top-2 -right-2 bg-red-500 w-5 h-5 items-center justify-center rounded-full border-2 border-brand-warm">
                     <Text className="text-white text-[10px] font-bold">{items.length}</Text>
@@ -389,7 +388,7 @@ export function Pos() {
           <View className="p-4 border-b border-white/10 bg-black/20 gap-3">
             <View className="flex-row items-center justify-between">
               <View className="flex-row items-center gap-2">
-                <ShoppingCart size={24} color="#A16B3D" />
+                <ShoppingCart size={24} color="#2563EB" />
                 <Text className="font-bold text-lg text-brand-cream ml-2">Pesanan Aktif</Text>
               </View>
               <View className="bg-brand-warm px-2 py-1 rounded-md">
@@ -398,10 +397,10 @@ export function Pos() {
             </View>
 
             <View className="flex-row items-center bg-black/40 border border-white/10 rounded-lg px-3 py-1">
-              <User size={16} color="#7D8F6A" />
+              <User size={16} color="#A1A1AA" />
               <TextInput
                 placeholder="Nama Customer (Opsional)"
-                placeholderTextColor="#7D8F6A"
+                placeholderTextColor="#A1A1AA"
                 className="flex-1 text-brand-cream text-sm ml-2 h-10 py-0"
                 underlineColorAndroid="transparent"
                 value={customerName}
@@ -451,10 +450,10 @@ export function Pos() {
             {/* Input Nama & Kupon in Modal */}
             <View className="px-4 py-3 border-b border-white/5 gap-3">
               <View className="flex-row items-center bg-black/40 border border-white/10 rounded-lg px-3 py-1">
-                <User size={16} color="#7D8F6A" />
+                <User size={16} color="#A1A1AA" />
                 <TextInput
                   placeholder="Nama Customer (Opsional)"
-                  placeholderTextColor="#7D8F6A"
+                  placeholderTextColor="#A1A1AA"
                   className="flex-1 text-brand-cream text-sm ml-2 h-10 py-0"
                   underlineColorAndroid="transparent"
                   value={customerName}
@@ -478,7 +477,7 @@ export function Pos() {
       {/* Modal Checkout */}
       <Modal visible={showCheckout} transparent animationType="fade">
         <View className="flex-1 bg-black/80 justify-center items-center">
-          <View className="bg-[#1A1A1A] w-[400px] rounded-2xl p-6 border border-brand-warm/30 shadow-2xl">
+          <View className="bg-[#18181B] w-[400px] rounded-2xl p-6 border border-brand-warm/30 shadow-2xl">
             <View className="items-center mb-6">
               <Text className="text-2xl font-bold text-brand-cream mb-2">Pilih Pembayaran</Text>
               <Text className="text-brand-sage text-sm">Total tagihan yang harus dibayar</Text>
@@ -510,7 +509,7 @@ export function Pos() {
               </TouchableOpacity>
               <TouchableOpacity 
                 className="flex-1 py-3 rounded-xl bg-brand-olive items-center justify-center opacity-100"
-                onPress={processPayment}
+                onPress={() => processPayment()}
                 disabled={isProcessing}
               >
                 <Text className="text-brand-cream font-bold">{isProcessing ? 'Memproses...' : 'Proses Bayar'}</Text>
@@ -523,7 +522,7 @@ export function Pos() {
       {/* Modal Pesanan Tertunda */}
       <Modal visible={showPendingOrders} transparent animationType="slide">
         <View className="flex-1 bg-black/80 pt-10 pb-6 px-4">
-          <View className="flex-1 bg-[#1A1A1A]/95 rounded-2xl overflow-hidden shadow-2xl p-4 border border-white/10">
+          <View className="flex-1 bg-[#18181B]/95 rounded-2xl overflow-hidden shadow-2xl p-4 border border-white/10">
             <View className="flex-row justify-between items-center mb-4 border-b border-white/10 pb-3">
               <Text className="text-brand-cream font-bold text-lg">Pesanan Menunggu Pembayaran</Text>
               <TouchableOpacity onPress={() => setShowPendingOrders(false)} className="bg-red-500/20 px-3 py-1.5 rounded-lg border border-red-500/50">
@@ -574,8 +573,8 @@ export function Pos() {
       <Modal visible={!!paymentUrl} transparent animationType="slide">
         <View className="flex-1 bg-black/80 pt-10 pb-6 px-4">
           <View className="flex-1 bg-white rounded-2xl overflow-hidden shadow-2xl">
-            <View className="flex-row justify-between items-center bg-[#3A2B1F] p-4">
-              <Text className="text-[#F3EDE1] font-bold text-lg">Pembayaran Midtrans</Text>
+            <View className="flex-row justify-between items-center bg-[#18181B] p-4">
+              <Text className="text-[#FFFFFF] font-bold text-lg">Pembayaran Midtrans</Text>
               <TouchableOpacity onPress={() => setPaymentUrl(null)} className="bg-red-500/20 px-3 py-1.5 rounded-lg border border-red-500/50">
                 <Text className="text-red-400 font-bold text-sm">Tutup</Text>
               </TouchableOpacity>

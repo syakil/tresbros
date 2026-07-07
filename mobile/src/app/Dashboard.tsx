@@ -35,7 +35,7 @@ export function Dashboard() {
     <ScrollView 
       className="flex-1 bg-brand-dark px-4 pt-6"
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#A16B3D" />
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#2563EB" />
       }
     >
       <View className="mb-6">
@@ -45,7 +45,7 @@ export function Dashboard() {
 
       {loading ? (
         <View className="flex-1 justify-center items-center py-20">
-          <ActivityIndicator size="large" color="#A16B3D" />
+          <ActivityIndicator size="large" color="#2563EB" />
           <Text className="text-brand-sage mt-4">Memuat data analitik...</Text>
         </View>
       ) : (
