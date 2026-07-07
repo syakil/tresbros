@@ -76,6 +76,12 @@ namespace backend.Controllers
 
             _context.Entry(order).State = EntityState.Modified;
 
+            // Trigger stock deduction and journal entry creation immediately upon payment confirmation
+            if (order.PaymentStatus == "success")
+            {
+                await OrderController.ProcessOrderCompletion(order, _context);
+            }
+
             // Log into MidtransLog table
             var rawPayload = payload.GetRawText();
             var log = new MidtransLog

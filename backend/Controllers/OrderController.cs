@@ -68,10 +68,31 @@ namespace backend.Controllers
             order.QueueNumber = maxQueueToday + 1;
             order.OrderNumber = $"{localTime:yyyyMMdd}{order.QueueNumber:D3}";
 
+            if (order.PaymentMethod == "CASH")
+            {
+                order.PaymentStatus = "success";
+            }
+
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
 
             Console.WriteLine($"[ORDER CREATED] ID: {order.Id}, OrderNo: {order.OrderNumber}, Queue: {order.QueueNumber}, PaymentMethod: '{order.PaymentMethod}', TotalAmount: {order.TotalAmount}");
+
+            // Process stock deduction & journal immediately for CASH order
+            if (order.PaymentMethod == "CASH")
+            {
+                var reloadedOrder = await _context.Orders
+                    .Include(o => o.Items)
+                        .ThenInclude(i => i.Product)
+                            .ThenInclude(p => p.RecipeItems)
+                    .FirstOrDefaultAsync(o => o.Id == order.Id);
+
+                if (reloadedOrder != null)
+                {
+                    await ProcessOrderCompletion(reloadedOrder, _context);
+                    await _context.SaveChangesAsync();
+                }
+            }
 
             // Midtrans Integration
             if (order.PaymentMethod == "MIDTRANS")
@@ -145,102 +166,11 @@ namespace backend.Controllers
 
             if (isNowCompleted && !wasCompleted)
             {
-                double totalCogs = 0;
-
-                // Deduct stock
-                foreach (var item in order.Items)
-                {
-                    if (item.Product?.RecipeItems != null)
-                    {
-                        foreach (var recipe in item.Product.RecipeItems)
-                        {
-                            double requiredQty = recipe.Quantity * item.Quantity;
-                            var material = await _context.Materials.FindAsync(recipe.MaterialId);
-                            
-                            if (material != null)
-                            {
-                                material.Stock -= requiredQty;
-                                _context.Entry(material).State = EntityState.Modified;
-
-                                // FIFO deduction from MaterialBatch
-                                var batches = await _context.MaterialBatches
-                                    .Where(b => b.MaterialId == material.Id && b.RemainingQty > 0)
-                                    .OrderBy(b => b.CreatedAt)
-                                    .ToListAsync();
-
-                                double remainingNeeded = requiredQty;
-
-                                foreach (var batch in batches)
-                                {
-                                    if (remainingNeeded <= 0) break;
-
-                                    double qtyToDeduct = Math.Min(remainingNeeded, batch.RemainingQty);
-                                    batch.RemainingQty -= qtyToDeduct;
-                                    remainingNeeded -= qtyToDeduct;
-                                    
-                                    totalCogs += qtyToDeduct * batch.UnitPrice;
-                                    _context.Entry(batch).State = EntityState.Modified;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Create Journal for Sales, Tax, COGS
-                var cashOrReceivableCode = order.PaymentMethod == "MIDTRANS" ? "1120" : "1110";
-                var cashAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == cashOrReceivableCode) ?? new ChartOfAccount { Code = cashOrReceivableCode, Name = order.PaymentMethod == "MIDTRANS" ? "Piutang Midtrans" : "Kas Kecil", Type = "ASSET" };
-                var salesAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "4110") ?? new ChartOfAccount { Code = "4110", Name = "Pendapatan Penjualan", Type = "REVENUE" };
-                var discountAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "4120") ?? new ChartOfAccount { Code = "4120", Name = "Diskon & Promo", Type = "REVENUE" };
-                var cogsAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "5110") ?? new ChartOfAccount { Code = "5110", Name = "HPP", Type = "EXPENSE" };
-                var inventoryAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "1140") ?? new ChartOfAccount { Code = "1140", Name = "Persediaan Bahan Baku", Type = "ASSET" };
-                var taxAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "2120") ?? new ChartOfAccount { Code = "2120", Name = "Hutang Pajak (PB1)", Type = "LIABILITY" };
-
-                if (cashAccount.Id == 0) _context.ChartOfAccounts.Add(cashAccount);
-                if (salesAccount.Id == 0) _context.ChartOfAccounts.Add(salesAccount);
-                if (discountAccount.Id == 0) _context.ChartOfAccounts.Add(discountAccount);
-                if (cogsAccount.Id == 0) _context.ChartOfAccounts.Add(cogsAccount);
-                if (inventoryAccount.Id == 0) _context.ChartOfAccounts.Add(inventoryAccount);
-                if (taxAccount.Id == 0) _context.ChartOfAccounts.Add(taxAccount);
-
-                var taxSetting = await _context.Settings.FirstOrDefaultAsync(s => s.Key == "TAX_ENABLED");
-                bool isTaxEnabled = taxSetting?.Value == "true";
-                
-                double taxAmount = isTaxEnabled ? order.TotalAmount - (order.TotalAmount / 1.11) : 0;
-                double salesRevenue = (order.TotalAmount - taxAmount) + order.DiscountAmount;
-
-                var journal = new JournalEntry 
-                {
-                    Date = DateTime.UtcNow,
-                    Reference = order.OrderNumber,
-                    Description = $"Penjualan {order.OrderNumber}"
-                };
-
-                // Sales & Cash/Receivable
-                journal.Lines.Add(new JournalEntryLine { Account = cashAccount, Debit = order.TotalAmount, Credit = 0 });
-                journal.Lines.Add(new JournalEntryLine { Account = salesAccount, Debit = 0, Credit = salesRevenue });
-                
-                if (order.DiscountAmount > 0)
-                {
-                    journal.Lines.Add(new JournalEntryLine { Account = discountAccount, Debit = order.DiscountAmount, Credit = 0 });
-                }
-
-                if (isTaxEnabled && taxAmount > 0)
-                {
-                    journal.Lines.Add(new JournalEntryLine { Account = taxAccount, Debit = 0, Credit = taxAmount });
-                }
-
-                // COGS & Inventory
-                if (totalCogs > 0)
-                {
-                    journal.Lines.Add(new JournalEntryLine { Account = cogsAccount, Debit = totalCogs, Credit = 0 });
-                    journal.Lines.Add(new JournalEntryLine { Account = inventoryAccount, Debit = 0, Credit = totalCogs });
-                }
-
-                _context.JournalEntries.Add(journal);
+                await ProcessOrderCompletion(order, _context);
             }
             else if (wasCompleted && !isNowCompleted)
             {
-                // Revert stock (not reverting FIFO batches logic precisely for simplicity, just adding stock back. A full rollback would be more complex)
+                // Revert stock (not reverting FIFO batches logic precisely for simplicity, just adding stock back)
                 foreach (var item in order.Items)
                 {
                     if (item.Product?.RecipeItems != null)
@@ -291,6 +221,153 @@ namespace backend.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        public static async Task ProcessOrderCompletion(Order order, AppDbContext context)
+        {
+            // 1. Check if already processed (check if journal entry with order number exists)
+            bool alreadyProcessed = await context.JournalEntries.AnyAsync(j => j.Reference == order.OrderNumber);
+            if (alreadyProcessed) return;
+
+            double totalCogs = 0;
+
+            // Deduct stock for main products
+            foreach (var item in order.Items)
+            {
+                if (item.Product?.RecipeItems != null)
+                {
+                    foreach (var recipe in item.Product.RecipeItems)
+                    {
+                        double requiredQty = recipe.Quantity * item.Quantity;
+                        var material = await context.Materials.FindAsync(recipe.MaterialId);
+                        
+                        if (material != null)
+                        {
+                            material.Stock -= requiredQty;
+                            context.Entry(material).State = EntityState.Modified;
+
+                            var batches = await context.MaterialBatches
+                                .Where(b => b.MaterialId == material.Id && b.RemainingQty > 0)
+                                .OrderBy(b => b.CreatedAt)
+                                .ToListAsync();
+
+                            double remainingNeeded = requiredQty;
+
+                            foreach (var batch in batches)
+                            {
+                                if (remainingNeeded <= 0) break;
+
+                                double qtyToDeduct = Math.Min(remainingNeeded, batch.RemainingQty);
+                                batch.RemainingQty -= qtyToDeduct;
+                                remainingNeeded -= qtyToDeduct;
+                                
+                                totalCogs += qtyToDeduct * batch.UnitPrice;
+                                context.Entry(batch).State = EntityState.Modified;
+                            }
+                        }
+                    }
+                }
+
+                // Deduct recipe for any add-ons/toppings listed in notes
+                if (!string.IsNullOrEmpty(item.Notes))
+                {
+                    var noteParts = item.Notes.Split(',')
+                        .Select(p => p.Trim())
+                        .Where(p => !string.IsNullOrEmpty(p))
+                        .ToList();
+
+                    foreach (var part in noteParts)
+                    {
+                        var addonProduct = await context.Products
+                            .Include(p => p.RecipeItems)
+                            .FirstOrDefaultAsync(p => p.Name.ToLower() == part.ToLower());
+
+                        if (addonProduct != null && addonProduct.RecipeItems != null)
+                        {
+                            foreach (var recipe in addonProduct.RecipeItems)
+                            {
+                                double requiredQty = recipe.Quantity * item.Quantity;
+                                var material = await context.Materials.FindAsync(recipe.MaterialId);
+
+                                if (material != null)
+                                {
+                                    material.Stock -= requiredQty;
+                                    context.Entry(material).State = EntityState.Modified;
+
+                                    var batches = await context.MaterialBatches
+                                        .Where(b => b.MaterialId == material.Id && b.RemainingQty > 0)
+                                        .OrderBy(b => b.CreatedAt)
+                                        .ToListAsync();
+
+                                    double remainingNeeded = requiredQty;
+
+                                    foreach (var batch in batches)
+                                    {
+                                        if (remainingNeeded <= 0) break;
+
+                                        double qtyToDeduct = Math.Min(remainingNeeded, batch.RemainingQty);
+                                        batch.RemainingQty -= qtyToDeduct;
+                                        remainingNeeded -= qtyToDeduct;
+
+                                        totalCogs += qtyToDeduct * batch.UnitPrice;
+                                        context.Entry(batch).State = EntityState.Modified;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Create Journal
+            var cashOrReceivableCode = order.PaymentMethod == "MIDTRANS" ? "1120" : "1110";
+            var cashAccount = await context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == cashOrReceivableCode) ?? new ChartOfAccount { Code = cashOrReceivableCode, Name = order.PaymentMethod == "MIDTRANS" ? "Piutang Midtrans" : "Kas Kecil", Type = "ASSET" };
+            var salesAccount = await context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "4110") ?? new ChartOfAccount { Code = "4110", Name = "Pendapatan Penjualan", Type = "REVENUE" };
+            var discountAccount = await context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "4120") ?? new ChartOfAccount { Code = "4120", Name = "Diskon & Promo", Type = "REVENUE" };
+            var cogsAccount = await context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "5110") ?? new ChartOfAccount { Code = "5110", Name = "HPP", Type = "EXPENSE" };
+            var inventoryAccount = await context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "1140") ?? new ChartOfAccount { Code = "1140", Name = "Persediaan Bahan Baku", Type = "ASSET" };
+            var taxAccount = await context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "2120") ?? new ChartOfAccount { Code = "2120", Name = "Hutang Pajak (PB1)", Type = "LIABILITY" };
+
+            if (cashAccount.Id == 0) context.ChartOfAccounts.Add(cashAccount);
+            if (salesAccount.Id == 0) context.ChartOfAccounts.Add(salesAccount);
+            if (discountAccount.Id == 0) context.ChartOfAccounts.Add(discountAccount);
+            if (cogsAccount.Id == 0) context.ChartOfAccounts.Add(cogsAccount);
+            if (inventoryAccount.Id == 0) context.ChartOfAccounts.Add(inventoryAccount);
+            if (taxAccount.Id == 0) context.ChartOfAccounts.Add(taxAccount);
+
+            var taxSetting = await context.Settings.FirstOrDefaultAsync(s => s.Key == "TAX_ENABLED");
+            bool isTaxEnabled = taxSetting?.Value == "true";
+            
+            double taxAmount = isTaxEnabled ? order.TotalAmount - (order.TotalAmount / 1.11) : 0;
+            double salesRevenue = (order.TotalAmount - taxAmount) + order.DiscountAmount;
+
+            var journal = new JournalEntry 
+            {
+                Date = DateTime.UtcNow,
+                Reference = order.OrderNumber,
+                Description = $"Penjualan {order.OrderNumber}"
+            };
+
+            journal.Lines.Add(new JournalEntryLine { Account = cashAccount, Debit = order.TotalAmount, Credit = 0 });
+            journal.Lines.Add(new JournalEntryLine { Account = salesAccount, Debit = 0, Credit = salesRevenue });
+            
+            if (order.DiscountAmount > 0)
+            {
+                journal.Lines.Add(new JournalEntryLine { Account = discountAccount, Debit = order.DiscountAmount, Credit = 0 });
+            }
+
+            if (isTaxEnabled && taxAmount > 0)
+            {
+                journal.Lines.Add(new JournalEntryLine { Account = taxAccount, Debit = 0, Credit = taxAmount });
+            }
+
+            if (totalCogs > 0)
+            {
+                journal.Lines.Add(new JournalEntryLine { Account = cogsAccount, Debit = totalCogs, Credit = 0 });
+                journal.Lines.Add(new JournalEntryLine { Account = inventoryAccount, Debit = 0, Credit = totalCogs });
+            }
+
+            context.JournalEntries.Add(journal);
         }
 
         private bool OrderExists(int id)

@@ -79,6 +79,7 @@ export default function RnDPage() {
               <tr>
                 <th className="px-4 py-3 font-medium">Recipe Name</th>
                 <th className="px-4 py-3 font-medium">Status</th>
+                <th className="px-4 py-3 font-medium text-right">Harga Jual</th>
                 <th className="px-4 py-3 font-medium text-right">Target COGS</th>
                 <th className="px-4 py-3 font-medium text-right">Actual COGS</th>
                 <th className="px-4 py-3 font-medium text-right">Actions</th>
@@ -87,13 +88,13 @@ export default function RnDPage() {
             <tbody className="divide-y divide-zinc-100">
               {isLoading ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-zinc-500">
+                  <td colSpan={6} className="px-4 py-8 text-center text-zinc-500">
                     Loading data...
                   </td>
                 </tr>
               ) : filtered?.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-zinc-500">
+                  <td colSpan={6} className="px-4 py-8 text-center text-zinc-500">
                     No trial recipes yet
                   </td>
                 </tr>
@@ -113,11 +114,26 @@ export default function RnDPage() {
                         {recipe.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right">
-                      Rp {recipe.targetCost?.toLocaleString('id-ID')}
+                    <td className="px-4 py-3 text-right font-medium text-zinc-900">
+                      {recipe.sellingPrice > 0 ? `Rp ${recipe.sellingPrice.toLocaleString('id-ID')}` : '-'}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      Rp {recipe.actualCost?.toLocaleString('id-ID')}
+                      {recipe.targetCostType === 'percentage' && recipe.sellingPrice > 0 ? (
+                        <div>
+                          <div className="font-semibold text-zinc-700">{recipe.targetCostValue}%</div>
+                          <div className="text-[10px] text-zinc-500">(Rp {recipe.targetCost?.toLocaleString('id-ID')})</div>
+                        </div>
+                      ) : (
+                        `Rp ${recipe.targetCost?.toLocaleString('id-ID')}`
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="font-semibold text-brand-sage">Rp {recipe.actualCost?.toLocaleString('id-ID')}</div>
+                      {recipe.sellingPrice > 0 && (
+                        <div className="text-[10px] text-zinc-500">
+                          {((recipe.actualCost / recipe.sellingPrice) * 100).toFixed(1)}%
+                        </div>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-2">

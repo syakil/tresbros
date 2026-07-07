@@ -22,6 +22,19 @@ export default function RnDDetailPage({ params }: { params: Promise<{ id: string
   const [promoteForm, setPromoteForm] = useState({ price: '', category: 'Coffee' });
   const [historyToApply, setHistoryToApply] = useState<number | null>(null);
 
+  const updateTargetCost = (updates: Partial<any>) => {
+    setRecipe((prev: any) => {
+      if (!prev) return prev;
+      const nextRecipe = { ...prev, ...updates };
+      const sPrice = nextRecipe.sellingPrice || 0;
+      const cType = nextRecipe.targetCostType || 'nominal';
+      const cVal = nextRecipe.targetCostValue || 0;
+      
+      nextRecipe.targetCost = cType === 'percentage' ? sPrice * (cVal / 100) : cVal;
+      return nextRecipe;
+    });
+  };
+
   const showToast = (text: string, type: 'success' | 'error' | 'warning' = 'success') => {
     setToastMessage({ text, type });
     setTimeout(() => setToastMessage(null), 3000);
@@ -170,7 +183,8 @@ export default function RnDDetailPage({ params }: { params: Promise<{ id: string
   };
 
   const handlePromote = () => {
-    setPromoteForm({ price: recipe?.targetCost?.toString() || '0', category: 'Coffee' });
+    const defaultPrice = recipe?.sellingPrice > 0 ? recipe.sellingPrice : recipe?.targetCost;
+    setPromoteForm({ price: defaultPrice?.toString() || '0', category: 'Coffee' });
     setShowPromoteConfirm(true);
   };
 
@@ -297,6 +311,14 @@ export default function RnDDetailPage({ params }: { params: Promise<{ id: string
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
+                <Input 
+                  label="Harga Jual (Rp)"
+                  type="number"
+                  value={recipe.sellingPrice || ''} 
+                  onChange={(e) => updateTargetCost({ sellingPrice: parseFloat(e.target.value) || 0 })}
+                />
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-zinc-700 mb-1">Status</label>
                 <CustomSelect 
                   className="w-full border border-zinc-200 rounded-lg p-2.5 text-sm bg-white"
@@ -310,15 +332,34 @@ export default function RnDDetailPage({ params }: { params: Promise<{ id: string
                   ]}
                 />
               </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 mb-1">Format Target COGS</label>
+                <CustomSelect 
+                  className="w-full border border-zinc-200 rounded-lg p-2.5 text-sm bg-white"
+                  value={recipe.targetCostType || 'nominal'}
+                  onChange={(val) => updateTargetCost({ targetCostType: val })}
+                  options={[
+                    { value: 'nominal', label: 'Nominal (Rp)' },
+                    { value: 'percentage', label: 'Persentase (%)' }
+                  ]}
+                />
+              </div>
               <div>
                 <Input 
-                  label="Target COGS (Rp)"
+                  label={recipe.targetCostType === 'percentage' ? 'Target COGS (%)' : 'Target COGS (Rp)'}
                   type="number"
-                  value={recipe.targetCost} 
-                  onChange={(e) => setRecipe({...recipe, targetCost: parseFloat(e.target.value) || 0})}
+                  value={recipe.targetCostValue !== undefined ? recipe.targetCostValue : recipe.targetCost} 
+                  onChange={(e) => updateTargetCost({ targetCostValue: parseFloat(e.target.value) || 0 })}
                 />
               </div>
             </div>
+            {recipe.targetCostType === 'percentage' && recipe.sellingPrice > 0 && (
+              <div className="text-xs text-zinc-500 mt-1">
+                Setara dengan: <span className="font-semibold text-zinc-700">Rp {recipe.targetCost.toLocaleString('id-ID')}</span>
+              </div>
+            )}
           </div>
         </Card>
 
@@ -394,10 +435,23 @@ export default function RnDDetailPage({ params }: { params: Promise<{ id: string
             ))}
           </tbody>
           <tfoot>
-            <tr className="bg-zinc-50/50">
+            <tr className="bg-zinc-50/50 text-xs md:text-sm">
               <td colSpan={4} className="px-3 py-3 font-bold text-right">Total Actual COGS:</td>
-              <td className="px-3 py-3 font-bold text-right text-brand-sage">
-                Rp {(recipe.ingredients?.reduce((acc: number, ing: any) => acc + (ing.quantity * ing.costPerUnit), 0) || 0).toLocaleString('id-ID')}
+              <td className="px-3 py-3 font-bold text-right text-brand-sage whitespace-nowrap">
+                {(() => {
+                  const actualCost = recipe.ingredients?.reduce((acc: number, ing: any) => acc + (ing.quantity * ing.costPerUnit), 0) || 0;
+                  const percent = recipe.sellingPrice > 0 ? (actualCost / recipe.sellingPrice) * 100 : 0;
+                  return (
+                    <div>
+                      <div>Rp {actualCost.toLocaleString('id-ID')}</div>
+                      {recipe.sellingPrice > 0 && (
+                        <div className="text-[10px] text-zinc-500 font-medium normal-case">
+                          ({percent.toFixed(1)}% dari Harga Jual)
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </td>
               <td></td>
             </tr>
@@ -450,7 +504,7 @@ export default function RnDDetailPage({ params }: { params: Promise<{ id: string
       {/* Custom Confirm Modal for Promote */}
       {showPromoteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md animate-in zoom-in-95 duration-200">
             <div className="p-6">
               <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center mb-4">
                 <CheckCircle className="w-6 h-6 text-blue-600" />
@@ -480,7 +534,9 @@ export default function RnDDetailPage({ params }: { params: Promise<{ id: string
                       { label: "Non-Coffee", value: "Non-Coffee" },
                       { label: "Tea", value: "Tea" },
                       { label: "Food", value: "Food" },
-                      { label: "Snack", value: "Snack" }
+                      { label: "Snack", value: "Snack" },
+                      { label: "Add-on", value: "Add-on" },
+                      { label: "Topping", value: "Topping" }
                     ]}
                     className="bg-white border border-zinc-200 text-zinc-900 rounded-lg px-3 py-2 flex items-center h-10 w-full"
                   />

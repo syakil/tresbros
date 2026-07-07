@@ -43,7 +43,7 @@ export default function ItemsPage() {
     const opts = categories.map((c: any) => ({ label: c.name, value: c.name }));
     
     // Ensure standard options exist
-    const standard = ['Coffee', 'Non-Coffee', 'Tea', 'Food', 'Snack', 'Uncategorized'];
+    const standard = ['Coffee', 'Non-Coffee', 'Tea', 'Food', 'Snack', 'Uncategorized', 'Add-on', 'Topping'];
     standard.forEach(s => {
       if (!opts.find((o: any) => o.value === s)) {
         opts.push({ label: s, value: s });

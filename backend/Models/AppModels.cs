@@ -283,6 +283,9 @@ namespace backend.Models
         public string Description { get; set; } = string.Empty;
         public double TargetCost { get; set; } = 0;
         public double ActualCost { get; set; } = 0;
+        public double SellingPrice { get; set; } = 0;
+        public string TargetCostType { get; set; } = "nominal"; // nominal, percentage
+        public double TargetCostValue { get; set; } = 0;
         public string Notes { get; set; } = string.Empty;
         public string Status { get; set; } = "Draft"; // Draft, Tested, Approved, Rejected
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

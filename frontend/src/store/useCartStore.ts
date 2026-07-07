@@ -14,6 +14,7 @@ export interface CartItem extends Product {
   cartItemId: string;
   quantity: number;
   notes?: string;
+  basePrice?: number;
 }
 
 interface CartState {
@@ -23,6 +24,7 @@ interface CartState {
   removeItem: (cartItemId: string) => void;
   updateQuantity: (cartItemId: string, quantity: number) => void;
   setCustomerName: (name: string) => void;
+  updateNotes: (cartItemId: string, notes: string, extraPrice?: number) => void;
   discountType: 'nominal' | 'percentage';
   discountAmount: number;
   appliedCoupon: any | null;
@@ -44,11 +46,9 @@ export const useCartStore = create<CartState>((set, get) => ({
   discountType: 'nominal',
   discountAmount: 0,
   appliedCoupon: null,
-  
   taxEnabled: true,
   
   setTaxEnabled: (enabled) => set({ taxEnabled: enabled }),
-  
   setDiscountType: (type) => set({ discountType: type, discountAmount: 0, appliedCoupon: null }),
   setDiscountAmount: (amount) => set({ discountAmount: Math.max(0, amount), appliedCoupon: null }),
   setAppliedCoupon: (coupon, amount) => set({ appliedCoupon: coupon, discountType: 'nominal', discountAmount: amount }),
@@ -70,7 +70,8 @@ export const useCartStore = create<CartState>((set, get) => ({
           ...product, 
           cartItemId: Math.random().toString(36).substr(2, 9), 
           quantity: 1, 
-          notes 
+          notes,
+          basePrice: product.price
         }] 
       };
     });
@@ -91,6 +92,22 @@ export const useCartStore = create<CartState>((set, get) => ({
   },
   
   setCustomerName: (name) => set({ customerName: name }),
+  
+  updateNotes: (cartItemId, notes, extraPrice = 0) => {
+    set((state) => ({
+      items: state.items.map((i) => {
+        if (i.cartItemId !== cartItemId) return i;
+        
+        const base = i.basePrice !== undefined ? i.basePrice : i.price;
+        return { 
+          ...i, 
+          notes, 
+          price: base + extraPrice, 
+          basePrice: base 
+        };
+      })
+    }));
+  },
   
   clearCart: () => set({ items: [], customerName: '', discountAmount: 0, discountType: 'nominal', appliedCoupon: null }),
   

@@ -11,7 +11,7 @@ import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 
 export default function PosPage() {
-  const { items, customerName, setCustomerName, addItem, removeItem, updateQuantity, getSubtotal, getTax, getTotal, clearCart, discountAmount, setDiscountAmount, discountType, setDiscountType, getCalculatedDiscount, appliedCoupon, setAppliedCoupon, setTaxEnabled, taxEnabled } = useCartStore();
+  const { items, customerName, setCustomerName, addItem, removeItem, updateQuantity, getSubtotal, getTax, getTotal, clearCart, discountAmount, setDiscountAmount, discountType, setDiscountType, getCalculatedDiscount, appliedCoupon, setAppliedCoupon, setTaxEnabled, taxEnabled, updateNotes } = useCartStore();
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [showCheckout, setShowCheckout] = useState(false);
@@ -92,8 +92,26 @@ export default function PosPage() {
   });
   
   // Filter by Category AND Search Query
+  const addonProducts = products.filter(p => p.category === 'Add-on' || p.category === 'Topping');
+
+  const calculateAddonExtraPrice = (notesStr: string) => {
+    let extra = 0;
+    if (!notesStr) return extra;
+    const activeTags = notesStr.split(',').map(n => n.trim()).filter(Boolean);
+    activeTags.forEach(tag => {
+      const addon = addonProducts.find(p => p.name.toLowerCase() === tag.toLowerCase());
+      if (addon) {
+        extra += addon.price;
+      }
+    });
+    return extra;
+  };
+
   const filteredProducts = products.filter(p => {
-    const matchCategory = activeCategory === 'All' || p.category === activeCategory;
+    const isAddonOrTopping = p.category === 'Add-on' || p.category === 'Topping';
+    const matchCategory = 
+      (activeCategory === 'All' && !isAddonOrTopping) || 
+      p.category === activeCategory;
     const matchSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchCategory && matchSearch;
   });
@@ -358,6 +376,97 @@ export default function PosPage() {
                     )}
                   </div>
                 </div>
+
+                {/* Quick custom notes/tags */}
+                <div className="flex flex-col gap-1.5 mt-1 border-t border-zinc-100 pt-2">
+                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Keterangan / Custom:</span>
+                  <div className="flex flex-wrap gap-1">
+                    {/* Preparation notes (Non-price) */}
+                    {[
+                      { label: "Less Sugar", val: "Less Sugar" },
+                      { label: "No Sugar", val: "No Sugar" },
+                      { label: "Less Ice", val: "Less Ice" }
+                    ].map((tag) => {
+                      const isActive = item.notes?.split(',').map(n => n.trim()).includes(tag.val);
+                      return (
+                        <button
+                          key={tag.val}
+                          type="button"
+                          onClick={() => {
+                            let list = item.notes ? item.notes.split(',').map(n => n.trim()).filter(Boolean) : [];
+                            
+                            // Mutual exclusivity check: Less Sugar vs No Sugar
+                            if (tag.val === 'Less Sugar') {
+                              list = list.filter(n => n !== 'No Sugar');
+                            } else if (tag.val === 'No Sugar') {
+                              list = list.filter(n => n !== 'Less Sugar');
+                            }
+
+                            if (list.includes(tag.val)) {
+                              list = list.filter(n => n !== tag.val);
+                            } else {
+                              list.push(tag.val);
+                            }
+                            const nextNotes = list.join(', ');
+                            const extraPrice = calculateAddonExtraPrice(nextNotes);
+                            updateNotes(item.cartItemId, nextNotes, extraPrice);
+                          }}
+                          className={`text-[10px] px-2 py-1 rounded-md font-semibold transition ${
+                            isActive 
+                              ? 'bg-blue-600 text-white shadow-sm border border-blue-600' 
+                              : 'bg-zinc-100 hover:bg-zinc-200 text-zinc-600 border border-zinc-200'
+                          }`}
+                        >
+                          {tag.label}
+                        </button>
+                      );
+                    })}
+
+                    {/* Dynamic Add-ons & Toppings */}
+                    {addonProducts.map((addon) => {
+                      const isActive = item.notes?.split(',').map(n => n.trim()).includes(addon.name);
+                      return (
+                        <button
+                          key={addon.id}
+                          type="button"
+                          onClick={() => {
+                            let list = item.notes ? item.notes.split(',').map(n => n.trim()).filter(Boolean) : [];
+                            
+                            if (list.includes(addon.name)) {
+                              list = list.filter(n => n !== addon.name);
+                            } else {
+                              list.push(addon.name);
+                            }
+                            const nextNotes = list.join(', ');
+                            const extraPrice = calculateAddonExtraPrice(nextNotes);
+                            updateNotes(item.cartItemId, nextNotes, extraPrice);
+                          }}
+                          className={`text-[10px] px-2 py-1 rounded-md font-semibold transition ${
+                            isActive 
+                              ? 'bg-blue-600 text-white shadow-sm border border-blue-600' 
+                              : 'bg-zinc-100 hover:bg-zinc-200 text-zinc-600 border border-zinc-200'
+                          }`}
+                        >
+                          {addon.name} (+Rp {addon.price.toLocaleString('id-ID')})
+                        </button>
+                      );
+                    })}
+                  </div>
+                  
+                  {/* Custom manual notes input */}
+                  <input
+                    type="text"
+                    placeholder="Custom notes (e.g. less sweet, extra hot...)"
+                    className="w-full bg-zinc-50 border border-zinc-200 text-zinc-800 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-blue-500 focus:bg-white transition mt-1"
+                    value={item.notes || ''}
+                    onChange={(e) => {
+                      const nextNotes = e.target.value;
+                      const extraPrice = calculateAddonExtraPrice(nextNotes);
+                      updateNotes(item.cartItemId, nextNotes, extraPrice);
+                    }}
+                  />
+                </div>
+
                 <div className="flex justify-between items-center mt-2 pt-2 border-t border-zinc-100">
                   <button onClick={() => removeItem(item.cartItemId)} className="text-zinc-400 hover:text-red-500 hover:bg-red-50 p-1.5 rounded-lg transition-colors">
                     <Trash2 className="w-4 h-4" />
@@ -627,6 +736,7 @@ export default function PosPage() {
         {items.map(item => (
           <div key={item.cartItemId} className="mb-1">
             <div className="font-bold">{item.name}</div>
+            {item.notes && <div className="text-[10px] text-zinc-600 italic pl-2">- {item.notes}</div>}
             <div className="flex justify-between">
               <span>{item.quantity} x {item.price}</span>
               <span>{item.quantity * item.price}</span>
