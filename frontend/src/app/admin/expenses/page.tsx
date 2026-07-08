@@ -59,10 +59,10 @@ export default function ExpensesPage() {
     }
   });
 
-  const expenseAccounts = coas.filter((c: any) => c.type === 'EXPENSE' && c.isActive);
+  const expenseAccounts = coas.filter((c: any) => (c.type === 'EXPENSE' || c.type === 'EQUITY') && c.isActive);
   const assetAccounts = coas.filter((c: any) => c.type === 'ASSET' && c.code !== '1140' && c.isActive);
 
-  const expenseOptions = expenseAccounts.map((c: any) => ({ value: c.id.toString(), label: `${c.code} - ${c.name}` }));
+  const expenseOptions = expenseAccounts.map((c: any) => ({ value: c.id.toString(), label: `${c.code} - ${c.name} (${c.type})` }));
   const assetOptions = assetAccounts.map((c: any) => ({ value: c.id.toString(), label: `${c.code} - ${c.name}` }));
 
   const resetForm = () => {

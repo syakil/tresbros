@@ -59,10 +59,10 @@ export default function IncomesPage() {
     }
   });
 
-  const revenueAccounts = coas.filter((c: any) => c.type === 'REVENUE' && c.isActive);
+  const revenueAccounts = coas.filter((c: any) => (c.type === 'REVENUE' || c.type === 'EQUITY') && c.isActive);
   const assetAccounts = coas.filter((c: any) => c.type === 'ASSET' && c.code !== '1140' && c.isActive);
 
-  const revenueOptions = revenueAccounts.map((c: any) => ({ value: c.id.toString(), label: `${c.code} - ${c.name}` }));
+  const revenueOptions = revenueAccounts.map((c: any) => ({ value: c.id.toString(), label: `${c.code} - ${c.name} (${c.type})` }));
   const assetOptions = assetAccounts.map((c: any) => ({ value: c.id.toString(), label: `${c.code} - ${c.name}` }));
 
   const resetForm = () => {
