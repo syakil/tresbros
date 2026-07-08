@@ -77,9 +77,9 @@ export default function KdsPage() {
     }
   });
 
-  const todoOrders = orders.filter(o => o.status === 'TODO');
-  const inProgressOrders = orders.filter(o => o.status === 'IN_PROGRESS');
-  const doneOrders = orders.filter(o => o.status === 'DONE');
+  const todoOrders = orders.filter(o => o.status === 'TODO' && o.paymentStatus === 'success');
+  const inProgressOrders = orders.filter(o => o.status === 'IN_PROGRESS' && o.paymentStatus === 'success');
+  const doneOrders = orders.filter(o => o.status === 'DONE' && o.paymentStatus === 'success');
 
   const OrderCardItem = ({ item }: { item: OrderItem }) => {
     const [showRecipe, setShowRecipe] = useState(false);

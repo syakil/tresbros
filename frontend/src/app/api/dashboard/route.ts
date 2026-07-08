@@ -36,7 +36,7 @@ export async function GET(request: Request) {
     // Filter di Node.js
     const orders = allOrders.filter((o: any) => {
       const d = new Date(o.createdAt);
-      return d >= startDate && d <= endDate;
+      return d >= startDate && d <= endDate && o.paymentStatus === 'success';
     });
 
     const expenses = allExpenses.filter((e: any) => {

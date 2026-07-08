@@ -36,10 +36,12 @@ export async function POST(req: Request) {
 export async function GET() {
   try {
     const orders = await backendClient.get('/api/Order');
+    // Filter out failed orders
+    const activeOrders = orders.filter((o: any) => o.paymentStatus !== 'failed');
     // Ensure ascending order if backend sends descending
-    orders.sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    activeOrders.sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
-    return NextResponse.json(orders);
+    return NextResponse.json(activeOrders);
   } catch (error: any) {
     console.error("Failed to fetch orders:", error);
     return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });

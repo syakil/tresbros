@@ -39,8 +39,8 @@ export default function QueuePage() {
     refetchInterval: 3000, // Poll every 3 seconds
   });
 
-  const preparingOrders = orders.filter(o => o.status === 'TODO' || o.status === 'IN_PROGRESS');
-  const readyOrders = orders.filter(o => o.status === 'DONE');
+  const preparingOrders = orders.filter(o => (o.status === 'TODO' || o.status === 'IN_PROGRESS') && o.paymentStatus === 'success');
+  const readyOrders = orders.filter(o => o.status === 'DONE' && o.paymentStatus === 'success');
 
   // Logic for Auto-Pagination (Sedang Disiapkan)
   useEffect(() => {
