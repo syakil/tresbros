@@ -60,6 +60,47 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
+
+    try
+    {
+        // Reconcile and fix orphan batches for cancelled purchases
+        var orphanBatches = db.MaterialBatches
+            .Include(b => b.PurchaseItem)
+            .ThenInclude(pi => pi.Purchase)
+            .Where(b => b.PurchaseItem != null && b.PurchaseItem.Purchase != null && b.PurchaseItem.Purchase.Status == "CANCELLED")
+            .ToList();
+
+        if (orphanBatches.Any())
+        {
+            var affectedMaterialIds = orphanBatches.Select(b => b.MaterialId).Distinct().ToList();
+            
+            db.MaterialBatches.RemoveRange(orphanBatches);
+            db.SaveChanges();
+
+            // Recalculate CostPerUnit for each affected material
+            foreach (var materialId in affectedMaterialIds)
+            {
+                var material = db.Materials.Find(materialId);
+                if (material != null)
+                {
+                    var remainingBatches = db.MaterialBatches
+                        .Where(b => b.MaterialId == materialId && b.RemainingQty > 0)
+                        .ToList();
+
+                    double totalValue = remainingBatches.Sum(b => b.RemainingQty * b.UnitPrice);
+                    double totalStock = remainingBatches.Sum(b => b.RemainingQty);
+
+                    material.CostPerUnit = totalStock > 0 ? totalValue / totalStock : 0;
+                    db.Entry(material).State = EntityState.Modified;
+                }
+            }
+            db.SaveChanges();
+        }
+    }
+    catch (System.Exception ex)
+    {
+        System.Console.WriteLine($"Error reconciling database stocks: {ex.Message}");
+    }
 }
 
 // Configure the HTTP request pipeline.

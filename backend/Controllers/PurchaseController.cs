@@ -164,10 +164,56 @@ namespace backend.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePurchase(int id)
         {
-            var purchase = await _context.Purchases.FindAsync(id);
+            var purchase = await _context.Purchases
+                .Include(p => p.Items)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
             if (purchase == null)
             {
                 return NotFound();
+            }
+
+            // Remove associated batches and revert stock if it wasn't cancelled yet
+            if (purchase.Items != null)
+            {
+                foreach (var item in purchase.Items)
+                {
+                    var material = await _context.Materials.FindAsync(item.MaterialId);
+                    if (material != null)
+                    {
+                        // If the purchase was COMPLETED, we need to revert the stock
+                        if (purchase.Status == "COMPLETED")
+                        {
+                            material.Stock -= item.Quantity;
+                            _context.Entry(material).State = EntityState.Modified;
+                        }
+
+                        // Remove the batch
+                        var batch = await _context.MaterialBatches.FirstOrDefaultAsync(b => b.PurchaseItemId == item.Id);
+                        if (batch != null)
+                        {
+                            _context.MaterialBatches.Remove(batch);
+                            
+                            // Update CostPerUnit
+                            var remainingBatches = await _context.MaterialBatches
+                                .Where(b => b.MaterialId == material.Id && b.RemainingQty > 0 && b.Id != batch.Id)
+                                .ToListAsync();
+                            
+                            double totalValue = remainingBatches.Sum(b => b.RemainingQty * b.UnitPrice);
+                            double totalStock = remainingBatches.Sum(b => b.RemainingQty);
+                            
+                            material.CostPerUnit = totalStock > 0 ? totalValue / totalStock : 0;
+                        }
+                    }
+                }
+            }
+
+            // Remove the Journal Entry
+            var journal = await _context.JournalEntries
+                .FirstOrDefaultAsync(j => j.Reference == purchase.PurchaseNo);
+            if (journal != null)
+            {
+                _context.JournalEntries.Remove(journal);
             }
 
             _context.Purchases.Remove(purchase);
@@ -197,7 +243,7 @@ namespace backend.Controllers
             purchase.Status = "CANCELLED";
             _context.Entry(purchase).State = EntityState.Modified;
 
-            // Revert stock
+            // Revert stock, remove batches, and update CostPerUnit
             if (purchase.Items != null)
             {
                 foreach (var item in purchase.Items)
@@ -207,8 +253,40 @@ namespace backend.Controllers
                     {
                         material.Stock -= item.Quantity;
                         _context.Entry(material).State = EntityState.Modified;
+
+                        // Find and remove the corresponding batch
+                        var batch = await _context.MaterialBatches.FirstOrDefaultAsync(b => b.PurchaseItemId == item.Id);
+                        if (batch != null)
+                        {
+                            _context.MaterialBatches.Remove(batch);
+                            
+                            // Query remaining active batches (excluding the one we are removing)
+                            var remainingBatches = await _context.MaterialBatches
+                                .Where(b => b.MaterialId == material.Id && b.RemainingQty > 0 && b.Id != batch.Id)
+                                .ToListAsync();
+                            
+                            double totalValue = remainingBatches.Sum(b => b.RemainingQty * b.UnitPrice);
+                            double totalStock = remainingBatches.Sum(b => b.RemainingQty);
+                            
+                            material.CostPerUnit = totalStock > 0 ? totalValue / totalStock : 0;
+                        }
                     }
                 }
+            }
+
+            // Also delete the Journal Entry associated with this purchase (if any) and adjust COA balances back
+            var invAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "1140");
+            var cashAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "1110");
+            
+            var journal = await _context.JournalEntries
+                .FirstOrDefaultAsync(j => j.Reference == purchase.PurchaseNo);
+            
+            if (journal != null)
+            {
+                _context.JournalEntries.Remove(journal);
+                
+                if (invAccount != null) invAccount.Balance -= purchase.TotalAmount;
+                if (cashAccount != null) cashAccount.Balance += purchase.TotalAmount;
             }
 
             await _context.SaveChangesAsync();
