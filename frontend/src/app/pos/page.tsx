@@ -24,6 +24,24 @@ export default function PosPage() {
   const [lastQueueNumber, setLastQueueNumber] = useState<string>('');
   const [isMounted, setIsMounted] = useState(false);
   const [showPendingOrders, setShowPendingOrders] = useState(false);
+  const [orderToCancel, setOrderToCancel] = useState<any | null>(null);
+  const [isCancellingOrder, setIsCancellingOrder] = useState<boolean>(false);
+  const [roundingType, setRoundingType] = useState<'NONE' | 'DOWN_100' | 'UP_100' | 'DOWN_500' | 'UP_500' | 'DOWN_1000' | 'UP_1000'>('NONE');
+  const [cashAmountReceived, setCashAmountReceived] = useState<number | ''>('');
+  const [printReceiptData, setPrintReceiptData] = useState<{ total: number; rounding: number; grandTotal: number; cashReceived: number; change: number; paymentMethod: string } | null>(null);
+  const [showRoundingDropdown, setShowRoundingDropdown] = useState(false);
+
+  const getRoundedTotal = (total: number) => {
+    switch (roundingType) {
+      case 'DOWN_100': return Math.floor(total / 100) * 100;
+      case 'UP_100': return Math.ceil(total / 100) * 100;
+      case 'DOWN_500': return Math.floor(total / 500) * 500;
+      case 'UP_500': return Math.ceil(total / 500) * 500;
+      case 'DOWN_1000': return Math.floor(total / 1000) * 1000;
+      case 'UP_1000': return Math.ceil(total / 1000) * 1000;
+      default: return total;
+    }
+  };
 
   const { data: orders, refetch: refetchOrders } = useQuery({
     queryKey: ['pos-orders'],
@@ -140,15 +158,23 @@ export default function PosPage() {
 
   const handleCheckout = () => {
     if (items.length === 0) return;
+    setRoundingType('NONE');
+    setCashAmountReceived('');
+    setPrintReceiptData(null);
+    setShowRoundingDropdown(false);
     setShowCheckout(true);
   };
 
   const processPayment = async () => {
     try {
       setIsProcessing(true);
+      const roundedTotal = getRoundedTotal(getTotal());
+      const rawTotal = getTotal();
+      const finalTotalAmount = paymentMethod === 'CASH' ? roundedTotal : rawTotal;
+
       const res = await axios.post('/api/orders', {
         customerName: customerName,
-        totalAmount: getTotal(),
+        totalAmount: finalTotalAmount,
         couponCode: appliedCoupon?.code || null,
         discountAmount: getCalculatedDiscount(),
         paymentMethod: paymentMethod,
@@ -161,6 +187,19 @@ export default function PosPage() {
       });
       setLastOrderNumber(res.data.orderNumber);
       setLastQueueNumber(res.data.queueNumber);
+
+      const diff = roundedTotal - rawTotal;
+      const received = paymentMethod === 'CASH' ? Number(cashAmountReceived || roundedTotal) : 0;
+      const changeAmount = paymentMethod === 'CASH' ? (received - roundedTotal) : 0;
+
+      setPrintReceiptData({
+        total: rawTotal,
+        rounding: diff,
+        grandTotal: roundedTotal,
+        cashReceived: received,
+        change: changeAmount,
+        paymentMethod: paymentMethod
+      });
 
       if (paymentMethod === 'MIDTRANS') {
         if (res.data.snapToken) {
@@ -617,39 +656,48 @@ export default function PosPage() {
                     <div className="text-zinc-500 text-sm font-medium">{order.customerName || 'Guest'} • {new Date(order.createdAt).toLocaleTimeString('id-ID')}</div>
                     <div className="text-blue-600 font-bold mt-2 text-lg">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(order.totalAmount)}</div>
                   </div>
-                  <Button 
-                    variant="primary" 
-                    onClick={() => {
-                      if (order.snapToken) {
-                        setShowPendingOrders(false);
-                        (window as any).snap.pay(order.snapToken, {
-                          onSuccess: function(){
-                            showToast("Payment Successful! Order sent to KDS.", 'success');
-                            setLastOrderNumber(order.orderNumber || order.id);
-                            setLastQueueNumber(order.queueNumber || '-');
-                            setTimeout(() => window.print(), 500);
-                            refetchOrders();
-                          },
-                          onPending: function(){
-                            showToast("Payment still pending...", 'warning');
-                            refetchOrders();
-                          },
-                          onError: function(){
-                            showToast("Payment failed.", 'error');
-                            refetchOrders();
-                          },
-                          onClose: function(){
-                            showToast("Payment window closed.", 'warning');
-                            refetchOrders();
-                          }
-                        });
-                      } else {
-                        showToast("Midtrans token not found.", 'error');
-                      }
-                    }}
-                  >
-                    Continue Payment
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                      onClick={() => setOrderToCancel(order)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      variant="primary" 
+                      onClick={() => {
+                        if (order.snapToken) {
+                          setShowPendingOrders(false);
+                          (window as any).snap.pay(order.snapToken, {
+                            onSuccess: function(){
+                              showToast("Payment Successful! Order sent to KDS.", 'success');
+                              setLastOrderNumber(order.orderNumber || order.id);
+                              setLastQueueNumber(order.queueNumber || '-');
+                              setTimeout(() => window.print(), 500);
+                              refetchOrders();
+                            },
+                            onPending: function(){
+                              showToast("Payment still pending...", 'warning');
+                              refetchOrders();
+                            },
+                            onError: function(){
+                              showToast("Payment failed.", 'error');
+                              refetchOrders();
+                            },
+                            onClose: function(){
+                              showToast("Payment window closed.", 'warning');
+                              refetchOrders();
+                            }
+                          });
+                        } else {
+                          showToast("Midtrans token not found.", 'error');
+                        }
+                      }}
+                    >
+                      Continue Payment
+                    </Button>
+                  </div>
                 </div>
               ))}
               
@@ -664,49 +712,246 @@ export default function PosPage() {
       {/* Modal Checkout (Glassmorphism Overlay) */}
       {showCheckout && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-zinc-900/40 backdrop-blur-sm p-4 animate-in fade-in">
-          <Card className="w-full max-w-md bg-white border-zinc-200 shadow-2xl p-8 rounded-2xl">
-            <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <ShoppingCart className="w-8 h-8" />
+          <Card className="w-full max-w-md bg-white border-zinc-200 shadow-2xl p-0 rounded-2xl max-h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+            {/* Header: fixed */}
+            <div className="text-center p-6 border-b border-zinc-100 shrink-0">
+              <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                <ShoppingCart className="w-6 h-6" />
               </div>
-              <h2 className="text-2xl font-display font-bold text-zinc-900 mb-2">Select Payment</h2>
-              <p className="text-zinc-500 text-sm font-medium">Total bill to be paid</p>
-              <p className="text-4xl font-display font-bold text-blue-600 mt-2 tracking-tight">{formatRupiah(getTotal())}</p>
+              <h2 className="text-xl font-display font-bold text-zinc-900">Select Payment</h2>
+              <p className="text-3xl font-display font-black text-blue-600 mt-2 tracking-tight">{formatRupiah(getTotal())}</p>
             </div>
             
-            <div className="space-y-3 mb-8">
-              <button 
-                className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all ${paymentMethod === 'CASH' ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-zinc-200 bg-white text-zinc-700 hover:border-blue-300 hover:bg-zinc-50'}`}
-                onClick={() => setPaymentMethod('CASH')}
-              >
-                <div className="flex items-center gap-3 font-semibold">
-                  <span className="text-xl">💵</span> Cash
+            {/* Middle Section: Scrollable */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar-light">
+              <div className="space-y-3">
+                <button 
+                  className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all ${paymentMethod === 'CASH' ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-zinc-200 bg-white text-zinc-700 hover:border-blue-300 hover:bg-zinc-50'}`}
+                  onClick={() => setPaymentMethod('CASH')}
+                >
+                  <div className="flex items-center gap-3 font-semibold">
+                    <span className="text-xl">💵</span> Cash
+                  </div>
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'CASH' ? 'border-blue-600' : 'border-zinc-300'}`}>
+                    {paymentMethod === 'CASH' && <div className="w-2.5 h-2.5 rounded-full bg-blue-600"></div>}
+                  </div>
+                </button>
+                
+                <button 
+                  className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all ${paymentMethod === 'MIDTRANS' ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-zinc-200 bg-white text-zinc-700 hover:border-blue-300 hover:bg-zinc-50'}`}
+                  onClick={() => setPaymentMethod('MIDTRANS')}
+                >
+                  <div className="flex items-center gap-3 font-semibold text-left">
+                    <span className="text-xl">💳</span> 
+                    <span>
+                      Midtrans <br/>
+                      <span className="text-xs font-normal opacity-80">(QRIS / Transfer / Card)</span>
+                    </span>
+                  </div>
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${paymentMethod === 'MIDTRANS' ? 'border-blue-600' : 'border-zinc-300'}`}>
+                    {paymentMethod === 'MIDTRANS' && <div className="w-2.5 h-2.5 rounded-full bg-blue-600"></div>}
+                  </div>
+                </button>
+              </div>
+
+              {paymentMethod === 'CASH' && (
+                <div className="border-t border-zinc-100 pt-5 space-y-4 text-left">
+                  {/* Rounding Dropdown (Custom UI) */}
+                  <div className="relative">
+                    <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider block mb-1.5">Pembulatan</label>
+                    <button
+                      type="button"
+                      onClick={() => setShowRoundingDropdown(!showRoundingDropdown)}
+                      className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-sm font-medium text-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all flex items-center justify-between cursor-pointer"
+                    >
+                      <span>
+                        {roundingType === 'NONE' && "Tanpa Pembulatan"}
+                        {roundingType === 'DOWN_100' && "Bulatkan Bawah Rp 100"}
+                        {roundingType === 'UP_100' && "Bulatkan Atas Rp 100"}
+                        {roundingType === 'DOWN_500' && "Bulatkan Bawah Rp 500"}
+                        {roundingType === 'UP_500' && "Bulatkan Atas Rp 500"}
+                        {roundingType === 'DOWN_1000' && "Bulatkan Bawah Rp 1.000"}
+                        {roundingType === 'UP_1000' && "Bulatkan Atas Rp 1.000"}
+                      </span>
+                      <span className="text-zinc-400 text-xs">▼</span>
+                    </button>
+
+                    {showRoundingDropdown && (
+                      <>
+                        <div className="fixed inset-0 z-40" onClick={() => setShowRoundingDropdown(false)} />
+                        <div className="absolute left-0 right-0 mt-1.5 bg-white border border-zinc-200 rounded-xl shadow-xl z-50 overflow-hidden py-1 animate-in fade-in slide-in-from-top-2 duration-150 max-h-56 overflow-y-auto custom-scrollbar-light">
+                          {[
+                            { value: 'NONE', label: "Tanpa Pembulatan" },
+                            { value: 'DOWN_100', label: "Bulatkan Bawah Rp 100" },
+                            { value: 'UP_100', label: "Bulatkan Atas Rp 105" }, // Wait, matched labels
+                            { value: 'UP_105', label: "Bulatkan Atas Rp 100" }, // Keep label correct
+                          ].map((opt) => {
+                            // Map values dynamically to display properly
+                            let displayVal = opt.value;
+                            if (opt.value === 'UP_105') displayVal = 'UP_100';
+                            if (opt.value === 'DOWN_100' || opt.value === 'NONE') displayVal = opt.value;
+                            // Wait, let's keep list clean
+                            return null;
+                          })}
+                          {[
+                            { value: 'NONE', label: "Tanpa Pembulatan" },
+                            { value: 'DOWN_100', label: "Bulatkan Bawah Rp 100" },
+                            { value: 'UP_100', label: "Bulatkan Atas Rp 100" },
+                            { value: 'DOWN_500', label: "Bulatkan Bawah Rp 500" },
+                            { value: 'UP_500', label: "Bulatkan Atas Rp 500" },
+                            { value: 'DOWN_1000', label: "Bulatkan Bawah Rp 1.000" },
+                            { value: 'UP_1000', label: "Bulatkan Atas Rp 1.000" },
+                          ].map((opt) => (
+                            <button
+                              key={opt.value}
+                              type="button"
+                              onClick={() => {
+                                setRoundingType(opt.value as any);
+                                setShowRoundingDropdown(false);
+                              }}
+                              className={`w-full text-left px-4 py-2.5 text-sm font-medium hover:bg-zinc-50 transition-colors flex items-center justify-between cursor-pointer ${roundingType === opt.value ? 'bg-blue-50 text-blue-700 hover:bg-blue-50' : 'text-zinc-700'}`}
+                            >
+                              <span>{opt.label}</span>
+                              {roundingType === opt.value && <span className="text-blue-600 font-bold text-xs">✓</span>}
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Final Total */}
+                  <div className="flex justify-between items-center py-2.5 bg-zinc-50 px-4 rounded-xl border border-zinc-200">
+                    <span className="text-sm font-medium text-zinc-500">Total Akhir</span>
+                    <span className="text-lg font-bold text-zinc-900">{formatRupiah(getRoundedTotal(getTotal()))}</span>
+                  </div>
+
+                  {/* Nominal Bayar */}
+                  <div>
+                    <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider block mb-1.5">Uang Diterima</label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 font-bold text-sm">Rp</span>
+                      <Input 
+                        type="number" 
+                        value={cashAmountReceived}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setCashAmountReceived(val === '' ? '' : Number(val));
+                        }}
+                        placeholder="Masukkan nominal bayar"
+                        className="pl-10 pr-4 py-3 w-full border-zinc-200 rounded-xl focus:ring-blue-500"
+                      />
+                    </div>
+                    {/* Quick Cash Suggestions */}
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      <button 
+                        type="button"
+                        onClick={() => setCashAmountReceived(getRoundedTotal(getTotal()))}
+                        className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-semibold transition-all border border-blue-100 cursor-pointer"
+                      >
+                        Uang Pas
+                      </button>
+                      {[10000, 20000, 50000, 100000].map(val => {
+                        const roundedTotal = getRoundedTotal(getTotal());
+                        if (val > roundedTotal) {
+                          return (
+                            <button 
+                              key={val}
+                              type="button"
+                              onClick={() => setCashAmountReceived(val)}
+                              className="px-3 py-1.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 rounded-lg text-xs font-semibold transition-all border border-zinc-200 cursor-pointer"
+                            >
+                              {new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(val)}
+                            </button>
+                          );
+                        }
+                        return null;
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Change or Warning */}
+                  {cashAmountReceived !== '' && (
+                    <div className="border-t border-zinc-100 pt-4">
+                      {Number(cashAmountReceived) >= getRoundedTotal(getTotal()) ? (
+                        <div className="flex justify-between items-center bg-emerald-50 border border-emerald-100 px-4 py-3 rounded-xl text-emerald-800 animate-in fade-in slide-in-from-top-2 duration-200">
+                          <span className="text-sm font-medium">Kembalian</span>
+                          <span className="text-xl font-bold">{formatRupiah(Number(cashAmountReceived) - getRoundedTotal(getTotal()))}</span>
+                        </div>
+                      ) : (
+                        <div className="flex justify-between items-center bg-rose-50 border border-rose-100 px-4 py-3 rounded-xl text-rose-800 animate-pulse">
+                          <span className="text-sm font-medium">Uang Kurang</span>
+                          <span className="text-lg font-bold">{formatRupiah(getRoundedTotal(getTotal()) - Number(cashAmountReceived))}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
-                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'CASH' ? 'border-blue-600' : 'border-zinc-300'}`}>
-                  {paymentMethod === 'CASH' && <div className="w-2.5 h-2.5 rounded-full bg-blue-600"></div>}
-                </div>
-              </button>
-              
-              <button 
-                className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all ${paymentMethod === 'MIDTRANS' ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-zinc-200 bg-white text-zinc-700 hover:border-blue-300 hover:bg-zinc-50'}`}
-                onClick={() => setPaymentMethod('MIDTRANS')}
-              >
-                <div className="flex items-center gap-3 font-semibold text-left">
-                  <span className="text-xl">💳</span> 
-                  <span>
-                    Midtrans <br/>
-                    <span className="text-xs font-normal opacity-80">(QRIS / Transfer / Card)</span>
-                  </span>
-                </div>
-                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${paymentMethod === 'MIDTRANS' ? 'border-blue-600' : 'border-zinc-300'}`}>
-                  {paymentMethod === 'MIDTRANS' && <div className="w-2.5 h-2.5 rounded-full bg-blue-600"></div>}
-                </div>
-              </button>
+              )}
             </div>
             
-            <div className="flex gap-3 pt-6 border-t border-zinc-100">
+            {/* Footer Buttons: fixed */}
+            <div className="p-6 bg-zinc-50 border-t border-zinc-100 flex gap-3 shrink-0">
               <Button variant="outline" className="flex-1 py-3" onClick={() => setShowCheckout(false)}>Cancel</Button>
-              <Button variant="primary" className="flex-1 py-3" onClick={processPayment}>Process Payment</Button>
+              <Button 
+                variant="primary" 
+                className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl" 
+                onClick={processPayment}
+                disabled={isProcessing || (paymentMethod === 'CASH' && (cashAmountReceived === '' || Number(cashAmountReceived) < getRoundedTotal(getTotal())))}
+              >
+                Process Payment
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Modal Konfirmasi Pembatalan Order (Custom Alert) */}
+      {orderToCancel && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-zinc-900/40 backdrop-blur-sm p-4 animate-in fade-in zoom-in-95 duration-200">
+          <Card className="w-full max-w-md bg-white border-zinc-200 shadow-2xl p-8 rounded-2xl">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Trash2 className="w-8 h-8 text-rose-500 animate-bounce" />
+              </div>
+              <h2 className="text-2xl font-display font-bold text-zinc-900 mb-2">Cancel Order?</h2>
+              <p className="text-zinc-500 text-sm font-medium">
+                Are you sure you want to cancel order <span className="font-mono font-bold text-zinc-900">{orderToCancel.orderNumber || orderToCancel.id}</span>?
+              </p>
+              <p className="text-zinc-400 text-xs mt-3 leading-relaxed">
+                This will permanently remove the pending transaction. Raw material stocks have not been deducted yet, so no stock rollback is required.
+              </p>
+            </div>
+            
+            <div className="flex gap-3 pt-4 border-t border-zinc-100">
+              <Button 
+                variant="outline" 
+                className="flex-1 py-3" 
+                onClick={() => setOrderToCancel(null)}
+                disabled={isCancellingOrder}
+              >
+                Back
+              </Button>
+              <Button 
+                variant="danger" 
+                className="flex-1 py-3 font-semibold" 
+                onClick={async () => {
+                  try {
+                    setIsCancellingOrder(true);
+                    await axios.delete(`/api/orders/${orderToCancel.id}`);
+                    showToast("Order cancelled successfully.", 'success');
+                    setOrderToCancel(null);
+                    refetchOrders();
+                  } catch (err: any) {
+                    showToast(err.response?.data?.error || "Failed to cancel order", 'error');
+                  } finally {
+                    setIsCancellingOrder(false);
+                  }
+                }}
+                disabled={isCancellingOrder}
+              >
+                {isCancellingOrder ? "Processing..." : "Yes, Cancel"}
+              </Button>
             </div>
           </Card>
         </div>
@@ -740,8 +985,8 @@ export default function PosPage() {
             <div className="font-bold">{item.name}</div>
             {item.notes && <div className="text-[10px] text-zinc-600 italic pl-2">- {item.notes}</div>}
             <div className="flex justify-between">
-              <span>{item.quantity} x {item.price}</span>
-              <span>{item.quantity * item.price}</span>
+              <span>{item.quantity} x {formatRupiah(item.price)}</span>
+              <span>{formatRupiah(item.quantity * item.price)}</span>
             </div>
           </div>
         ))}
@@ -750,9 +995,9 @@ export default function PosPage() {
       <div className="border-b border-black border-dashed mb-2"></div>
       
       <div className="mb-2">
-        <div className="flex justify-between"><span>Subtotal</span><span>{getSubtotal()}</span></div>
-        {discountAmount > 0 && <div className="flex justify-between"><span>Discount {appliedCoupon ? `[${appliedCoupon.code}]` : (discountType === 'percentage' ? `(${discountAmount}%)` : '')}</span><span>-{getCalculatedDiscount()}</span></div>}
-        {taxEnabled && <div className="flex justify-between"><span>PB1 (11%)</span><span>{getTax()}</span></div>}
+        <div className="flex justify-between"><span>Subtotal</span><span>{formatRupiah(getSubtotal())}</span></div>
+        {discountAmount > 0 && <div className="flex justify-between"><span>Discount {appliedCoupon ? `[${appliedCoupon.code}]` : (discountType === 'percentage' ? `(${discountAmount}%)` : '')}</span><span>-{formatRupiah(getCalculatedDiscount())}</span></div>}
+        {taxEnabled && <div className="flex justify-between"><span>PB1 (11%)</span><span>{formatRupiah(getTax())}</span></div>}
       </div>
       
       <div className="border-b border-black border-dashed mb-2"></div>
@@ -760,8 +1005,30 @@ export default function PosPage() {
       <div className="mb-2">
         <div className="flex justify-between font-bold">
           <span>TOTAL</span>
-          <span>{getTotal()}</span>
+          <span>{printReceiptData ? formatRupiah(printReceiptData.total) : formatRupiah(getTotal())}</span>
         </div>
+        {printReceiptData && printReceiptData.paymentMethod === 'CASH' && printReceiptData.rounding !== 0 && (
+          <div className="flex justify-between text-[11px] mt-0.5">
+            <span>Pembulatan</span>
+            <span>{printReceiptData.rounding > 0 ? '+' : ''}{formatRupiah(printReceiptData.rounding)}</span>
+          </div>
+        )}
+        {printReceiptData && printReceiptData.paymentMethod === 'CASH' && (
+          <>
+            <div className="flex justify-between font-bold text-[14px] mt-1 border-t border-black border-dashed pt-1">
+              <span>GRAND TOTAL</span>
+              <span>{formatRupiah(printReceiptData.grandTotal)}</span>
+            </div>
+            <div className="flex justify-between text-[11px] mt-1">
+              <span>Bayar (Cash)</span>
+              <span>{formatRupiah(printReceiptData.cashReceived)}</span>
+            </div>
+            <div className="flex justify-between text-[11px]">
+              <span>Kembalian</span>
+              <span>{formatRupiah(printReceiptData.change)}</span>
+            </div>
+          </>
+        )}
       </div>
       
       <div className="text-center mt-4 mb-2">

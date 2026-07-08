@@ -25,3 +25,18 @@ export async function PATCH(req: Request, context: any) {
     return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
   }
 }
+
+export async function DELETE(req: Request, context: any) {
+  try {
+    const params = await context.params;
+    const orderId = parseInt(params.id);
+
+    // Send delete request to .NET backend.
+    await backendClient.delete(`/api/Order/${orderId}`);
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error("Failed to delete order:", error);
+    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+  }
+}

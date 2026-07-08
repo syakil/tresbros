@@ -63,6 +63,21 @@ using (var scope = app.Services.CreateScope())
 
     try
     {
+        var taxSetting = db.Settings.FirstOrDefault(s => s.Key == "TAX_ENABLED");
+        if (taxSetting == null)
+        {
+            db.Settings.Add(new backend.Models.Setting { Key = "TAX_ENABLED", Value = "true", DataType = "bool" });
+            db.SaveChanges();
+            System.Console.WriteLine("[SETTINGS SEED] TAX_ENABLED initialized to true.");
+        }
+    }
+    catch (System.Exception ex)
+    {
+        System.Console.WriteLine($"Error seeding settings: {ex.Message}");
+    }
+
+    try
+    {
         // Reconcile and fix orphan batches for cancelled purchases
         var orphanBatches = db.MaterialBatches
             .Include(b => b.PurchaseItem)

@@ -293,13 +293,13 @@ export default function DashboardPage() {
                 ) : (
                   <div className="w-full mt-4 h-[200px]">
                     <ResponsiveContainer width="100%" height="100%">
-                      <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                      <PieChart margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
                         <Pie
                           data={data?.topProducts}
                           cx="50%"
-                          cy="45%"
-                          innerRadius={65}
-                          outerRadius={85}
+                          cy="50%"
+                          innerRadius={50}
+                          outerRadius={70}
                           paddingAngle={2}
                           dataKey="qty"
                           nameKey="name"

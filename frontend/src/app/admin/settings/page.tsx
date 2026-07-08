@@ -15,6 +15,12 @@ export default function SettingsPage() {
   const [confirmText, setConfirmText] = useState('');
   const [resetError, setResetError] = useState('');
   const [resetSuccess, setResetSuccess] = useState(false);
+  const [toast, setToast] = useState<{ message: string, type: 'error' | 'success' | 'warning' } | null>(null);
+
+  const showToast = (message: string, type: 'error' | 'success' | 'warning') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3500);
+  };
 
   useEffect(() => {
     fetchSettings();
@@ -61,10 +67,10 @@ export default function SettingsPage() {
         dataType: 'bool'
       });
 
-      alert('Settings saved successfully!');
+      showToast('Settings saved successfully!', 'success');
     } catch (error) {
       console.error("Failed to save settings", error);
-      alert('Failed to save settings');
+      showToast('Failed to save settings', 'error');
     } finally {
       setSaving(false);
     }
@@ -218,6 +224,24 @@ export default function SettingsPage() {
               </Button>
             </div>
           </Card>
+        </div>
+      )}
+
+      {/* Custom Toast Notification */}
+      {toast && (
+        <div className={`fixed bottom-6 right-6 z-[100] flex items-center gap-3 px-5 py-4 bg-white rounded-2xl shadow-2xl border animate-in slide-in-from-bottom-5 fade-in duration-300 ${
+          toast.type === 'success' ? 'bg-white text-zinc-900 border-emerald-200' : 
+          toast.type === 'error' ? 'bg-white text-zinc-900 border-red-200' : 
+          'bg-white text-zinc-900 border-amber-200'
+        }`}>
+          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black text-white ${
+            toast.type === 'success' ? 'bg-emerald-500' : 
+            toast.type === 'error' ? 'bg-red-500' : 
+            'bg-amber-500'
+          }`}>
+            {toast.type === 'success' ? '✓' : toast.type === 'error' ? '✕' : '!'}
+          </div>
+          <p className="font-medium text-sm">{toast.message}</p>
         </div>
       )}
     </div>

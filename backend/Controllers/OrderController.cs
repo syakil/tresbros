@@ -333,6 +333,7 @@ namespace backend.Controllers
             var cogsAccount = await context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "5110") ?? new ChartOfAccount { Code = "5110", Name = "HPP", Type = "EXPENSE" };
             var inventoryAccount = await context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "1140") ?? new ChartOfAccount { Code = "1140", Name = "Persediaan Bahan Baku", Type = "ASSET" };
             var taxAccount = await context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "2120") ?? new ChartOfAccount { Code = "2120", Name = "Hutang Pajak (PB1)", Type = "LIABILITY" };
+            var roundingAccount = await context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "5150") ?? new ChartOfAccount { Code = "5150", Name = "Selisih Pembulatan", Type = "EXPENSE" };
 
             if (cashAccount.Id == 0) context.ChartOfAccounts.Add(cashAccount);
             if (salesAccount.Id == 0) context.ChartOfAccounts.Add(salesAccount);
@@ -340,12 +341,23 @@ namespace backend.Controllers
             if (cogsAccount.Id == 0) context.ChartOfAccounts.Add(cogsAccount);
             if (inventoryAccount.Id == 0) context.ChartOfAccounts.Add(inventoryAccount);
             if (taxAccount.Id == 0) context.ChartOfAccounts.Add(taxAccount);
+            if (roundingAccount.Id == 0) context.ChartOfAccounts.Add(roundingAccount);
+
+            // Calculate original subtotal from items
+            double originalSubtotal = 0;
+            foreach (var item in order.Items)
+            {
+                originalSubtotal += item.Quantity * item.Price;
+            }
 
             var taxSetting = await context.Settings.FirstOrDefaultAsync(s => s.Key == "TAX_ENABLED");
-            bool isTaxEnabled = taxSetting?.Value == "true";
+            bool isTaxEnabled = taxSetting == null || taxSetting.Value == "true";
             
-            double taxAmount = isTaxEnabled ? order.TotalAmount - (order.TotalAmount / 1.11) : 0;
-            double salesRevenue = (order.TotalAmount - taxAmount) + order.DiscountAmount;
+            double taxableAmount = Math.Max(0, originalSubtotal - order.DiscountAmount);
+            double taxAmount = isTaxEnabled ? taxableAmount * 0.11 : 0;
+            double unroundedTotal = taxableAmount + taxAmount;
+            double roundingDifference = order.TotalAmount - unroundedTotal;
+            double salesRevenue = originalSubtotal;
 
             var journal = new JournalEntry 
             {
@@ -365,6 +377,20 @@ namespace backend.Controllers
             if (isTaxEnabled && taxAmount > 0)
             {
                 journal.Lines.Add(new JournalEntryLine { Account = taxAccount, Debit = 0, Credit = taxAmount });
+            }
+
+            if (Math.Abs(roundingDifference) > 0.01)
+            {
+                if (roundingDifference < 0)
+                {
+                    // Round down: we received less cash, so debit the difference as rounding expense
+                    journal.Lines.Add(new JournalEntryLine { Account = roundingAccount, Debit = Math.Abs(roundingDifference), Credit = 0 });
+                }
+                else
+                {
+                    // Round up: we received more cash, so credit the difference as rounding gain
+                    journal.Lines.Add(new JournalEntryLine { Account = roundingAccount, Debit = 0, Credit = roundingDifference });
+                }
             }
 
             if (totalCogs > 0)

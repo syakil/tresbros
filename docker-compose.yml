@@ -21,6 +21,8 @@ services:
     container_name: tresbros_backend
     environment:
       - ConnectionStrings__DefaultConnection=Host=postgres;Database=tresbros;Username=postgres;Password=YOUR_POSTGRES_PASSWORD
+    volumes:
+      - ./backend/appsettings.json:/app/appsettings.json
     ports:
       - "5052:8080"
     depends_on:
@@ -34,6 +36,7 @@ services:
     container_name: tresbros_frontend
     environment:
       - BACKEND_URL=http://backend:8080
+      - NEXT_PUBLIC_MIDTRANS_CLIENT_KEY=SB-Mid-client-3c-KuTSEjRrpPILS
     ports:
       - "3005:3000"
     depends_on:
