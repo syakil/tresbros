@@ -10,8 +10,6 @@ import { CustomSelect } from '@/components/ui/CustomSelect';
 
 export default function ItemsPage() {
   const queryClient = useQueryClient();
-  const [showAdd, setShowAdd] = useState(false);
-  const [form, setForm] = useState({ name: '', price: '', category: 'Coffee' });
   const [editingProduct, setEditingProduct] = useState<any>(null);
 
   // Custom Alert & Toast State
@@ -58,20 +56,7 @@ export default function ItemsPage() {
     return opts;
   }, [categories, editingProduct]);
 
-  const addProduct = useMutation({
-    mutationFn: async (data: typeof form) => {
-      await axios.post('/api/products', data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      setShowAdd(false);
-      setForm({ name: '', price: '', category: 'Coffee' });
-      showToast('Product added successfully!', 'success');
-    },
-    onError: (error: any) => {
-      showToast(error.response?.data?.error || 'Failed to add product', 'error');
-    }
-  });
+
 
   const updateProduct = useMutation({
     mutationFn: async (data: any) => {
@@ -150,53 +135,8 @@ export default function ItemsPage() {
         <h1 className="text-3xl font-display font-bold text-zinc-900">Product Data</h1>
         <div className="flex justify-between items-center">
           <p className="text-zinc-500">Manage menu and prices of products sold</p>
-          <Button variant="primary" onClick={() => setShowAdd(!showAdd)}>
-            <Plus className="w-4 h-4 mr-2" /> Add Product
-          </Button>
         </div>
       </div>
-
-      {showAdd && (
-        <Card className="relative z-20 flex flex-col md:flex-row gap-5 items-end bg-white border border-zinc-200 p-6 shadow-sm">
-          <div className="flex-1 w-full">
-            <label className="text-sm text-zinc-700 font-medium mb-1.5 block">Product Name</label>
-            <input 
-              type="text"
-              value={form.name} 
-              onChange={(e) => setForm({...form, name: e.target.value})} 
-              placeholder="e.g., Espresso" 
-              className="w-full bg-white border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition placeholder:text-zinc-400"
-            />
-          </div>
-          <div className="w-full md:w-48">
-            <label className="text-sm text-zinc-700 font-medium mb-1.5 block">Price (Rp)</label>
-            <input 
-              type="number"
-              value={form.price} 
-              onChange={(e) => setForm({...form, price: e.target.value})} 
-              placeholder="15000" 
-              className="w-full bg-white border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition placeholder:text-zinc-400"
-            />
-          </div>
-          <div className="w-full md:w-48">
-            <label className="text-sm text-zinc-700 font-medium mb-1.5 block">Category</label>
-            <CustomSelect 
-              value={form.category}
-              onChange={(val) => setForm({...form, category: val})}
-              className="bg-white border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3"
-              options={categoryOptions}
-            />
-          </div>
-          <Button 
-            variant="primary" 
-            className="py-3 w-full md:w-auto"
-            onClick={() => addProduct.mutate(form)}
-            disabled={!form.name || !form.price}
-          >
-            Save
-          </Button>
-        </Card>
-      )}
 
       <Card className="p-0 overflow-hidden overflow-x-auto shadow-sm border border-zinc-200 bg-white">
         <table className="w-full text-left text-sm text-zinc-600 min-w-[600px]">

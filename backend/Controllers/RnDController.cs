@@ -128,16 +128,23 @@ namespace backend.Controllers
 
             if (rndRecipe == null) return NotFound("RnD Recipe not found");
 
-            var category = await _context.Categories.FindAsync(request.CategoryId);
+            Category? category = null;
+            if (!string.IsNullOrEmpty(request.CategoryName))
+            {
+                category = await _context.Categories.FirstOrDefaultAsync(c => c.Name.ToLower() == request.CategoryName.ToLower());
+            }
+
+            if (category == null && request.CategoryId > 0)
+            {
+                category = await _context.Categories.FindAsync(request.CategoryId);
+            }
+
             if (category == null)
             {
-                category = await _context.Categories.FirstOrDefaultAsync();
-                if (category == null)
-                {
-                    category = new Category { Name = "Uncategorized" };
-                    _context.Categories.Add(category);
-                    await _context.SaveChangesAsync();
-                }
+                string catName = string.IsNullOrEmpty(request.CategoryName) ? "Uncategorized" : request.CategoryName;
+                category = new Category { Name = catName };
+                _context.Categories.Add(category);
+                await _context.SaveChangesAsync();
             }
 
             var newProduct = new Product
@@ -306,6 +313,7 @@ namespace backend.Controllers
     {
         public double Price { get; set; }
         public int CategoryId { get; set; }
+        public string CategoryName { get; set; } = string.Empty;
     }
 
     public class UpdateNotesRequest

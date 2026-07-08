@@ -324,10 +324,11 @@ export default function RnDDetailPage({ params }: { params: Promise<{ id: string
                   className="w-full border border-zinc-200 rounded-lg p-2.5 text-sm bg-white"
                   value={recipe.status}
                   onChange={(val) => setRecipe({...recipe, status: val})}
-                  options={[
+                  options={recipe.status === 'Approved' ? [
+                    { value: 'Approved', label: 'Approved' }
+                  ] : [
                     { value: 'Draft', label: 'Draft' },
                     { value: 'Tested', label: 'Tested' },
-                    { value: 'Approved', label: 'Approved' },
                     { value: 'Rejected', label: 'Rejected' }
                   ]}
                 />
