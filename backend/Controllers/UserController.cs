@@ -47,6 +47,7 @@ namespace backend.Controllers
                 return BadRequest("Username already exists");
             }
 
+            user.Id = 0; // Ensure DB auto-generates the primary key
             user.CreatedAt = DateTime.UtcNow;
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
