@@ -111,9 +111,24 @@ export default function POSScreen() {
     },
   });
 
+  const addonProducts = products.filter(
+    (p) => p.category === 'Add-on' || p.category === 'Topping'
+  );
+
+  const calculateAddonExtraPrice = (notesStr: string) => {
+    if (!notesStr) return 0;
+    const activeTags = notesStr.split(',').map((n) => n.trim()).filter(Boolean);
+    let extra = 0;
+    activeTags.forEach((tag) => {
+      const addon = addonProducts.find((p) => p.name.toLowerCase() === tag.toLowerCase());
+      if (addon) extra += addon.price;
+    });
+    return extra;
+  };
+
   const filtered = selectedCategory
     ? products.filter((p) => p.category === selectedCategory)
-    : products;
+    : products.filter((p) => p.category !== 'Add-on' && p.category !== 'Topping');
 
   const handleAddProduct = (product: ProductResponse) => {
     cart.addItem({
@@ -139,7 +154,7 @@ export default function POSScreen() {
       items: cart.items.map((item) => ({
         productId: item.product.id,
         quantity: item.quantity,
-        price: item.product.price,
+        price: item.product.price + item.extraPrice,
         notes: item.notes || undefined,
       })),
     });
@@ -251,7 +266,13 @@ export default function POSScreen() {
             <FlatList
               data={cart.items}
               keyExtractor={(item) => item.cartItemId}
-              renderItem={({ item }) => <CartItemRow item={item} />}
+              renderItem={({ item }) => (
+                <CartItemRow
+                  item={item}
+                  addonProducts={addonProducts}
+                  calculateAddonExtraPrice={calculateAddonExtraPrice}
+                />
+              )}
               style={styles.cartList}
             />
 
@@ -530,35 +551,105 @@ export default function POSScreen() {
   );
 }
 
-function CartItemRow({ item }: { item: CartItem }) {
+const PREP_TAGS = [
+  { label: 'Less Sugar', val: 'Less Sugar' },
+  { label: 'No Sugar', val: 'No Sugar' },
+  { label: 'Less Ice', val: 'Less Ice' },
+];
+
+function CartItemRow({
+  item,
+  addonProducts,
+  calculateAddonExtraPrice,
+}: {
+  item: CartItem;
+  addonProducts: ProductResponse[];
+  calculateAddonExtraPrice: (notes: string) => number;
+}) {
   const cart = useCartStore();
+  const activeTags = item.notes ? item.notes.split(',').map((n) => n.trim()).filter(Boolean) : [];
+
+  const toggleTag = (tag: string) => {
+    let list = [...activeTags];
+    if (tag === 'Less Sugar') {
+      list = list.filter((n) => n !== 'No Sugar');
+    } else if (tag === 'No Sugar') {
+      list = list.filter((n) => n !== 'Less Sugar');
+    }
+    list = list.includes(tag) ? list.filter((n) => n !== tag) : [...list, tag];
+    const nextNotes = list.join(', ');
+    cart.updateNotes(item.cartItemId, nextNotes, calculateAddonExtraPrice(nextNotes));
+  };
+
+  const handleNotesChange = (text: string) => {
+    cart.updateNotes(item.cartItemId, text, calculateAddonExtraPrice(text));
+  };
 
   return (
     <View style={styles.cartItem}>
-      <View style={styles.cartItemLeft}>
+      <View style={styles.cartItemTopRow}>
         <Text style={styles.cartItemName} numberOfLines={1}>
           {item.product.name}
         </Text>
-        {item.notes ? <Text style={styles.cartItemNotes}>{item.notes}</Text> : null}
-        <Text style={styles.cartItemPrice}>
-          {formatCurrency((item.product.price + item.extraPrice) * item.quantity)}
-        </Text>
+        <View style={styles.qtyControls}>
+          <TouchableOpacity
+            style={styles.qtyBtn}
+            onPress={() => cart.updateQuantity(item.cartItemId, item.quantity - 1)}
+          >
+            <Text style={styles.qtyBtnText}>−</Text>
+          </TouchableOpacity>
+          <Text style={styles.qtyValue}>{item.quantity}</Text>
+          <TouchableOpacity
+            style={styles.qtyBtn}
+            onPress={() => cart.updateQuantity(item.cartItemId, item.quantity + 1)}
+          >
+            <Text style={styles.qtyBtnText}>+</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-      <View style={styles.qtyControls}>
-        <TouchableOpacity
-          style={styles.qtyBtn}
-          onPress={() => cart.updateQuantity(item.cartItemId, item.quantity - 1)}
-        >
-          <Text style={styles.qtyBtnText}>−</Text>
-        </TouchableOpacity>
-        <Text style={styles.qtyValue}>{item.quantity}</Text>
-        <TouchableOpacity
-          style={styles.qtyBtn}
-          onPress={() => cart.updateQuantity(item.cartItemId, item.quantity + 1)}
-        >
-          <Text style={styles.qtyBtnText}>+</Text>
-        </TouchableOpacity>
+
+      <Text style={styles.cartItemPrice}>
+        {formatCurrency((item.product.price + item.extraPrice) * item.quantity)}
+      </Text>
+
+      <View style={styles.chipRow}>
+        {PREP_TAGS.map((tag) => {
+          const isActive = activeTags.includes(tag.val);
+          return (
+            <TouchableOpacity
+              key={tag.val}
+              style={[styles.chip, isActive && styles.chipActive]}
+              onPress={() => toggleTag(tag.val)}
+            >
+              <Text style={[styles.chipText, isActive && styles.chipTextActive]}>
+                {tag.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+        {addonProducts.map((addon) => {
+          const isActive = activeTags.includes(addon.name);
+          return (
+            <TouchableOpacity
+              key={addon.id}
+              style={[styles.chip, isActive && styles.chipActive]}
+              onPress={() => toggleTag(addon.name)}
+            >
+              <Text style={[styles.chipText, isActive && styles.chipTextActive]}>
+                {addon.name} (+{formatCurrency(addon.price)})
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
+
+      <TextInput
+        style={styles.notesInput}
+        placeholder="Catatan (mis. less sweet, extra hot...)"
+        placeholderTextColor={Colors.zinc400}
+        value={item.notes}
+        onChangeText={handleNotesChange}
+      />
     </View>
   );
 }
@@ -648,23 +739,54 @@ const styles = StyleSheet.create({
   },
   cartTitle: { ...Typography.subtitle, color: Colors.zinc900 },
   closeBtn: { fontSize: 18, color: Colors.zinc500, padding: Spacing.xs },
-  cartList: { maxHeight: 250 },
+  cartList: { maxHeight: 320 },
   cartItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     paddingVertical: Spacing.sm,
     borderBottomWidth: 1,
     borderBottomColor: Colors.zinc100,
   },
-  cartItemLeft: { flex: 1, marginRight: Spacing.md },
-  cartItemName: { ...Typography.bodyMedium, color: Colors.zinc900 },
-  cartItemNotes: { ...Typography.caption, color: Colors.zinc400, marginTop: 2 },
+  cartItemTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  cartItemName: { ...Typography.bodyMedium, color: Colors.zinc900, flex: 1, marginRight: Spacing.sm },
   cartItemPrice: { ...Typography.body, color: Colors.brown, marginTop: 2 },
   qtyControls: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.sm,
+  },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.xs,
+    marginTop: Spacing.xs,
+  },
+  chip: {
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
+    borderRadius: Shape.borderRadius.md,
+    backgroundColor: Colors.zinc100,
+    borderWidth: 1,
+    borderColor: Colors.zinc200,
+  },
+  chipActive: {
+    backgroundColor: Colors.olive,
+    borderColor: Colors.olive,
+  },
+  chipText: { ...Typography.caption, color: Colors.zinc600, fontWeight: '600' },
+  chipTextActive: { color: Colors.white },
+  notesInput: {
+    ...Typography.caption,
+    color: Colors.zinc800,
+    backgroundColor: Colors.zinc50,
+    borderWidth: 1,
+    borderColor: Colors.zinc200,
+    borderRadius: Shape.borderRadius.md,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 6,
+    marginTop: Spacing.xs,
   },
   qtyBtn: {
     width: 32,
