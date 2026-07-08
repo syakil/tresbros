@@ -204,8 +204,10 @@ export default function PosPage() {
         window.print();
         clearCart();
       }, 500);
-    } catch (error) {
-      showToast("An error occurred while saving the order.", 'error');
+    } catch (error: any) {
+      const errResponse = error.response?.data;
+      const errMsg = typeof errResponse === 'string' ? errResponse : (errResponse?.error || "An error occurred while saving the order.");
+      showToast(errMsg, 'error');
       console.error(error);
     } finally {
       setIsProcessing(false);

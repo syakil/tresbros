@@ -29,7 +29,8 @@ export async function POST(req: Request) {
     return NextResponse.json(newOrder, { status: 201 });
   } catch (error: any) {
     console.error("Failed to create order:", error);
-    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+    const status = error.message?.includes("Internal Server Error") ? 500 : 400;
+    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status });
   }
 }
 

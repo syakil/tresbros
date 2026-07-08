@@ -73,27 +73,6 @@ namespace backend.Controllers
                 order.PaymentStatus = "success";
             }
 
-            _context.Orders.Add(order);
-            await _context.SaveChangesAsync();
-
-            Console.WriteLine($"[ORDER CREATED] ID: {order.Id}, OrderNo: {order.OrderNumber}, Queue: {order.QueueNumber}, PaymentMethod: '{order.PaymentMethod}', TotalAmount: {order.TotalAmount}");
-
-            // Process stock deduction & journal immediately for CASH order
-            if (order.PaymentMethod == "CASH")
-            {
-                var reloadedOrder = await _context.Orders
-                    .Include(o => o.Items)
-                        .ThenInclude(i => i.Product)
-                            .ThenInclude(p => p.RecipeItems)
-                    .FirstOrDefaultAsync(o => o.Id == order.Id);
-
-                if (reloadedOrder != null)
-                {
-                    await ProcessOrderCompletion(reloadedOrder, _context);
-                    await _context.SaveChangesAsync();
-                }
-            }
-
             // Midtrans Integration
             if (order.PaymentMethod == "MIDTRANS")
             {
@@ -120,21 +99,48 @@ namespace backend.Controllers
                     }
                 };
 
-                var response = await client.PostAsJsonAsync(snapUrl, payload);
-                if (response.IsSuccessStatusCode)
+                try
                 {
-                    var result = await response.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
-                    order.SnapToken = result.GetProperty("token").GetString();
-                    order.PaymentUrl = result.GetProperty("redirect_url").GetString();
-                    order.PaymentStatus = "pending";
-                    
-                    _context.Entry(order).State = EntityState.Modified;
-                    await _context.SaveChangesAsync();
+                    var response = await client.PostAsJsonAsync(snapUrl, payload);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var result = await response.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+                        order.SnapToken = result.GetProperty("token").GetString();
+                        order.PaymentUrl = result.GetProperty("redirect_url").GetString();
+                        order.PaymentStatus = "pending";
+                    }
+                    else
+                    {
+                        var errorResponse = await response.Content.ReadAsStringAsync();
+                        Console.WriteLine($"[MIDTRANS ERROR] Status Code: {response.StatusCode}, Response: {errorResponse}");
+                        return BadRequest("Failed to create Midtrans transaction. Check API Key in backend.");
+                    }
                 }
-                else
+                catch (System.Exception ex)
                 {
-                    var errorResponse = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"[MIDTRANS ERROR] Status Code: {response.StatusCode}, Response: {errorResponse}");
+                    Console.WriteLine($"[MIDTRANS EXCEPTION] {ex.Message}");
+                    return BadRequest("Failed to create Midtrans transaction. Check API Key in backend.");
+                }
+            }
+
+            _context.Orders.Add(order);
+            await _context.SaveChangesAsync();
+
+            Console.WriteLine($"[ORDER CREATED] ID: {order.Id}, OrderNo: {order.OrderNumber}, Queue: {order.QueueNumber}, PaymentMethod: '{order.PaymentMethod}', TotalAmount: {order.TotalAmount}");
+
+            // Process stock deduction & journal immediately for CASH order
+            if (order.PaymentMethod == "CASH")
+            {
+                var reloadedOrder = await _context.Orders
+                    .Include(o => o.Items)
+                        .ThenInclude(i => i.Product)
+                            .ThenInclude(p => p.RecipeItems)
+                    .FirstOrDefaultAsync(o => o.Id == order.Id);
+
+                if (reloadedOrder != null)
+                {
+                    await ProcessOrderCompletion(reloadedOrder, _context);
+                    await _context.SaveChangesAsync();
                 }
             }
 
