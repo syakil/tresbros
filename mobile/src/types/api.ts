@@ -32,6 +32,7 @@ export interface CreateOrderRequest {
   paymentMethod: string;
   couponCode?: string;
   discountAmount?: number;
+  totalAmount: number;
   items: {
     productId: number;
     quantity: number;

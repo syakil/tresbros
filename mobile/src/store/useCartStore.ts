@@ -1,9 +1,24 @@
 import { create } from 'zustand';
-import type { Product } from '@/types/models';
+
+export interface CartProduct {
+  id: number;
+  name: string;
+  price: number;
+  categoryId?: number;
+  availableCount?: number | null;
+}
+
+export interface CartProduct {
+  id: number;
+  name: string;
+  price: number;
+  categoryId?: number;
+  availableCount?: number | null;
+}
 
 export interface CartItem {
   cartItemId: string;
-  product: Product;
+  product: CartProduct;
   quantity: number;
   notes: string;
   extraPrice: number;
@@ -17,7 +32,7 @@ interface CartState {
   appliedCoupon: { code: string; type: string; value: number } | null;
   taxEnabled: boolean;
 
-  addItem: (product: Product, notes?: string) => void;
+  addItem: (product: CartProduct, notes?: string) => void;
   removeItem: (cartItemId: string) => void;
   updateQuantity: (cartItemId: string, quantity: number) => void;
   updateNotes: (cartItemId: string, notes: string, extraPrice?: number) => void;

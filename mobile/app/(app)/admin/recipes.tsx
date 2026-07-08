@@ -45,7 +45,7 @@ export default function RecipesScreen() {
 
   const { data: recipes = [], isLoading } = useQuery({
     queryKey: ['recipes', selectedProduct],
-    queryFn: () => recipesApi.getAll(selectedProduct ?? undefined),
+    queryFn: () => recipesApi.getAll(selectedProduct!),
     enabled: selectedProduct !== null,
   });
 

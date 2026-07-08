@@ -21,20 +21,19 @@ import { Card } from '@/components/ui/Card';
 import { Modal } from '@/components/ui/Modal';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { productsApi } from '@/api/products';
+import { productsApi, type ProductResponse } from '@/api/products';
 import { categoriesApi } from '@/api/categories';
 import { formatCurrency } from '@/utils/format';
-import type { Product } from '@/types/models';
 
 export default function ItemsScreen() {
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
-  const [editing, setEditing] = useState<Product | null>(null);
+  const [editing, setEditing] = useState<ProductResponse | null>(null);
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
-  const [categoryId, setCategoryId] = useState('');
+  const [category, setCategory] = useState('');
 
-  const { data: products = [], isLoading, refetch, isRefetching } = useQuery({
+  const { data: products = [], isLoading, refetch, isRefetching } = useQuery<ProductResponse[]>({
     queryKey: ['products'],
     queryFn: productsApi.getAll,
   });
@@ -49,7 +48,7 @@ export default function ItemsScreen() {
       const data = {
         name: name.trim(),
         price: Number(price),
-        categoryId: Number(categoryId),
+        category: category.trim() || 'Uncategorized',
       };
       if (editing) {
         return productsApi.update(editing.id, data);
@@ -73,17 +72,17 @@ export default function ItemsScreen() {
     onError: (err: Error) => Alert.alert('Gagal', err.message),
   });
 
-  const openForm = (product?: Product) => {
+  const openForm = (product?: ProductResponse) => {
     if (product) {
       setEditing(product);
       setName(product.name);
       setPrice(String(product.price));
-      setCategoryId(String(product.categoryId));
+      setCategory(product.category ?? '');
     } else {
       setEditing(null);
       setName('');
       setPrice('');
-      setCategoryId('');
+      setCategory('');
     }
     setShowForm(true);
   };
@@ -93,10 +92,10 @@ export default function ItemsScreen() {
     setEditing(null);
     setName('');
     setPrice('');
-    setCategoryId('');
+    setCategory('');
   };
 
-  const handleDelete = (product: Product) => {
+  const handleDelete = (product: ProductResponse) => {
     Alert.alert('Hapus', `Hapus "${product.name}"?`, [
       { text: 'Batal' },
       { text: 'Hapus', style: 'destructive', onPress: () => deleteMutation.mutate(product.id) },
@@ -124,7 +123,7 @@ export default function ItemsScreen() {
               <View style={{ flex: 1 }}>
                 <Text style={styles.itemName}>{item.name}</Text>
                 <Text style={styles.itemCategory}>
-                  {item.category?.name ?? `Category #${item.categoryId}`}
+                  {item.category ?? 'Uncategorized'}
                 </Text>
               </View>
               <Text style={styles.itemPrice}>{formatCurrency(item.price)}</Text>
@@ -158,10 +157,10 @@ export default function ItemsScreen() {
           {categories.map((cat) => (
             <TouchableOpacity
               key={cat.id}
-              style={[styles.catChip, Number(categoryId) === cat.id && styles.catChipActive]}
-              onPress={() => setCategoryId(String(cat.id))}
+              style={[styles.catChip, category === cat.name && styles.catChipActive]}
+              onPress={() => setCategory(cat.name)}
             >
-              <Text style={[styles.catText, Number(categoryId) === cat.id && styles.catTextActive]}>
+              <Text style={[styles.catText, category === cat.name && styles.catTextActive]}>
                 {cat.name}
               </Text>
             </TouchableOpacity>

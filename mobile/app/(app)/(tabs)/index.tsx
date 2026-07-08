@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, RefreshControl, Alert, TouchableOpacity } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
+import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Colors } from '@/theme/colors';
@@ -11,20 +12,46 @@ import { Header } from '@/components/layout/Header';
 import { Card } from '@/components/ui/Card';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { dashboardApi } from '@/api/dashboard';
+import { useAuthStore } from '@/store/useAuthStore';
 import { formatCurrency } from '@/utils/format';
 
 export default function DashboardScreen() {
+  const router = useRouter();
+  const logout = useAuthStore((s) => s.logout);
+
   const { data, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ['dashboard'],
     queryFn: dashboardApi.getData,
   });
+
+  const handleLogout = () => {
+    Alert.alert('Keluar', 'Yakin ingin keluar?', [
+      { text: 'Batal', style: 'cancel' },
+      {
+        text: 'Keluar',
+        style: 'destructive',
+        onPress: async () => {
+          await logout();
+          router.replace('/(auth)/login');
+        },
+      },
+    ]);
+  };
 
   if (isLoading) return <LoadingSpinner />;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <StatusBar style="dark" />
-      <Header title="Dashboard" subtitle="Ringkasan hari ini" />
+      <Header 
+        title="Dashboard" 
+        subtitle="Ringkasan hari ini" 
+        rightAction={
+          <TouchableOpacity onPress={handleLogout} style={{ padding: Spacing.xs }}>
+            <Text style={{ ...Typography.bodyMedium, color: Colors.danger, fontWeight: '600' }}>Keluar</Text>
+          </TouchableOpacity>
+        }
+      />
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
@@ -36,28 +63,29 @@ export default function DashboardScreen() {
           <Card variant="elevated" style={styles.statCard}>
             <Text style={styles.statLabel}>Pendapatan</Text>
             <Text style={styles.statValue}>
-              {formatCurrency(data?.todayRevenue ?? 0)}
+              {formatCurrency(data?.revenue ?? 0)}
             </Text>
           </Card>
           <Card variant="elevated" style={styles.statCard}>
             <Text style={styles.statLabel}>Transaksi</Text>
-            <Text style={styles.statValue}>{data?.todayTransactions ?? 0}</Text>
+            <Text style={styles.statValue}>{data?.orders ?? 0}</Text>
           </Card>
         </View>
 
-        {data?.lowStockAlerts && data.lowStockAlerts.length > 0 && (
-          <Card variant="outlined" style={styles.section}>
-            <Text style={styles.sectionTitle}>⚠ Stok Rendah</Text>
-            {data.lowStockAlerts.map((item, idx) => (
-              <View key={idx} style={styles.alertRow}>
-                <Text style={styles.alertName}>{item.name}</Text>
-                <Text style={styles.alertStock}>
-                  {item.stock} / {item.minStock} {item.unit}
-                </Text>
-              </View>
-            ))}
+        <View style={styles.statsRow}>
+          <Card variant="outlined" style={styles.statCard}>
+            <Text style={styles.statLabel}>Pengeluaran</Text>
+            <Text style={[styles.statValue, { color: Colors.danger }]}>
+              {formatCurrency(data?.expenses ?? 0)}
+            </Text>
           </Card>
-        )}
+          <Card variant="outlined" style={styles.statCard}>
+            <Text style={styles.statLabel}>Laba Bersih</Text>
+            <Text style={[styles.statValue, { color: (data?.netProfit ?? 0) >= 0 ? Colors.success : Colors.danger }]}>
+              {formatCurrency(data?.netProfit ?? 0)}
+            </Text>
+          </Card>
+        </View>
 
         {data?.topProducts && data.topProducts.length > 0 && (
           <Card variant="outlined" style={styles.section}>
@@ -67,19 +95,33 @@ export default function DashboardScreen() {
                 <Text style={styles.alertName}>
                   {idx + 1}. {item.name}
                 </Text>
-                <Text style={styles.alertStock}>{item.count} terjual</Text>
+                <Text style={styles.alertStock}>{item.qty} terjual</Text>
               </View>
             ))}
           </Card>
         )}
 
-        {data?.salesTrend && data.salesTrend.length > 0 && (
+        {data?.chartData && data.chartData.length > 0 && (
           <Card variant="outlined" style={styles.section}>
             <Text style={styles.sectionTitle}>Tren Penjualan</Text>
-            {data.salesTrend.map((item, idx) => (
+            {data.chartData.map((item, idx) => (
               <View key={idx} style={styles.alertRow}>
-                <Text style={styles.alertName}>{item.date}</Text>
+                <Text style={styles.alertName}>{item.date ?? item.time ?? ''}</Text>
                 <Text style={styles.alertStock}>{formatCurrency(item.revenue)}</Text>
+              </View>
+            ))}
+          </Card>
+        )}
+
+        {data?.recentOrders && data.recentOrders.length > 0 && (
+          <Card variant="outlined" style={styles.section}>
+            <Text style={styles.sectionTitle}>Pesanan Terakhir</Text>
+            {data.recentOrders.map((order: any, idx: number) => (
+              <View key={idx} style={styles.alertRow}>
+                <Text style={styles.alertName}>
+                  #{order.queueNumber} - {order.paymentMethod}
+                </Text>
+                <Text style={styles.alertStock}>{formatCurrency(order.totalAmount)}</Text>
               </View>
             ))}
           </Card>

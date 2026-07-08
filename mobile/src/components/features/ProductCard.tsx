@@ -8,7 +8,13 @@ import { formatCurrency } from '@/utils/format';
 import type { Product } from '@/types/models';
 
 interface ProductCardProps {
-  product: Product;
+  product: {
+    id: number;
+    name: string;
+    price: number;
+    category?: string;
+    availableCount?: number | null;
+  };
   onPress: () => void;
   compact?: boolean;
 }
@@ -27,9 +33,9 @@ export function ProductCard({ product, onPress, compact = false }: ProductCardPr
         <Text style={styles.name} numberOfLines={compact ? 1 : 2}>
           {product.name}
         </Text>
-        {product.category && (
-          <Text style={styles.category}>{product.category.name}</Text>
-        )}
+        {product.category ? (
+          <Text style={styles.category}>{product.category}</Text>
+        ) : null}
         <Text style={styles.price}>{formatCurrency(product.price)}</Text>
       </View>
       {!isAvailable && (

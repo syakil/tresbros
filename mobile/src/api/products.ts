@@ -1,16 +1,31 @@
 import { client } from './client';
-import type { Product } from '@/types/models';
+
+export interface ProductResponse {
+  id: number;
+  name: string;
+  price: number;
+  category: string;
+  availableCount: number | null;
+  missingMaterials: string[];
+}
+
+export interface ProductCreateRequest {
+  name: string;
+  price: number;
+  category: string;
+}
 
 export const productsApi = {
-  getAll: () => client.get<Product[]>('/api/products').then((r) => r.data),
+  getAll: () =>
+    client.get<ProductResponse[]>('/api/products').then((r) => r.data),
 
   getById: (id: number) =>
-    client.get<Product>(`/api/products/${id}`).then((r) => r.data),
+    client.get<ProductResponse>(`/api/products/${id}`).then((r) => r.data),
 
-  create: (data: Partial<Product>) =>
-    client.post<Product>('/api/products', data).then((r) => r.data),
+  create: (data: ProductCreateRequest) =>
+    client.post<ProductResponse>('/api/products', data).then((r) => r.data),
 
-  update: (id: number, data: Partial<Product>) =>
+  update: (id: number, data: Partial<ProductCreateRequest>) =>
     client.put(`/api/products/${id}`, data).then((r) => r.data),
 
   delete: (id: number) =>

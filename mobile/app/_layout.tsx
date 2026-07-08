@@ -21,12 +21,12 @@ const queryClient = new QueryClient({
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    Outfit: require('../../assets/fonts/Outfit-Regular.ttf'),
-    'Outfit-Medium': require('../../assets/fonts/Outfit-Medium.ttf'),
-    'Outfit-SemiBold': require('../../assets/fonts/Outfit-SemiBold.ttf'),
-    'Outfit-Bold': require('../../assets/fonts/Outfit-Bold.ttf'),
-    Inter: require('../../assets/fonts/Inter-Regular.ttf'),
-    'Inter-Medium': require('../../assets/fonts/Inter-Medium.ttf'),
+    Outfit: require('../assets/fonts/Outfit-Regular.ttf'),
+    'Outfit-Medium': require('../assets/fonts/Outfit-Medium.ttf'),
+    'Outfit-SemiBold': require('../assets/fonts/Outfit-SemiBold.ttf'),
+    'Outfit-Bold': require('../assets/fonts/Outfit-Bold.ttf'),
+    Inter: require('../assets/fonts/Inter-Regular.ttf'),
+    'Inter-Medium': require('../assets/fonts/Inter-Medium.ttf'),
   });
 
   const loadStored = useAuthStore((s) => s.loadStored);

@@ -45,8 +45,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="more"
         options={{
-          title: 'Lainnya',
-          tabBarIcon: ({ focused }) => <TabIcon emoji="☰" focused={focused} />,
+          href: null,
         }}
       />
     </Tabs>

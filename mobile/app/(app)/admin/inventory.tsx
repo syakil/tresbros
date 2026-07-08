@@ -48,15 +48,18 @@ export default function InventoryScreen() {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const data = {
+      if (editing) {
+        return materialsApi.update(editing.id, {
+          name: name.trim(),
+          unit: unit.trim(),
+          minStock: Number(minStock),
+        });
+      }
+      return materialsApi.create({
         name: name.trim(),
-        stock: Number(stock),
-        minStock: Number(minStock),
         unit: unit.trim(),
-        costPerUnit: Number(costPerUnit),
-      };
-      if (editing) return materialsApi.update(editing.id, data);
-      return materialsApi.create(data);
+        minStock: Number(minStock),
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['materials'] });
