@@ -32,6 +32,8 @@ interface Order {
   items: OrderItem[];
   queueNumber?: string | null;
   orderNumber?: string | null;
+  paymentStatus?: string | null;
+  paymentMethod?: string | null;
 }
 
 const Timer = ({ createdAt }: { createdAt: string }) => {

@@ -12,6 +12,8 @@ interface Order {
   createdAt: string;
   queueNumber?: string | null;
   orderNumber?: string | null;
+  paymentStatus?: string | null;
+  paymentMethod?: string | null;
 }
 
 const ITEMS_PER_PAGE = 8; // Menyesuaikan agar tidak overflow ke bawah (2 kolom x 4 baris)
