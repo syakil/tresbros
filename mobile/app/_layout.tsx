@@ -20,7 +20,7 @@ const queryClient = new QueryClient({
 });
 
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({
+  const [fontsLoaded, fontError] = useFonts({
     Outfit: require('../assets/fonts/Outfit-Regular.ttf'),
     'Outfit-Medium': require('../assets/fonts/Outfit-Medium.ttf'),
     'Outfit-SemiBold': require('../assets/fonts/Outfit-SemiBold.ttf'),
@@ -45,12 +45,15 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
-    if (fontsLoaded) {
+    if (fontsLoaded || fontError) {
+      if (fontError) {
+        console.error('Font loading failed, continuing with fallback fonts:', fontError);
+      }
       SplashScreen.hideAsync();
     }
-  }, [fontsLoaded]);
+  }, [fontsLoaded, fontError]);
 
-  if (!fontsLoaded) return null;
+  if (!fontsLoaded && !fontError) return null;
 
   return (
     <QueryClientProvider client={queryClient}>
