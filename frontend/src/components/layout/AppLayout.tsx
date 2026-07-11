@@ -64,6 +64,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     if (path.includes('/settings')) return 'System Settings';
     if (path.includes('/users')) return 'User Management';
     if (path.includes('/roles')) return 'Role Management';
+    if (path.includes('/stock-opname')) return 'Stock Opname';
     if (path.includes('/inventory')) return 'Stock Management';
     if (path.includes('/purchases')) return 'Material Purchases';
     
@@ -168,10 +169,16 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             )}
 
             {hasPermission('inventory') && (
-              <Link href="/admin/inventory" onClick={() => setIsSidebarOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-r-xl transition ${getActiveStyle('/admin/inventory')}`}>
-                <Boxes className="w-5 h-5" />
-                <span>Stock Management</span>
-              </Link>
+              <>
+                <Link href="/admin/inventory" onClick={() => setIsSidebarOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-r-xl transition ${getActiveStyle('/admin/inventory')}`}>
+                  <Boxes className="w-5 h-5" />
+                  <span>Stock Management</span>
+                </Link>
+                <Link href="/admin/stock-opname" onClick={() => setIsSidebarOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-r-xl transition ${getActiveStyle('/admin/stock-opname')}`}>
+                  <ClipboardList className="w-5 h-5" />
+                  <span>Stock Opname</span>
+                </Link>
+              </>
             )}
             
             {hasPermission('accounting') && (

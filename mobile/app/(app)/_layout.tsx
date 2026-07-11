@@ -19,7 +19,12 @@ export default function AppLayout() {
   if (!isAuthenticated) return null;
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: Colors.zinc50 },
+      }}
+    >
       <Stack.Screen name="(tabs)" />
       <Stack.Screen
         name="admin/items"

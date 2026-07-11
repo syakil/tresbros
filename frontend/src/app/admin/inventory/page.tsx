@@ -313,9 +313,9 @@ export default function InventoryPage() {
   return (
     <div className="flex flex-col gap-6 max-w-6xl mx-auto w-full">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-display font-bold text-zinc-900">Stock Management</h1>
+        <h1 className="text-3xl font-display font-bold text-zinc-900">Stock Opname & Inventory</h1>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <p className="text-zinc-500 text-sm md:text-base">Monitor raw material availability and stock movement</p>
+          <p className="text-zinc-500 text-sm md:text-base">Monitor stock opname, raw material availability, and stock movement</p>
           <div className="flex gap-2 w-full md:w-auto">
             <Button variant="primary" className="shadow-md w-full md:w-auto justify-center" onClick={() => setShowAdd(!showAdd)}>
               <Plus className="w-4 h-4 mr-2" /> Add Raw Material

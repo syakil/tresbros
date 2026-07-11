@@ -6,6 +6,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -35,16 +36,16 @@ export default function LoginScreen() {
       return;
     }
 
+    Keyboard.dismiss();
     setLoading(true);
     setError('');
 
     try {
       const response = await authApi.login({ username, password });
-      await login(response.user, response.token);
+      await login({ ...response.user, isActive: true }, response.token);
       router.replace('/(app)/(tabs)');
     } catch (err) {
       setError(extractError(err));
-    } finally {
       setLoading(false);
     }
   };

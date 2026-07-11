@@ -7,24 +7,29 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const filter = searchParams.get('filter') || 'today'; // today, yesterday, 7days, thismonth
 
-    let startDate = new Date();
-    let endDate = new Date();
-
+    const TZ_OFFSET = 7 * 60 * 60 * 1000; // Jakarta is UTC+7
     const now = new Date();
+    const localNow = new Date(now.getTime() + TZ_OFFSET);
+
+    let localStart = new Date();
+    let localEnd = new Date();
 
     if (filter === 'today') {
-      startDate = startOfDay(now);
-      endDate = endOfDay(now);
+      localStart = startOfDay(localNow);
+      localEnd = endOfDay(localNow);
     } else if (filter === 'yesterday') {
-      startDate = startOfDay(subDays(now, 1));
-      endDate = endOfDay(subDays(now, 1));
+      localStart = startOfDay(subDays(localNow, 1));
+      localEnd = endOfDay(subDays(localNow, 1));
     } else if (filter === '7days') {
-      startDate = startOfDay(subDays(now, 7));
-      endDate = endOfDay(now);
+      localStart = startOfDay(subDays(localNow, 7));
+      localEnd = endOfDay(localNow);
     } else if (filter === 'thismonth') {
-      startDate = startOfMonth(now);
-      endDate = endOfMonth(now);
+      localStart = startOfMonth(localNow);
+      localEnd = endOfMonth(localNow);
     }
+
+    const startDate = new Date(localStart.getTime() - TZ_OFFSET);
+    const endDate = new Date(localEnd.getTime() - TZ_OFFSET);
 
     // Ambil Data dari Backend .NET
     const [allOrders, allExpenses, allIncomes] = await Promise.all([
@@ -96,25 +101,25 @@ export async function GET(request: Request) {
       const dailyData: Record<string, { date: string, revenue: number, expense: number }> = {};
       
       // Init array of dates to ensure empty days are 0
-      let currDate = new Date(startDate);
-      while (currDate <= endDate) {
+      let currDate = new Date(localStart);
+      while (currDate <= localEnd) {
         const dateStr = currDate.toISOString().split('T')[0];
         dailyData[dateStr] = { date: dateStr, revenue: 0, expense: 0 };
         currDate.setDate(currDate.getDate() + 1);
       }
 
       orders.forEach((order: any) => {
-        const dateStr = new Date(order.createdAt).toISOString().split('T')[0];
+        const dateStr = new Date(new Date(order.createdAt).getTime() + TZ_OFFSET).toISOString().split('T')[0];
         if (dailyData[dateStr]) dailyData[dateStr].revenue += order.totalAmount;
       });
 
       incomes.forEach((inc: any) => {
-        const dateStr = new Date(inc.date).toISOString().split('T')[0];
+        const dateStr = new Date(new Date(inc.date).getTime() + TZ_OFFSET).toISOString().split('T')[0];
         if (dailyData[dateStr]) dailyData[dateStr].revenue += inc.amount;
       });
 
       expenses.forEach((exp: any) => {
-        const dateStr = new Date(exp.date).toISOString().split('T')[0];
+        const dateStr = new Date(new Date(exp.date).getTime() + TZ_OFFSET).toISOString().split('T')[0];
         if (dailyData[dateStr]) dailyData[dateStr].expense += exp.amount;
       });
 
@@ -131,17 +136,17 @@ export async function GET(request: Request) {
       }
 
       orders.forEach((order: any) => {
-        const hour = new Date(order.createdAt).getHours();
+        const hour = new Date(new Date(order.createdAt).getTime() + TZ_OFFSET).getUTCHours();
         hourlyData[hour].revenue += order.totalAmount;
       });
       
       incomes.forEach((inc: any) => {
-        const hour = new Date(inc.date).getHours();
+        const hour = new Date(new Date(inc.date).getTime() + TZ_OFFSET).getUTCHours();
         hourlyData[hour].revenue += inc.amount;
       });
 
       expenses.forEach((exp: any) => {
-        const hour = new Date(exp.date).getHours();
+        const hour = new Date(new Date(exp.date).getTime() + TZ_OFFSET).getUTCHours();
         hourlyData[hour].expense += exp.amount;
       });
 

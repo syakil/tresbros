@@ -205,46 +205,7 @@ export default function RecipesPage() {
                     <p className="text-sm text-zinc-500">Raw material needs per 1 portion</p>
                   </div>
                 </div>
-                <Button variant="primary" onClick={() => setShowAddMaterial(!showAddMaterial)} className="text-sm shadow-md py-2 px-4 rounded-xl">
-                  <Plus className="w-4 h-4 mr-2" /> Add Material
-                </Button>
               </div>
-
-              {showAddMaterial && (
-                <div className="p-5 border-b border-zinc-100 bg-zinc-50 flex flex-col md:flex-row gap-4 items-end shrink-0 relative z-30 shadow-inner">
-                  <div className="flex-1 w-full">
-                    <label className="text-sm font-medium text-zinc-700 mb-1.5 block">Select Master Raw Material</label>
-                    <CustomSelect 
-                      value={newMaterialId}
-                      onChange={(val) => setNewMaterialId(val)}
-                      className="bg-white border border-zinc-200 text-zinc-900 rounded-lg px-3 py-2.5"
-                      options={materials.map((m: any) => ({
-                        value: m.id.toString(),
-                        label: `${m.name} (${m.unit})`
-                      }))}
-                      placeholder="Select Material..."
-                    />
-                  </div>
-                  <div className="w-full md:w-32">
-                    <label className="text-sm font-medium text-zinc-700 mb-1.5 block">Quantity</label>
-                    <input 
-                      type="number" 
-                      placeholder="0" 
-                      value={newQuantity}
-                      onChange={(e) => setNewQuantity(e.target.value)}
-                      className="w-full bg-white border border-zinc-200 text-zinc-900 rounded-lg px-4 py-2.5 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition" 
-                    />
-                  </div>
-                  <Button 
-                    variant="primary" 
-                    onClick={() => addRecipeItem.mutate()} 
-                    className="py-2.5 w-full md:w-auto"
-                    disabled={addRecipeItem.isPending || !newMaterialId || !newQuantity}
-                  >
-                    Save
-                  </Button>
-                </div>
-              )}
 
               <div className="flex-1 overflow-y-auto z-10 bg-white">
                 <table className="w-full text-left text-sm text-zinc-600">

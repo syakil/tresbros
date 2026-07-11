@@ -6,6 +6,8 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useAuthStore } from '@/store/useAuthStore';
 import { setUnauthorizedHandler } from '@/api/client';
 import { useRouter } from 'expo-router';
+import { useProtectedRoute } from '@/hooks/useAuth';
+import { Colors } from '@/theme/colors';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -31,7 +33,10 @@ export default function RootLayout() {
 
   const loadStored = useAuthStore((s) => s.loadStored);
   const logout = useAuthStore((s) => s.logout);
+  const isLoading = useAuthStore((s) => s.isLoading);
   const router = useRouter();
+
+  useProtectedRoute();
 
   useEffect(() => {
     loadStored();
@@ -45,19 +50,24 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
-    if (fontsLoaded || fontError) {
+    if ((fontsLoaded || fontError) && !isLoading) {
       if (fontError) {
         console.error('Font loading failed, continuing with fallback fonts:', fontError);
       }
       SplashScreen.hideAsync();
     }
-  }, [fontsLoaded, fontError]);
+  }, [fontsLoaded, fontError, isLoading]);
 
   if (!fontsLoaded && !fontError) return null;
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Stack screenOptions={{ headerShown: false }}>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: Colors.zinc50 },
+        }}
+      >
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(app)" />
         <Stack.Screen name="queue" />

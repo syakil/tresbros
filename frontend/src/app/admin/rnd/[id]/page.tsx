@@ -80,14 +80,14 @@ export default function RnDDetailPage({ params }: { params: Promise<{ id: string
     setIsSaving(true);
     try {
       // Hitung ulang targetCost berdasarkan ingredients
-      const newActualCost = recipe.ingredients?.reduce((acc: number, ing: any) => acc + (ing.quantity * ing.costPerUnit), 0) || 0;
+      const newActualCost = recipe.ingredients?.reduce((acc: number, ing: any) => acc + ((parseFloat(ing.quantity) || 0) * ing.costPerUnit), 0) || 0;
       const updatedRecipe = { 
         ...recipe, 
         actualCost: newActualCost,
         ingredients: recipe.ingredients?.map((ing: any) => ({
           id: ing.id,
           materialId: ing.materialId,
-          quantity: ing.quantity,
+          quantity: parseFloat(ing.quantity) || 0,
           unit: ing.unit,
           costPerUnit: ing.costPerUnit,
           rnDRecipeId: recipe.id
@@ -107,14 +107,14 @@ export default function RnDDetailPage({ params }: { params: Promise<{ id: string
   const handleTestRecipe = async () => {
     setIsTesting(true);
     try {
-      const newActualCost = recipe.ingredients?.reduce((acc: number, ing: any) => acc + (ing.quantity * ing.costPerUnit), 0) || 0;
+      const newActualCost = recipe.ingredients?.reduce((acc: number, ing: any) => acc + ((parseFloat(ing.quantity) || 0) * ing.costPerUnit), 0) || 0;
       const updatedRecipe = { 
         ...recipe, 
         actualCost: newActualCost,
         ingredients: recipe.ingredients?.map((ing: any) => ({
           id: ing.id,
           materialId: ing.materialId,
-          quantity: ing.quantity,
+          quantity: parseFloat(ing.quantity) || 0,
           unit: ing.unit,
           costPerUnit: ing.costPerUnit,
           rnDRecipeId: recipe.id
@@ -218,7 +218,7 @@ export default function RnDDetailPage({ params }: { params: Promise<{ id: string
         {
           materialId: defaultMaterial.id,
           material: defaultMaterial,
-          quantity: 1,
+          quantity: "",
           unit: defaultMaterial.unit,
           costPerUnit: defaultMaterial.costPerUnit || 0
         }
@@ -314,8 +314,11 @@ export default function RnDDetailPage({ params }: { params: Promise<{ id: string
                 <Input 
                   label="Harga Jual (Rp)"
                   type="number"
-                  value={recipe.sellingPrice || ''} 
-                  onChange={(e) => updateTargetCost({ sellingPrice: parseFloat(e.target.value) || 0 })}
+                  value={recipe.sellingPrice !== undefined && recipe.sellingPrice !== null ? recipe.sellingPrice : ''} 
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    updateTargetCost({ sellingPrice: val === '' ? 0 : parseFloat(val) });
+                  }}
                 />
               </div>
               <div>
@@ -415,7 +418,10 @@ export default function RnDDetailPage({ params }: { params: Promise<{ id: string
                     className="w-full border border-zinc-200 rounded-md p-1.5 text-sm"
                     type="number" 
                     value={ing.quantity}
-                    onChange={(e) => updateIngredient(idx, 'quantity', parseFloat(e.target.value) || 0)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      updateIngredient(idx, 'quantity', val === '' ? '' : parseFloat(val));
+                    }}
                   />
                 </td>
                 <td className="px-3 py-2 text-zinc-500">
@@ -425,7 +431,7 @@ export default function RnDDetailPage({ params }: { params: Promise<{ id: string
                   Rp {ing.costPerUnit?.toLocaleString('id-ID')}
                 </td>
                 <td className="px-3 py-2 text-right font-medium">
-                  Rp {((ing.quantity || 0) * (ing.costPerUnit || 0)).toLocaleString('id-ID')}
+                  Rp {((parseFloat(ing.quantity) || 0) * (ing.costPerUnit || 0)).toLocaleString('id-ID')}
                 </td>
                 <td className="px-3 py-2 text-right">
                   <button onClick={() => removeIngredient(idx)} className="text-red-400 hover:text-red-600">
@@ -440,14 +446,15 @@ export default function RnDDetailPage({ params }: { params: Promise<{ id: string
               <td colSpan={4} className="px-3 py-3 font-bold text-right">Total Actual COGS:</td>
               <td className="px-3 py-3 font-bold text-right text-brand-sage whitespace-nowrap">
                 {(() => {
-                  const actualCost = recipe.ingredients?.reduce((acc: number, ing: any) => acc + (ing.quantity * ing.costPerUnit), 0) || 0;
-                  const percent = recipe.sellingPrice > 0 ? (actualCost / recipe.sellingPrice) * 100 : 0;
+                  const actualCost = recipe.ingredients?.reduce((acc: number, ing: any) => acc + ((parseFloat(ing.quantity) || 0) * ing.costPerUnit), 0) || 0;
+                  const cogsPercent = recipe.sellingPrice > 0 ? (actualCost / recipe.sellingPrice) * 100 : 0;
+                  const profitPercent = recipe.sellingPrice > 0 ? ((recipe.sellingPrice - actualCost) / recipe.sellingPrice) * 100 : 0;
                   return (
                     <div>
                       <div>Rp {actualCost.toLocaleString('id-ID')}</div>
                       {recipe.sellingPrice > 0 && (
                         <div className="text-[10px] text-zinc-500 font-medium normal-case">
-                          ({percent.toFixed(1)}% dari Harga Jual)
+                          (COGS: {cogsPercent.toFixed(1)}% | Keuntungan: {profitPercent.toFixed(1)}%)
                         </div>
                       )}
                     </div>

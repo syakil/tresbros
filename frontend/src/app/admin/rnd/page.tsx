@@ -131,7 +131,7 @@ export default function RnDPage() {
                       <div className="font-semibold text-brand-sage">Rp {recipe.actualCost?.toLocaleString('id-ID')}</div>
                       {recipe.sellingPrice > 0 && (
                         <div className="text-[10px] text-zinc-500">
-                          {((recipe.actualCost / recipe.sellingPrice) * 100).toFixed(1)}%
+                          Laba: {(((recipe.sellingPrice - recipe.actualCost) / recipe.sellingPrice) * 100).toFixed(1)}%
                         </div>
                       )}
                     </td>
