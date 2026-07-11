@@ -5,7 +5,7 @@ const ENV_API_URL = process.env.EXPO_PUBLIC_API_URL;
 export const API_URL =
   ENV_API_URL ||
   (Constants.expoConfig?.extra?.apiUrl as string) ||
-  'http://localhost:3000';
+  'https://tres.syakil-dev.my.id';
 
 export const APP_NAME = 'Tres Bros Caffè';
 
