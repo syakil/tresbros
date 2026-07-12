@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Colors } from '@/theme/colors';
 import { Typography } from '@/theme/typography';
 import { Spacing } from '@/theme/spacing';
@@ -11,9 +12,11 @@ interface HeaderProps {
   subtitle?: string;
   rightAction?: React.ReactNode;
   dark?: boolean;
+  showBack?: boolean;
 }
 
-export function Header({ title, subtitle, rightAction, dark = false }: HeaderProps) {
+export function Header({ title, subtitle, rightAction, dark = false, showBack = false }: HeaderProps) {
+  const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const textColor = dark ? Colors.cream : Colors.zinc900;
   const subColor = dark ? Colors.zinc400 : Colors.zinc500;
@@ -21,12 +24,19 @@ export function Header({ title, subtitle, rightAction, dark = false }: HeaderPro
   return (
     <View style={styles.container}>
       <View style={styles.left}>
-        <Text style={[styles.title, { color: textColor }]}>{title}</Text>
-        {subtitle && <Text style={[styles.subtitle, { color: subColor }]}>{subtitle}</Text>}
+        {showBack && (
+          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+            <Text style={[styles.backIcon, { color: textColor }]}>←</Text>
+          </TouchableOpacity>
+        )}
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.title, { color: textColor }]}>{title}</Text>
+          {subtitle && <Text style={[styles.subtitle, { color: subColor }]}>{subtitle}</Text>}
+        </View>
       </View>
       <View style={styles.right}>
         {rightAction}
-        {user && (
+        {!showBack && user && (
           <View style={[styles.avatar, dark && { backgroundColor: Colors.brown }]}>
             <Text style={styles.avatarText}>{getInitials(user.fullName || user.username)}</Text>
           </View>
@@ -44,7 +54,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.base,
     paddingVertical: Spacing.md,
   },
-  left: { flex: 1 },
+  left: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  backBtn: {
+    marginRight: Spacing.sm,
+    padding: Spacing.xs,
+  },
+  backIcon: {
+    fontSize: 22,
+    fontWeight: '600',
+  },
   title: {
     ...Typography.title,
   },

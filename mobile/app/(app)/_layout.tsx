@@ -26,74 +26,24 @@ export default function AppLayout() {
       }}
     >
       <Stack.Screen name="(tabs)" />
-      <Stack.Screen
-        name="admin/items"
-        options={{ headerShown: true, title: 'Produk', headerTintColor: Colors.olive }}
-      />
-      <Stack.Screen
-        name="admin/recipes"
-        options={{ headerShown: true, title: 'Resep', headerTintColor: Colors.olive }}
-      />
-      <Stack.Screen
-        name="admin/inventory"
-        options={{ headerShown: true, title: 'Inventori', headerTintColor: Colors.olive }}
-      />
-      <Stack.Screen
-        name="admin/purchases"
-        options={{ headerShown: true, title: 'Pembelian', headerTintColor: Colors.olive }}
-      />
-      <Stack.Screen
-        name="admin/expenses"
-        options={{ headerShown: true, title: 'Pengeluaran', headerTintColor: Colors.olive }}
-      />
-      <Stack.Screen
-        name="admin/incomes"
-        options={{ headerShown: true, title: 'Pendapatan', headerTintColor: Colors.olive }}
-      />
-      <Stack.Screen
-        name="admin/coupons"
-        options={{ headerShown: true, title: 'Kupon', headerTintColor: Colors.olive }}
-      />
-      <Stack.Screen
-        name="admin/users"
-        options={{ headerShown: true, title: 'Pengguna', headerTintColor: Colors.olive }}
-      />
-      <Stack.Screen
-        name="admin/roles"
-        options={{ headerShown: true, title: 'Role', headerTintColor: Colors.olive }}
-      />
-      <Stack.Screen
-        name="admin/settings"
-        options={{ headerShown: true, title: 'Pengaturan', headerTintColor: Colors.olive }}
-      />
-      <Stack.Screen
-        name="admin/accounting/coa"
-        options={{ headerShown: true, title: 'Chart of Accounts', headerTintColor: Colors.olive }}
-      />
-      <Stack.Screen
-        name="admin/accounting/journals"
-        options={{ headerShown: true, title: 'Jurnal', headerTintColor: Colors.olive }}
-      />
-      <Stack.Screen
-        name="admin/accounting/ledger"
-        options={{ headerShown: true, title: 'Buku Besar', headerTintColor: Colors.olive }}
-      />
-      <Stack.Screen
-        name="admin/accounting/profit-loss"
-        options={{ headerShown: true, title: 'Laba Rugi', headerTintColor: Colors.olive }}
-      />
-      <Stack.Screen
-        name="admin/rnd/index"
-        options={{ headerShown: true, title: 'R&D', headerTintColor: Colors.olive }}
-      />
-      <Stack.Screen
-        name="admin/rnd/[id]"
-        options={{ headerShown: true, title: 'Detail R&D', headerTintColor: Colors.olive }}
-      />
-      <Stack.Screen
-        name="orders/[id]"
-        options={{ headerShown: true, title: 'Detail Order', headerTintColor: Colors.olive }}
-      />
+      <Stack.Screen name="admin/items" />
+      <Stack.Screen name="admin/recipes" />
+      <Stack.Screen name="admin/inventory" />
+      <Stack.Screen name="admin/purchases" />
+      <Stack.Screen name="admin/expenses" />
+      <Stack.Screen name="admin/incomes" />
+      <Stack.Screen name="admin/coupons" />
+      <Stack.Screen name="admin/users" />
+      <Stack.Screen name="admin/roles" />
+      <Stack.Screen name="admin/settings" />
+      <Stack.Screen name="admin/stock-opname" />
+      <Stack.Screen name="admin/accounting/coa" />
+      <Stack.Screen name="admin/accounting/journals" />
+      <Stack.Screen name="admin/accounting/ledger" />
+      <Stack.Screen name="admin/accounting/profit-loss" />
+      <Stack.Screen name="admin/rnd/index" />
+      <Stack.Screen name="admin/rnd/[id]" />
+      <Stack.Screen name="orders/[id]" />
     </Stack>
   );
 }

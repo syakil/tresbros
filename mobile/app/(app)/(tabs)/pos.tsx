@@ -12,7 +12,10 @@ import {
   TextInput,
 } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
+import { useRouter } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { usePrinterStore } from '@/store/usePrinterStore';
+import { printReceipt } from '@/services/printerService';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Colors } from '@/theme/colors';
@@ -35,6 +38,7 @@ import { formatCurrency } from '@/utils/format';
 
 export default function POSScreen() {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showCart, setShowCart] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
@@ -43,6 +47,12 @@ export default function POSScreen() {
   const [cashAmountReceived, setCashAmountReceived] = useState<number | ''>('');
   const [roundingType, setRoundingType] = useState<'NONE' | 'DOWN_100' | 'UP_100' | 'DOWN_500' | 'UP_500' | 'DOWN_1000' | 'UP_1000'>('NONE');
   const [showRoundingDropdown, setShowRoundingDropdown] = useState(false);
+
+  // Print States
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successOrder, setSuccessOrder] = useState<any>(null);
+  const [successChange, setSuccessChange] = useState<number>(0);
+  const printer = usePrinterStore();
 
   const cart = useCartStore();
 
@@ -81,16 +91,50 @@ export default function POSScreen() {
     queryFn: categoriesApi.getAll,
   });
 
+  const handlePrintReceipt = async () => {
+    if (!successOrder) return;
+    if (!printer.selectedPrinter) {
+      Alert.alert(
+        "Printer Belum Dipilih",
+        "Silakan hubungkan printer Bluetooth terlebih dahulu di tab Menu > Pengaturan Printer.",
+        [
+          { text: "Batal", style: "cancel" },
+          { text: "Atur Printer", onPress: () => {
+            setShowSuccessModal(false);
+            router.push('/(app)/(tabs)/more');
+          }}
+        ]
+      );
+      return;
+    }
+
+    try {
+      const connected = await printer.connect();
+      if (!connected) {
+        Alert.alert("Gagal", "Tidak dapat terhubung ke printer. Pastikan Bluetooth aktif dan printer menyala.");
+        return;
+      }
+      await printReceipt(successOrder);
+      Alert.alert("Sukses", "Struk berhasil dicetak.");
+    } catch (e: any) {
+      Alert.alert("Error", e.message || "Gagal mencetak struk.");
+    }
+  };
+
   const createOrder = useMutation({
     mutationFn: ordersApi.create,
     onSuccess: async (order) => {
       const totalAmount = getRoundedTotal(cart.getTotal());
       const change = Number(cashAmountReceived || 0) - totalAmount;
 
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      
+      setSuccessOrder(order);
+      setSuccessChange(change > 0 ? change : 0);
+      
       cart.clearCart();
       setShowCheckout(false);
       setShowCart(false);
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
       
       if (order.paymentMethod === 'MIDTRANS' && order.paymentUrl) {
         try {
@@ -99,11 +143,7 @@ export default function POSScreen() {
           Alert.alert('Gagal', 'Gagal membuka halaman pembayaran');
         }
       } else {
-        if (change > 0) {
-          Alert.alert('Berhasil', `Pesanan dibuat.\nKembalian: ${formatCurrency(change)}`);
-        } else {
-          Alert.alert('Berhasil', 'Pesanan berhasil dibuat');
-        }
+        setShowSuccessModal(true);
       }
     },
     onError: (err: Error) => {
@@ -261,6 +301,15 @@ export default function POSScreen() {
               <TouchableOpacity onPress={() => setShowCart(false)}>
                 <Text style={styles.closeBtn}>✕</Text>
               </TouchableOpacity>
+            </View>
+            <View style={styles.customerInputContainer}>
+              <TextInput
+                style={styles.customerInput}
+                placeholder="Nama Pelanggan (Opsional)"
+                placeholderTextColor={Colors.zinc400}
+                value={cart.customerName}
+                onChangeText={(v) => cart.setCustomerName(v)}
+              />
             </View>
 
             <FlatList
@@ -547,6 +596,53 @@ export default function POSScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Checkout Success Modal with Printing Option */}
+      <Modal
+        visible={showSuccessModal}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setShowSuccessModal(false)}
+      >
+        <View style={styles.successModalOverlay}>
+          <View style={styles.successModalContent}>
+            <Text style={styles.successIcon}>✅</Text>
+            <Text style={styles.successTitle}>Transaksi Berhasil</Text>
+            
+            {successOrder?.paymentMethod === 'CASH' && (
+              <View style={styles.successDetailsBox}>
+                <Text style={styles.successLabel}>Total Bayar</Text>
+                <Text style={styles.successValue}>{formatCurrency(successOrder.totalAmount)}</Text>
+                
+                {successChange > 0 && (
+                  <>
+                    <View style={styles.successDivider} />
+                    <Text style={styles.successLabel}>Kembalian Uang</Text>
+                    <Text style={styles.successValueHighlight}>{formatCurrency(successChange)}</Text>
+                  </>
+                )}
+              </View>
+            )}
+
+            <View style={styles.successActionButtons}>
+              <TouchableOpacity onPress={handlePrintReceipt} style={styles.printActionBtn}>
+                <Text style={styles.printActionBtnText}>🖨️ Cetak Struk</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                onPress={() => {
+                  setShowSuccessModal(false);
+                  setSuccessOrder(null);
+                  setSuccessChange(0);
+                }} 
+                style={styles.doneActionBtn}
+              >
+                <Text style={styles.doneActionBtnText}>Selesai / Transaksi Baru</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -670,15 +766,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   badgeText: { color: Colors.white, fontSize: 10, fontWeight: '700' },
-  categoryScroll: { maxHeight: 44 },
-  categoryContent: { paddingHorizontal: Spacing.base, gap: Spacing.sm },
+  categoryScroll: {
+    maxHeight: 44,
+    marginVertical: Spacing.sm,
+  },
+  categoryContent: {
+    paddingHorizontal: Spacing.base,
+    gap: Spacing.sm,
+    alignItems: 'center',
+  },
   categoryChip: {
     paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
+    paddingVertical: 6,
     borderRadius: Shape.borderRadius.full,
     backgroundColor: Colors.white,
     borderWidth: 1,
     borderColor: Colors.zinc200,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   categoryChipActive: { backgroundColor: Colors.olive, borderColor: Colors.olive },
   categoryText: { ...Typography.captionMedium, color: Colors.zinc600 },
@@ -736,6 +841,19 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: Spacing.base,
+  },
+  customerInputContainer: {
+    marginBottom: Spacing.sm,
+  },
+  customerInput: {
+    backgroundColor: Colors.zinc50,
+    borderWidth: 1,
+    borderColor: Colors.zinc200,
+    borderRadius: Shape.borderRadius.xl,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    ...Typography.bodyMedium,
+    color: Colors.zinc800,
   },
   cartTitle: { ...Typography.subtitle, color: Colors.zinc900 },
   closeBtn: { fontSize: 18, color: Colors.zinc500, padding: Spacing.xs },
@@ -1084,5 +1202,94 @@ const styles = StyleSheet.create({
     borderTopColor: Colors.zinc100,
     paddingTop: Spacing.md,
     marginTop: Spacing.sm,
+  },
+  successModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: Spacing.lg,
+  },
+  successModalContent: {
+    backgroundColor: Colors.white,
+    borderRadius: Shape.borderRadius.xl,
+    padding: Spacing.xl,
+    alignItems: 'center',
+    width: '90%',
+    maxWidth: 400,
+    ...Shape.shadow.lg,
+  },
+  successIcon: {
+    fontSize: 50,
+    marginBottom: Spacing.md,
+  },
+  successTitle: {
+    ...Typography.subtitle,
+    fontWeight: 'bold',
+    color: Colors.zinc900,
+    marginBottom: Spacing.lg,
+  },
+  successDetailsBox: {
+    backgroundColor: Colors.zinc50,
+    borderRadius: Shape.borderRadius.lg,
+    padding: Spacing.md,
+    width: '100%',
+    marginBottom: Spacing.lg,
+    borderWidth: 1,
+    borderColor: Colors.zinc200,
+    alignItems: 'center',
+  },
+  successLabel: {
+    ...Typography.caption,
+    color: Colors.zinc500,
+    marginBottom: 2,
+  },
+  successValue: {
+    ...Typography.bodyLarge,
+    fontWeight: '700',
+    color: Colors.zinc800,
+    marginBottom: Spacing.sm,
+  },
+  successValueHighlight: {
+    ...Typography.title,
+    fontWeight: '800',
+    color: Colors.olive,
+  },
+  successDivider: {
+    width: '100%',
+    height: 1,
+    backgroundColor: Colors.zinc200,
+    marginVertical: Spacing.sm,
+  },
+  successActionButtons: {
+    width: '100%',
+    gap: Spacing.sm,
+  },
+  printActionBtn: {
+    backgroundColor: Colors.olive,
+    borderRadius: Shape.borderRadius.xl,
+    paddingVertical: Spacing.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...Shape.shadow.sm,
+  },
+  printActionBtnText: {
+    ...Typography.bodyMedium,
+    color: Colors.white,
+    fontWeight: 'bold',
+  },
+  doneActionBtn: {
+    backgroundColor: Colors.white,
+    borderRadius: Shape.borderRadius.xl,
+    paddingVertical: Spacing.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: Colors.zinc200,
+  },
+  doneActionBtnText: {
+    ...Typography.bodyMedium,
+    color: Colors.zinc700,
+    fontWeight: '600',
   },
 });

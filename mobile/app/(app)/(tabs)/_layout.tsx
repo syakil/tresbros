@@ -45,7 +45,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="more"
         options={{
-          href: null,
+          title: 'Menu',
+          tabBarIcon: ({ focused }) => <TabIcon emoji="⚙️" focused={focused} />,
         }}
       />
     </Tabs>

@@ -24,26 +24,26 @@ export interface MaterialUpdateRequest {
 
 export const materialsApi = {
   getAll: () =>
-    client.get<MaterialResponse[]>('/api/materials').then((r) => r.data),
+    client.get<MaterialResponse[]>('/api/Material').then((r) => r.data),
 
   getById: (id: number) =>
-    client.get<MaterialResponse>(`/api/materials/${id}`).then((r) => r.data),
+    client.get<MaterialResponse>(`/api/Material/${id}`).then((r) => r.data),
 
   create: (data: MaterialCreateRequest) =>
-    client.post<MaterialResponse>('/api/materials', data).then((r) => r.data),
+    client.post<MaterialResponse>('/api/Material', data).then((r) => r.data),
 
   update: (id: number, data: MaterialUpdateRequest) =>
-    client.put(`/api/materials/${id}`, data).then((r) => r.data),
+    client.put(`/api/Material/${id}`, data).then((r) => r.data),
 
   adjust: (id: number, data: { adjustType: 'in' | 'out'; quantity: number; totalPrice: number; notes: string }) =>
-    client.put<MaterialResponse>(`/api/materials/${id}/adjust`, data).then((r) => r.data),
+    client.post<MaterialResponse>(`/api/Material/${id}/adjust`, data).then((r) => r.data),
 
   getBatches: (id: number) =>
-    client.get(`/api/materials/${id}/batches`).then((r) => r.data),
+    client.get(`/api/Material/${id}/batches`).then((r) => r.data),
 
   updateBatch: (batchId: number, data: Record<string, unknown>) =>
-    client.put(`/api/materials/batches/${batchId}`, data).then((r) => r.data),
+    client.put(`/api/Material/batches/${batchId}`, data).then((r) => r.data),
 
   delete: (id: number) =>
-    client.delete(`/api/materials/${id}`).then((r) => r.data),
+    client.delete(`/api/Material/${id}`).then((r) => r.data),
 };
