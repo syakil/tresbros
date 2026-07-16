@@ -443,7 +443,14 @@ export default function RnDDetailPage({ params }: { params: Promise<{ id: string
           </tbody>
           <tfoot>
             <tr className="bg-zinc-50/50 text-xs md:text-sm">
-              <td colSpan={4} className="px-3 py-3 font-bold text-right">Total Actual COGS:</td>
+              <td colSpan={4} className="px-3 py-3 font-bold text-right">
+                <div className="flex flex-col items-end">
+                  <span>Estimasi COGS (Harga Rata-Rata):</span>
+                  <span className="text-[10px] text-zinc-400 font-normal normal-case mt-0.5">
+                    *Menggunakan biaya rata-rata bahan baku saat ini
+                  </span>
+                </div>
+              </td>
               <td className="px-3 py-3 font-bold text-right text-brand-sage whitespace-nowrap">
                 {(() => {
                   const actualCost = recipe.ingredients?.reduce((acc: number, ing: any) => acc + ((parseFloat(ing.quantity) || 0) * ing.costPerUnit), 0) || 0;
@@ -492,7 +499,7 @@ export default function RnDDetailPage({ params }: { params: Promise<{ id: string
                 </div>
                 <div className="md:w-48 text-right flex flex-col justify-between items-end border-t md:border-t-0 md:border-l border-zinc-100 pt-4 md:pt-0 md:pl-4">
                   <div>
-                    <p className="text-[10px] uppercase font-bold text-zinc-400">Total Material Cost</p>
+                    <p className="text-[10px] uppercase font-bold text-zinc-400">Biaya Riil FIFO (Saat Tes)</p>
                     <p className="font-bold text-brand-sage text-lg">Rp {test.actualCost.toLocaleString('id-ID')}</p>
                   </div>
                   <Button 
