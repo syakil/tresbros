@@ -3,10 +3,11 @@ import axios from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
-export async function POST(request: Request, { params }: { params: { id: string } }) {
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const data = await request.json();
-    const response = await axios.post(`${API_URL}/Asset/${params.id}/depreciate`, data);
+    const response = await axios.post(`${API_URL}/Asset/${id}/depreciate`, data);
     return NextResponse.json(response.data);
   } catch (error: any) {
     return NextResponse.json(

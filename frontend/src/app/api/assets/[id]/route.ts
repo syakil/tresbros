@@ -3,9 +3,10 @@ import axios from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const response = await axios.get(`${API_URL}/Asset/${params.id}`);
+    const { id } = await params;
+    const response = await axios.get(`${API_URL}/Asset/${id}`);
     return NextResponse.json(response.data);
   } catch (error: any) {
     return NextResponse.json(
@@ -15,11 +16,12 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const url = new URL(request.url);
     const searchParams = url.searchParams.toString();
-    const targetUrl = `${API_URL}/Asset/${params.id}${searchParams ? '?' + searchParams : ''}`;
+    const targetUrl = `${API_URL}/Asset/${id}${searchParams ? '?' + searchParams : ''}`;
     const response = await axios.delete(targetUrl);
     return NextResponse.json(response.data || { success: true });
   } catch (error: any) {
