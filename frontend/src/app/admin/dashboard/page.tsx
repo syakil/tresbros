@@ -291,33 +291,47 @@ export default function DashboardPage() {
                 {data?.topProducts?.length === 0 ? (
                   <p className="text-zinc-500 text-sm text-center py-10 flex-1 flex items-center justify-center bg-zinc-50 rounded-xl mt-4 border border-zinc-100 border-dashed">No sales data yet.</p>
                 ) : (
-                  <div className="w-full mt-4 h-[200px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
-                        <Pie
-                          data={data?.topProducts}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={50}
-                          outerRadius={70}
-                          paddingAngle={2}
-                          dataKey="qty"
-                          nameKey="name"
-                          stroke="none"
-                        >
-                          {data?.topProducts?.map((entry: any, index: number) => {
-                            const colors = ['#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe'];
-                            return <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />;
-                          })}
-                        </Pie>
-                        <Tooltip 
-                          contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e4e4e7', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                          itemStyle={{ color: '#18181b', fontWeight: 500 }}
-                          formatter={(value: any, name: any) => [`${value} Qty`, name]}
-                        />
-                        <Legend verticalAlign="bottom" height={24} iconType="circle" wrapperStyle={{ fontSize: '12px', color: '#52525b', fontWeight: 500 }} />
-                      </PieChart>
-                    </ResponsiveContainer>
+                  <div className="w-full mt-4 flex-1 flex flex-col justify-between min-h-[220px]">
+                    <div className="w-full h-[150px] flex-shrink-0">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                          <Pie
+                            data={data?.topProducts}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={45}
+                            outerRadius={65}
+                            paddingAngle={2}
+                            dataKey="qty"
+                            nameKey="name"
+                            stroke="none"
+                          >
+                            {data?.topProducts?.map((entry: any, index: number) => {
+                              const colors = ['#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe'];
+                              return <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />;
+                            })}
+                          </Pie>
+                          <Tooltip 
+                            contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e4e4e7', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                            itemStyle={{ color: '#18181b', fontWeight: 500 }}
+                            formatter={(value: any, name: any) => [`${value} Qty`, name]}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                    {/* Custom HTML Legend that wraps cleanly */}
+                    <div className="flex flex-wrap justify-center gap-x-3 gap-y-1.5 mt-4 text-[11px] font-medium text-zinc-600 px-2 pb-2">
+                      {data?.topProducts?.map((entry: any, index: number) => {
+                        const colors = ['#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe'];
+                        const color = colors[index % colors.length];
+                        return (
+                          <div key={entry.name} className="flex items-center gap-1.5 whitespace-nowrap">
+                            <span className="w-2 h-2 rounded-full flex-shrink-0 shadow-sm" style={{ backgroundColor: color }} />
+                            <span className="text-zinc-600">{entry.name}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </Card>
