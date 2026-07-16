@@ -71,24 +71,31 @@ using (var scope = app.Services.CreateScope())
             System.Console.WriteLine("[SETTINGS SEED] TAX_ENABLED initialized to true.");
         }
 
-        // Seed basic Chart of Accounts if empty
-        if (!db.ChartOfAccounts.Any())
+        // Seed basic Chart of Accounts safely
+        var requiredCoas = new List<backend.Models.ChartOfAccount>
         {
-            db.ChartOfAccounts.AddRange(
-                new backend.Models.ChartOfAccount { Code = "1110", Name = "Kas Kecil", Type = "ASSET" },
-                new backend.Models.ChartOfAccount { Code = "1120", Name = "Bank / Piutang Midtrans", Type = "ASSET" },
-                new backend.Models.ChartOfAccount { Code = "1200", Name = "Aset Tetap (Fixed Asset)", Type = "ASSET" },
-                new backend.Models.ChartOfAccount { Code = "1250", Name = "Akumulasi Penyusutan", Type = "ASSET" },
-                new backend.Models.ChartOfAccount { Code = "2110", Name = "Hutang Usaha", Type = "LIABILITY" },
-                new backend.Models.ChartOfAccount { Code = "3110", Name = "Modal Pemilik", Type = "EQUITY" },
-                new backend.Models.ChartOfAccount { Code = "4110", Name = "Pendapatan Penjualan", Type = "REVENUE" },
-                new backend.Models.ChartOfAccount { Code = "4120", Name = "Diskon & Promo", Type = "REVENUE" },
-                new backend.Models.ChartOfAccount { Code = "5100", Name = "Harga Pokok Penjualan (HPP)", Type = "EXPENSE" },
-                new backend.Models.ChartOfAccount { Code = "5150", Name = "Selisih Pembulatan", Type = "EXPENSE" },
-                new backend.Models.ChartOfAccount { Code = "6140", Name = "Beban Penyusutan", Type = "EXPENSE" }
-            );
+            new backend.Models.ChartOfAccount { Code = "1110", Name = "Kas Kecil", Type = "ASSET" },
+            new backend.Models.ChartOfAccount { Code = "1120", Name = "Bank / Piutang Midtrans", Type = "ASSET" },
+            new backend.Models.ChartOfAccount { Code = "1200", Name = "Aset Tetap (Fixed Asset)", Type = "ASSET" },
+            new backend.Models.ChartOfAccount { Code = "1250", Name = "Akumulasi Penyusutan", Type = "ASSET" },
+            new backend.Models.ChartOfAccount { Code = "2110", Name = "Hutang Usaha", Type = "LIABILITY" },
+            new backend.Models.ChartOfAccount { Code = "3110", Name = "Modal Pemilik", Type = "EQUITY" },
+            new backend.Models.ChartOfAccount { Code = "4110", Name = "Pendapatan Penjualan", Type = "REVENUE" },
+            new backend.Models.ChartOfAccount { Code = "4120", Name = "Diskon & Promo", Type = "REVENUE" },
+            new backend.Models.ChartOfAccount { Code = "5100", Name = "Harga Pokok Penjualan (HPP)", Type = "EXPENSE" },
+            new backend.Models.ChartOfAccount { Code = "5150", Name = "Selisih Pembulatan", Type = "EXPENSE" },
+            new backend.Models.ChartOfAccount { Code = "6140", Name = "Beban Penyusutan Aset Tetap", Type = "EXPENSE" },
+            new backend.Models.ChartOfAccount { Code = "6150", Name = "Keuntungan/Kerugian Pelepasan Aset", Type = "EXPENSE" }
+        };
+
+        var existingCodes = db.ChartOfAccounts.Select(c => c.Code).ToList();
+        var missingCoas = requiredCoas.Where(c => !existingCodes.Contains(c.Code)).ToList();
+
+        if (missingCoas.Any())
+        {
+            db.ChartOfAccounts.AddRange(missingCoas);
             db.SaveChanges();
-            System.Console.WriteLine("[COA SEED] Chart of Accounts initialized.");
+            System.Console.WriteLine($"[COA SEED] Added {missingCoas.Count} missing Chart of Accounts.");
         }
     }
     catch (System.Exception ex)

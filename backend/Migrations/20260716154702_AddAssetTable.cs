@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -73,16 +73,6 @@ namespace backend.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.InsertData(
-                table: "ChartOfAccounts",
-                columns: new[] { "Id", "Balance", "Code", "IsActive", "Name", "Type" },
-                values: new object[,]
-                {
-                    { 15, 0.0, "1200", true, "Aset Tetap", "ASSET" },
-                    { 16, 0.0, "1250", true, "Akumulasi Penyusutan Aset Tetap", "ASSET" },
-                    { 17, 0.0, "6140", true, "Beban Penyusutan Aset Tetap", "EXPENSE" },
-                    { 18, 0.0, "6150", true, "Keuntungan/Kerugian Pelepasan Aset", "EXPENSE" }
-                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Assets_AccumulatedDepreciationAccountId",
@@ -116,25 +106,7 @@ namespace backend.Migrations
             migrationBuilder.DropTable(
                 name: "Assets");
 
-            migrationBuilder.DeleteData(
-                table: "ChartOfAccounts",
-                keyColumn: "Id",
-                keyValue: 15);
 
-            migrationBuilder.DeleteData(
-                table: "ChartOfAccounts",
-                keyColumn: "Id",
-                keyValue: 16);
-
-            migrationBuilder.DeleteData(
-                table: "ChartOfAccounts",
-                keyColumn: "Id",
-                keyValue: 17);
-
-            migrationBuilder.DeleteData(
-                table: "ChartOfAccounts",
-                keyColumn: "Id",
-                keyValue: 18);
         }
     }
 }
