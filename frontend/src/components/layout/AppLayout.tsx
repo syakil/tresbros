@@ -202,6 +202,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   <ClipboardList className="w-5 h-5" />
                   <span>General Ledger</span>
                 </Link>
+                <Link href="/admin/accounting/assets" onClick={() => setIsSidebarOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-r-xl transition ${getActiveStyle('/admin/accounting/assets')}`}>
+                  <MonitorPlay className="w-5 h-5" />
+                  <span>Fixed Assets</span>
+                </Link>
                 <Link href="/admin/accounting/profit-loss" onClick={() => setIsSidebarOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-r-xl transition ${getActiveStyle('/admin/accounting/profit-loss')}`}>
                   <BarChart3 className="w-5 h-5" />
                   <span>Profit & Loss</span>
