@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Coffee, MonitorPlay, Home, ShoppingBag, LogOut, Package, ClipboardList, BarChart3, Boxes, ShoppingCart, Menu, X, Tag, ReceiptText, TrendingUp, Users } from 'lucide-react';
+import { Coffee, MonitorPlay, Home, ShoppingBag, LogOut, Package, ClipboardList, BarChart3, Boxes, ShoppingCart, Menu, X, Tag, ReceiptText, TrendingUp, Users, Crosshair } from 'lucide-react';
 import axios from 'axios';
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
@@ -123,6 +123,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 <Link href="/admin/dashboard" onClick={() => setIsSidebarOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-r-xl transition ${getActiveStyle('/admin/dashboard')}`}>
                   <BarChart3 className="w-5 h-5" />
                   <span>Sales Report</span>
+                </Link>
+                <Link href="/admin/sales" onClick={() => setIsSidebarOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-r-xl transition ${getActiveStyle('/admin/sales')}`}>
+                  <Crosshair className="w-5 h-5 text-indigo-400" />
+                  <span>Sales B2B (CRM)</span>
                 </Link>
               </>
             )}

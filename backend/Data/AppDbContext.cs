@@ -30,6 +30,7 @@ namespace backend.Data
         public DbSet<RnDRecipe> RnDRecipes { get; set; }
         public DbSet<RnDRecipeIngredient> RnDRecipeIngredients { get; set; }
         public DbSet<RnDTestHistory> RnDTestHistories { get; set; }
+        public DbSet<Asset> Assets { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -78,7 +79,11 @@ namespace backend.Data
                 new ChartOfAccount { Id = 11, Code = "5110", Name = "Harga Pokok Penjualan (HPP)", Type = "EXPENSE", IsActive = true },
                 new ChartOfAccount { Id = 12, Code = "5120", Name = "Biaya Admin Payment Gateway", Type = "EXPENSE", IsActive = true },
                 new ChartOfAccount { Id = 13, Code = "6110", Name = "Beban Operasional", Type = "EXPENSE", IsActive = true },
-                new ChartOfAccount { Id = 14, Code = "5130", Name = "Penyesuaian Persediaan", Type = "EXPENSE", IsActive = true }
+                new ChartOfAccount { Id = 14, Code = "5130", Name = "Penyesuaian Persediaan", Type = "EXPENSE", IsActive = true },
+                new ChartOfAccount { Id = 15, Code = "1200", Name = "Aset Tetap", Type = "ASSET", IsActive = true },
+                new ChartOfAccount { Id = 16, Code = "1250", Name = "Akumulasi Penyusutan Aset Tetap", Type = "ASSET", IsActive = true },
+                new ChartOfAccount { Id = 17, Code = "6140", Name = "Beban Penyusutan Aset Tetap", Type = "EXPENSE", IsActive = true },
+                new ChartOfAccount { Id = 18, Code = "6150", Name = "Keuntungan/Kerugian Pelepasan Aset", Type = "EXPENSE", IsActive = true }
             );
 
             // Set timestamp columns if needed for PostgreSQL (PostgreSQL requires UTC for timestamps)
