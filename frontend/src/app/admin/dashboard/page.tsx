@@ -33,7 +33,7 @@ export default function DashboardPage() {
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['dashboardStats', filter],
     queryFn: async () => {
-      const res = await axios.get(`/api/dashboard?filter=${filter}`);
+      const res = await axios.get(`/api/dashboard-summary?filter=${filter}`);
       setLastUpdated(new Date().toLocaleTimeString('id-ID'));
       return res.data;
     },
@@ -75,11 +75,11 @@ export default function DashboardPage() {
     healthGaugeColor = "#ef4444";
   }
 
-  // Simulated cash flow & balance sheet proportions based on real database records
-  const persediaanValue = Math.round(revenue * 0.18 + 8500000); 
-  const piutangValue = Math.round(revenue * 0.05);
-  const fixedAssetValue = 185000000; // Mesin Kopi, Gelas, Ruko, dsb
-  const cashOnHand = Math.max(0, netProfit + 15000000); // realistic cashier drawer cash
+  // Real cash flow & balance sheet proportions from database
+  const persediaanValue = data?.persediaanValue || 0; 
+  const piutangValue = data?.piutangValue || 0;
+  const fixedAssetValue = data?.fixedAssetValue || 0;
+  const cashOnHand = data?.cashOnHand || 0;
   const totalAssets = cashOnHand + persediaanValue + piutangValue + fixedAssetValue;
 
   const capitalAllocationData = [
@@ -89,18 +89,9 @@ export default function DashboardPage() {
     { name: 'Aset Tetap (Alat & Ruko)', value: fixedAssetValue, fill: '#8b5cf6' },
   ];
 
-  // Simulated expiries and stock situations based on real products
-  const criticalStockList = [
-    { name: "Fresh Milk Diamond 1L", stock: 4, safety: 12, est: "Besok habis", badge: "Besok habis", color: "bg-red-50 text-red-600 border-red-200" },
-    { name: "Houseblend Coffee Beans 1kg", stock: 2, safety: 5, est: "2 Hari lagi", badge: "2 Hari lagi", color: "bg-orange-50 text-orange-600 border-orange-200" },
-    { name: "Paper Cup 14oz", stock: 150, safety: 1000, est: "3 Hari lagi", badge: "3 Hari lagi", color: "bg-yellow-50 text-yellow-600 border-yellow-200" },
-    { name: "Caramel Syrup", stock: 1, safety: 3, est: "3 Hari lagi", badge: "3 Hari lagi", color: "bg-yellow-50 text-yellow-600 border-yellow-200" },
-  ];
-
-  const overStockList = [
-    { name: "Sticker Kemasan 250ml", stock: 5000, sufficeDays: 120, tiedCash: 3500000 },
-    { name: "Es Batu (Ice Tube) pack", stock: 45, sufficeDays: 10, tiedCash: 225000 }
-  ];
+  // Expiries and stock situations from real products
+  const criticalStockList: any[] = data?.criticalStockList || [];
+  const overStockList: any[] = data?.overStockList || [];
 
   const deadStockList = [
     { name: "Matcha Powder Premium", days: 45, value: 1200000 },
@@ -112,14 +103,10 @@ export default function DashboardPage() {
     { name: "Roti Tawar Bandung", daysLeft: 1, qty: 10, lossValue: 150000 }
   ];
 
-  const wasteSummary = {
-    today: Math.round(expenses * 0.04),
-    month: Math.round(expenses * 0.06 * 30),
-    breakdown: [
-      { name: "Bahan Expired", value: 65, fill: "#ef4444" },
-      { name: "Spillage (Tumpah/Rusak)", value: 20, fill: "#f59e0b" },
-      { name: "Gagal Produksi", value: 15, fill: "#3b82f6" }
-    ]
+  const wasteSummary = data?.wasteSummary || {
+    today: 0,
+    month: 0,
+    breakdown: [] as any[]
   };
 
   const staffList = [
