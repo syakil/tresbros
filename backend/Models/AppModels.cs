@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace backend.Models
 {
@@ -10,6 +11,8 @@ namespace backend.Models
         [Key]
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
+        
+        [JsonIgnore]
         public ICollection<Product> Products { get; set; } = new List<Product>();
     }
 
@@ -23,6 +26,8 @@ namespace backend.Models
         
         [ForeignKey("CategoryId")]
         public Category? Category { get; set; }
+        
+        [JsonIgnore]
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
         public ICollection<RecipeItem> RecipeItems { get; set; } = new List<RecipeItem>();
     }
@@ -63,6 +68,7 @@ namespace backend.Models
         public Product? Product { get; set; }
         
         [ForeignKey("OrderId")]
+        [JsonIgnore]
         public Order? Order { get; set; }
     }
 
@@ -114,7 +120,11 @@ namespace backend.Models
         public string Unit { get; set; } = string.Empty;
         public double CostPerUnit { get; set; } = 0;
         public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
+        
+        [JsonIgnore]
         public ICollection<PurchaseItem> PurchaseItems { get; set; } = new List<PurchaseItem>();
+        
+        [JsonIgnore]
         public ICollection<RecipeItem> RecipeItems { get; set; } = new List<RecipeItem>();
     }
 
@@ -144,6 +154,7 @@ namespace backend.Models
         public Material? Material { get; set; }
         
         [ForeignKey("PurchaseId")]
+        [JsonIgnore]
         public Purchase? Purchase { get; set; }
     }
 
@@ -159,6 +170,7 @@ namespace backend.Models
         public Material? Material { get; set; }
         
         [ForeignKey("ProductId")]
+        [JsonIgnore]
         public Product? Product { get; set; }
     }
 
@@ -227,6 +239,7 @@ namespace backend.Models
         public double Credit { get; set; } = 0;
 
         [ForeignKey("JournalEntryId")]
+        [JsonIgnore]
         public JournalEntry? JournalEntry { get; set; }
 
         [ForeignKey("AccountId")]
@@ -306,6 +319,7 @@ namespace backend.Models
         public DateTime TestedAt { get; set; } = DateTime.UtcNow;
 
         [ForeignKey("RnDRecipeId")]
+        [JsonIgnore]
         public RnDRecipe? RnDRecipe { get; set; }
     }
 
@@ -321,6 +335,7 @@ namespace backend.Models
         public double Subtotal => Quantity * CostPerUnit;
 
         [ForeignKey("RnDRecipeId")]
+        [JsonIgnore]
         public RnDRecipe? RnDRecipe { get; set; }
 
         [ForeignKey("MaterialId")]
