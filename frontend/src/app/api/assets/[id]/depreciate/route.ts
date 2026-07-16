@@ -1,18 +1,13 @@
 import { NextResponse } from 'next/server';
-import axios from 'axios';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+import { backendClient } from '@/lib/backendClient';
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const data = await request.json();
-    const response = await axios.post(`${API_URL}/Asset/${id}/depreciate`, data);
-    return NextResponse.json(response.data);
+    const body = await request.json();
+    const data = await backendClient.post(`/api/Asset/${id}/depreciate`, body);
+    return NextResponse.json(data);
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.response?.data || 'Failed to depreciate asset' },
-      { status: error.response?.status || 500 }
-    );
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

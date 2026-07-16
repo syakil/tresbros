@@ -1,16 +1,11 @@
 import { NextResponse } from 'next/server';
-import axios from 'axios';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+import { backendClient } from '@/lib/backendClient';
 
 export async function GET() {
   try {
-    const response = await axios.get(`${API_URL}/Asset/report`);
-    return NextResponse.json(response.data);
+    const data = await backendClient.get('/api/Asset/report');
+    return NextResponse.json(data);
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.response?.data || 'Failed to fetch asset report' },
-      { status: error.response?.status || 500 }
-    );
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
