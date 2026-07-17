@@ -174,8 +174,10 @@ namespace backend.Controllers
         }
 
         [HttpPost("{id}/test")]
-        public async Task<IActionResult> TestRecipe(int id)
+        public async Task<IActionResult> TestRecipe(int id, [FromBody] TestRecipeRequest request = null)
         {
+            bool deductStock = request?.DeductStock ?? true;
+
             var recipe = await _context.RnDRecipes
                 .Include(r => r.Ingredients)
                 .ThenInclude(i => i.Material)
@@ -187,33 +189,42 @@ namespace backend.Controllers
             var invAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "1140");
             var adjAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "5130"); 
 
-            // FIFO Deduction logic
+            // FIFO Deduction logic (only if deductStock is true)
             foreach (var ing in recipe.Ingredients)
             {
                 if (ing.Material == null) continue;
                 var material = ing.Material;
-                double remainingToDeduct = ing.Quantity;
-                var activeBatches = await _context.MaterialBatches
-                    .Where(b => b.MaterialId == material.Id && b.RemainingQty > 0)
-                    .OrderBy(b => b.CreatedAt)
-                    .ToListAsync();
-
-                foreach (var batch in activeBatches)
-                {
-                    if (remainingToDeduct <= 0) break;
-                    
-                    double deductFromBatch = Math.Min(batch.RemainingQty, remainingToDeduct);
-                    batch.RemainingQty -= deductFromBatch;
-                    remainingToDeduct -= deductFromBatch;
-                    totalCost += deductFromBatch * batch.UnitPrice;
-                }
                 
-                if (remainingToDeduct > 0)
+                if (deductStock)
                 {
-                    totalCost += remainingToDeduct * material.CostPerUnit;
-                }
+                    double remainingToDeduct = ing.Quantity;
+                    var activeBatches = await _context.MaterialBatches
+                        .Where(b => b.MaterialId == material.Id && b.RemainingQty > 0)
+                        .OrderBy(b => b.CreatedAt)
+                        .ToListAsync();
 
-                material.Stock -= ing.Quantity;
+                    foreach (var batch in activeBatches)
+                    {
+                        if (remainingToDeduct <= 0) break;
+                        
+                        double deductFromBatch = Math.Min(batch.RemainingQty, remainingToDeduct);
+                        batch.RemainingQty -= deductFromBatch;
+                        remainingToDeduct -= deductFromBatch;
+                        totalCost += deductFromBatch * batch.UnitPrice;
+                    }
+                    
+                    if (remainingToDeduct > 0)
+                    {
+                        totalCost += remainingToDeduct * material.CostPerUnit;
+                    }
+
+                    material.Stock -= ing.Quantity;
+                }
+                else
+                {
+                    // If not deducting stock, just calculate cost based on average cost per unit
+                    totalCost += ing.Quantity * material.CostPerUnit;
+                }
             }
 
             string dateStr = DateTime.UtcNow.ToString("yyMMdd");
@@ -237,7 +248,7 @@ namespace backend.Controllers
             };
             _context.RnDTestHistories.Add(history);
 
-            if (invAccount != null && adjAccount != null && totalCost > 0)
+            if (deductStock && invAccount != null && adjAccount != null && totalCost > 0)
             {
                 int journalCount = await _context.JournalEntries.CountAsync(j => j.Reference.StartsWith("RND" + dateStr));
                 string refCode = $"RND{dateStr}{(journalCount + 1).ToString("D4")}";
@@ -319,6 +330,11 @@ namespace backend.Controllers
     public class UpdateNotesRequest
     {
         public string Notes { get; set; } = string.Empty;
+    }
+
+    public class TestRecipeRequest
+    {
+        public bool DeductStock { get; set; } = true;
     }
 
     public class SnapshotIngredient

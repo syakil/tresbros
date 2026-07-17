@@ -104,7 +104,7 @@ export default function RnDDetailPage({ params }: { params: Promise<{ id: string
     }
   };
 
-  const handleTestRecipe = async () => {
+  const handleTestRecipe = async (deductStock: boolean = true) => {
     setIsTesting(true);
     try {
       const newActualCost = recipe.ingredients?.reduce((acc: number, ing: any) => acc + ((parseFloat(ing.quantity) || 0) * ing.costPerUnit), 0) || 0;
@@ -124,9 +124,9 @@ export default function RnDDetailPage({ params }: { params: Promise<{ id: string
       // Save first
       await axios.put(`/api/rnd/${recipe.id}`, updatedRecipe);
 
-      // Run Test (Deducts stock)
-      await axios.post(`/api/rnd/${recipe.id}/test`);
-      showToast('Test executed! Stock deducted.', 'success');
+      // Run Test
+      await axios.post(`/api/rnd/${recipe.id}/test`, { deductStock });
+      showToast(deductStock ? 'Test executed! Stock deducted.' : 'Test executed! No stock deducted.', 'success');
       
       // Refresh
       const freshRes = await axios.get(`/api/rnd/${id}`);
@@ -382,8 +382,11 @@ export default function RnDDetailPage({ params }: { params: Promise<{ id: string
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-bold">Raw Material Simulation (COGS)</h2>
           <div className="flex gap-2">
-            <Button onClick={handleTestRecipe} disabled={isTesting || !recipe.ingredients?.length} className="py-1.5 px-3 text-sm bg-brand-sage hover:bg-brand-sage/90 text-white border-none shadow-md shadow-brand-sage/20">
+            <Button onClick={() => handleTestRecipe(true)} disabled={isTesting || !recipe.ingredients?.length} className="py-1.5 px-3 text-sm bg-brand-sage hover:bg-brand-sage/90 text-white border-none shadow-md shadow-brand-sage/20">
               {isTesting ? 'Testing...' : 'Test & Deduct Stock'}
+            </Button>
+            <Button onClick={() => handleTestRecipe(false)} disabled={isTesting || !recipe.ingredients?.length} className="py-1.5 px-3 text-sm bg-blue-500 hover:bg-blue-600 text-white border-none shadow-md shadow-blue-500/20">
+              Test (No Deduction)
             </Button>
             <Button onClick={addIngredient} variant="secondary" className="py-1.5 px-3 text-sm border-zinc-200">
               <Plus className="w-4 h-4 mr-1" /> Add Material

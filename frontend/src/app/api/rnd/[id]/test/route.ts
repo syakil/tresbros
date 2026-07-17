@@ -4,7 +4,8 @@ import { backendClient } from '@/lib/backendClient';
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { id } = await params;
-        const data = await backendClient.post(`/api/RnD/${id}/test`, {});
+        const body = await request.json().catch(() => ({}));
+        const data = await backendClient.post(`/api/RnD/${id}/test`, body);
         return NextResponse.json(data);
     } catch (error: any) {
         if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
