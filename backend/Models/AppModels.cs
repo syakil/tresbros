@@ -341,4 +341,16 @@ namespace backend.Models
         [ForeignKey("MaterialId")]
         public Material? Material { get; set; }
     }
+    public class ClosingPeriod
+    {
+        [Key]
+        public int Id { get; set; }
+        public string PeriodType { get; set; } = string.Empty; // DAY, MONTH, YEAR
+        public DateTime PeriodDate { get; set; } // The actual date or first day of the month/year being closed
+        public DateTime ClosedAt { get; set; } = DateTime.UtcNow;
+        public string ClosedBy { get; set; } = string.Empty;
+        public double TotalRevenue { get; set; } = 0;
+        public double TotalExpense { get; set; } = 0;
+        public string Notes { get; set; } = string.Empty;
+    }
 }

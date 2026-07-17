@@ -11,11 +11,13 @@ namespace backend.Controllers
     {
         private readonly AppDbContext _context;
         private readonly IConfiguration _configuration;
+        private readonly backend.Services.ClosingService _closingService;
 
-        public OrderController(AppDbContext context, IConfiguration configuration)
+        public OrderController(AppDbContext context, IConfiguration configuration, backend.Services.ClosingService closingService)
         {
             _context = context;
             _configuration = configuration;
+            _closingService = closingService;
         }
 
         // GET: api/Order
@@ -55,6 +57,12 @@ namespace backend.Controllers
         public async Task<ActionResult<Order>> PostOrder(Order order)
         {
             var now = DateTime.UtcNow;
+            
+            if (await _closingService.IsPeriodClosedAsync(now))
+            {
+                return BadRequest("Cannot create order on a closed date/period. Please open a new shift or wait until tomorrow.");
+            }
+
             order.CreatedAt = now;
             
             // Format queue using UTC+7 for local day boundary (WIB)

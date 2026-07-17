@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Coffee, MonitorPlay, Home, ShoppingBag, LogOut, Package, ClipboardList, BarChart3, Boxes, ShoppingCart, Menu, X, Tag, ReceiptText, TrendingUp, Users } from 'lucide-react';
+import { Coffee, MonitorPlay, Home, ShoppingBag, LogOut, Package, ClipboardList, BarChart3, Boxes, ShoppingCart, Menu, X, Tag, ReceiptText, TrendingUp, Users, Lock } from 'lucide-react';
 import axios from 'axios';
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
@@ -61,6 +61,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     if (path.includes('/accounting/journals')) return 'Financial Journals';
     if (path.includes('/accounting/ledger')) return 'General Ledger';
     if (path.includes('/accounting/profit-loss')) return 'Profit & Loss';
+    if (path.includes('/accounting/closing')) return 'Period Closing';
     if (path.includes('/settings')) return 'System Settings';
     if (path.includes('/users')) return 'User Management';
     if (path.includes('/roles')) return 'Role Management';
@@ -209,6 +210,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 <Link href="/admin/accounting/profit-loss" onClick={() => setIsSidebarOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-r-xl transition ${getActiveStyle('/admin/accounting/profit-loss')}`}>
                   <BarChart3 className="w-5 h-5" />
                   <span>Profit & Loss</span>
+                </Link>
+                <Link href="/admin/accounting/closing" onClick={() => setIsSidebarOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-r-xl transition ${getActiveStyle('/admin/accounting/closing')}`}>
+                  <Lock className="w-5 h-5" />
+                  <span>Period Closing</span>
                 </Link>
               </>
             )}

@@ -53,6 +53,8 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddScoped<backend.Services.ClosingService>();
+
 var app = builder.Build();
 
 // Apply database migrations automatically at startup

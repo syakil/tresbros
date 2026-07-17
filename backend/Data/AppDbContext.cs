@@ -30,6 +30,7 @@ namespace backend.Data
         public DbSet<RnDRecipe> RnDRecipes { get; set; }
         public DbSet<RnDRecipeIngredient> RnDRecipeIngredients { get; set; }
         public DbSet<RnDTestHistory> RnDTestHistories { get; set; }
+        public DbSet<ClosingPeriod> ClosingPeriods { get; set; }
         public DbSet<Asset> Assets { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

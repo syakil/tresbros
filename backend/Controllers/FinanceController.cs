@@ -14,10 +14,12 @@ namespace backend.Controllers
     public class FinanceController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly backend.Services.ClosingService _closingService;
 
-        public FinanceController(AppDbContext context)
+        public FinanceController(AppDbContext context, backend.Services.ClosingService closingService)
         {
             _context = context;
+            _closingService = closingService;
         }
 
         // --- EXPENSES ---
@@ -51,6 +53,9 @@ namespace backend.Controllers
         [HttpPost("expenses")]
         public async Task<ActionResult<Expense>> PostExpense(Expense expense)
         {
+            if (await _closingService.IsPeriodClosedAsync(expense.Date))
+                return BadRequest("Cannot create expense on a closed period.");
+
             expense.CreatedAt = DateTime.UtcNow;
             _context.Expenses.Add(expense);
             await _context.SaveChangesAsync();
@@ -89,6 +94,9 @@ namespace backend.Controllers
             {
                 return BadRequest();
             }
+
+            if (await _closingService.IsPeriodClosedAsync(expense.Date))
+                return BadRequest("Cannot modify expense on a closed period.");
 
             var existing = await _context.Expenses.FindAsync(id);
             if (existing == null)
@@ -165,6 +173,9 @@ namespace backend.Controllers
                 return NotFound();
             }
 
+            if (await _closingService.IsPeriodClosedAsync(expense.Date))
+                return BadRequest("Cannot delete expense on a closed period.");
+
             // Remove associated journal entry
             var existingJournal = await _context.JournalEntries
                 .Include(j => j.Lines)
@@ -212,6 +223,9 @@ namespace backend.Controllers
         [HttpPost("incomes")]
         public async Task<ActionResult<Income>> PostIncome(Income income)
         {
+            if (await _closingService.IsPeriodClosedAsync(income.Date))
+                return BadRequest("Cannot create income on a closed period.");
+
             income.CreatedAt = DateTime.UtcNow;
             _context.Incomes.Add(income);
             await _context.SaveChangesAsync();
@@ -250,6 +264,9 @@ namespace backend.Controllers
             {
                 return BadRequest();
             }
+
+            if (await _closingService.IsPeriodClosedAsync(income.Date))
+                return BadRequest("Cannot modify income on a closed period.");
 
             var existing = await _context.Incomes.FindAsync(id);
             if (existing == null)
@@ -325,6 +342,9 @@ namespace backend.Controllers
             {
                 return NotFound();
             }
+
+            if (await _closingService.IsPeriodClosedAsync(income.Date))
+                return BadRequest("Cannot delete income on a closed period.");
 
             // Remove associated journal entry
             var existingJournal = await _context.JournalEntries
