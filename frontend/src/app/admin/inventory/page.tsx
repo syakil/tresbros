@@ -195,10 +195,8 @@ export default function InventoryPage() {
     }, 4000);
   };
   
-  // State form tambah bahan baku
-  const [addName, setAddName] = useState('');
-  const [addUnit, setAddUnit] = useState('gram');
-  const [addMinStock, setAddMinStock] = useState('');
+  // State form tambah bahan baku (Bulk)
+  const [bulkItems, setBulkItems] = useState([{ name: '', unit: 'gram', minStock: '', initialStock: '', initialCostPerUnit: '' }]);
 
   // State form mutasi stok
   const [adjustType, setAdjustType] = useState('in');
@@ -221,18 +219,24 @@ export default function InventoryPage() {
     }
   });
 
-  const createMaterial = useMutation({
-    mutationFn: async (payload: any) => {
-      const { data } = await axios.post('/api/materials', payload);
+  const bulkCreateMaterial = useMutation({
+    mutationFn: async (payload: any[]) => {
+      const req = payload.map(item => ({
+        name: item.name,
+        unit: item.unit,
+        minStock: parseFloat(item.minStock || '0'),
+        initialStock: parseFloat(item.initialStock || '0'),
+        initialCostPerUnit: parseFloat(item.initialCostPerUnit || '0')
+      })).filter(item => item.name.trim() !== '');
+
+      const { data } = await axios.post('/api/materials/bulk', req);
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['materials'] });
       setShowAdd(false);
-      setAddName('');
-      setAddMinStock('');
-      setAddUnit('gram');
-      showAlert("Material created successfully!", "success");
+      setBulkItems([{ name: '', unit: 'gram', minStock: '', initialStock: '', initialCostPerUnit: '' }]);
+      showAlert("Materials created successfully!", "success");
     }
   });
 
@@ -279,13 +283,9 @@ export default function InventoryPage() {
     }
   });
 
-  const handleAddMaterial = () => {
-    if (!addName) return showAlert("Raw material name is required!", "error");
-    createMaterial.mutate({
-      name: addName,
-      unit: addUnit,
-      minStock: addMinStock
-    });
+  const handleAddBulkMaterial = () => {
+    if (bulkItems.every(i => !i.name.trim())) return showAlert("At least one material name is required!", "error");
+    bulkCreateMaterial.mutate(bulkItems);
   };
 
   const handleAdjustMaterial = (id: number) => {
@@ -325,43 +325,82 @@ export default function InventoryPage() {
       </div>
 
       {showAdd && (
-        <Card className="flex flex-col md:flex-row gap-4 items-end mb-2">
-          <div className="flex-1 w-full">
-            <label className="text-xs font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Raw Material Name</label>
-            <input 
-              type="text" 
-              value={addName}
-              onChange={(e) => setAddName(e.target.value)}
-              placeholder="e.g., Vanilla Syrup" 
-              className="w-full bg-white border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition" 
-            />
+        <Card className="flex flex-col gap-4 mb-2 shadow-md border-blue-100 bg-blue-50/30">
+          <div className="flex justify-between items-center border-b border-zinc-200 pb-3">
+            <div>
+              <h3 className="font-bold text-zinc-900 text-lg">Add New Raw Materials</h3>
+              <p className="text-zinc-500 text-xs">Input multiple materials, initial stock, and unit prices at once.</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => setShowAdd(false)} className="bg-white">Close</Button>
           </div>
-          <div className="w-full md:w-40">
-            <label className="text-xs font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Unit of Measurement</label>
-            <CustomSelect
-              value={addUnit}
-              onChange={setAddUnit}
-              className="bg-white border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3"
-              options={[
-                { value: 'gram', label: 'Gram (g)' },
-                { value: 'ml', label: 'Mililiter (ml)' },
-                { value: 'pcs', label: 'Pieces (pcs)' }
-              ]}
-            />
+          
+          <div className="flex flex-col gap-3">
+            {bulkItems.map((item, index) => (
+              <div key={index} className="flex flex-col md:flex-row gap-3 items-end bg-white p-3 rounded-xl border border-zinc-200 relative shadow-sm hover:border-blue-300 transition-colors">
+                {bulkItems.length > 1 && (
+                  <button 
+                    onClick={() => setBulkItems(bulkItems.filter((_, i) => i !== index))}
+                    className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200 transition shadow-sm z-10"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
+                <div className="flex-1 w-full">
+                  <label className="text-[10px] font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Name</label>
+                  <input type="text" value={item.name} onChange={(e) => {
+                    const newItems = [...bulkItems];
+                    newItems[index].name = e.target.value;
+                    setBulkItems(newItems);
+                  }} placeholder="e.g., Vanilla Syrup" className="w-full bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:bg-white transition-colors" />
+                </div>
+                <div className="w-full md:w-28">
+                  <label className="text-[10px] font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Unit</label>
+                  <select value={item.unit} onChange={(e) => {
+                    const newItems = [...bulkItems];
+                    newItems[index].unit = e.target.value;
+                    setBulkItems(newItems);
+                  }} className="w-full bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:bg-white transition-colors">
+                    <option value="gram">gram (g)</option>
+                    <option value="ml">ml</option>
+                    <option value="pcs">pcs</option>
+                  </select>
+                </div>
+                <div className="w-full md:w-24">
+                  <label className="text-[10px] font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Min Stock</label>
+                  <input type="number" value={item.minStock} onChange={(e) => {
+                    const newItems = [...bulkItems];
+                    newItems[index].minStock = e.target.value;
+                    setBulkItems(newItems);
+                  }} placeholder="0" className="w-full bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:bg-white transition-colors" />
+                </div>
+                <div className="w-full md:w-24">
+                  <label className="text-[10px] font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Init. Stock</label>
+                  <input type="number" value={item.initialStock} onChange={(e) => {
+                    const newItems = [...bulkItems];
+                    newItems[index].initialStock = e.target.value;
+                    setBulkItems(newItems);
+                  }} placeholder="0" className="w-full bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:bg-white transition-colors" />
+                </div>
+                <div className="w-full md:w-32">
+                  <label className="text-[10px] font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Unit Price (Rp)</label>
+                  <input type="number" value={item.initialCostPerUnit} onChange={(e) => {
+                    const newItems = [...bulkItems];
+                    newItems[index].initialCostPerUnit = e.target.value;
+                    setBulkItems(newItems);
+                  }} placeholder="0" className="w-full bg-zinc-50 border border-zinc-200 text-zinc-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:bg-white transition-colors" />
+                </div>
+              </div>
+            ))}
           </div>
-          <div className="w-full md:w-40">
-            <label className="text-xs font-semibold text-zinc-600 mb-1 block uppercase tracking-wider">Minimum Stock Alert</label>
-            <input 
-              type="number" 
-              value={addMinStock}
-              onChange={(e) => setAddMinStock(e.target.value)}
-              placeholder="e.g., 500" 
-              className="w-full bg-white border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition" 
-            />
+          
+          <div className="flex gap-2 justify-between mt-2 pt-3 border-t border-zinc-200">
+            <Button variant="secondary" onClick={() => setBulkItems([...bulkItems, { name: '', unit: 'gram', minStock: '', initialStock: '', initialCostPerUnit: '' }])} className="text-sm bg-white hover:bg-zinc-100">
+              <Plus className="w-4 h-4 mr-1" /> Add Row
+            </Button>
+            <Button variant="primary" onClick={handleAddBulkMaterial} disabled={bulkCreateMaterial.isPending} className="shadow-md">
+              {bulkCreateMaterial.isPending ? 'Saving...' : 'Save All Materials'}
+            </Button>
           </div>
-          <Button variant="primary" className="w-full md:w-auto h-[46px]" onClick={handleAddMaterial} disabled={createMaterial.isPending}>
-            {createMaterial.isPending ? 'Saving...' : 'Save'}
-          </Button>
         </Card>
       )}
 

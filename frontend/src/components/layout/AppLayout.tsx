@@ -163,6 +163,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   <MonitorPlay className="w-5 h-5" />
                   <span>R&D / Experiments</span>
                 </Link>
+                <Link href="/admin/calibration" onClick={() => setIsSidebarOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-r-xl transition ${getActiveStyle('/admin/calibration')}`}>
+                  <Coffee className="w-5 h-5" />
+                  <span>Espresso Calibration</span>
+                </Link>
               </>
             )}
 

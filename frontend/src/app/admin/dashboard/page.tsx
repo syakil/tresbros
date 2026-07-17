@@ -18,11 +18,12 @@ import {
 export default function DashboardPage() {
   const [filter, setFilter] = useState('today');
   const [autoRefresh, setAutoRefresh] = useState(true);
-  const [lastUpdated, setLastUpdated] = useState(new Date().toLocaleTimeString('id-ID'));
+  const [lastUpdated, setLastUpdated] = useState('');
   const [activeDrilldown, setActiveDrilldown] = useState<{ title: string; content: React.ReactNode } | null>(null);
 
   // Auto-refresh logic
   useEffect(() => {
+    setLastUpdated(new Date().toLocaleTimeString('id-ID'));
     if (!autoRefresh) return;
     const interval = setInterval(() => {
       setLastUpdated(new Date().toLocaleTimeString('id-ID'));

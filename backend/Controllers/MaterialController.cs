@@ -20,6 +20,15 @@ namespace backend.Controllers
         public double UnitPrice { get; set; }
     }
 
+    public class BulkMaterialAddRequest
+    {
+        public string Name { get; set; } = "";
+        public string Unit { get; set; } = "gram";
+        public double MinStock { get; set; } = 0;
+        public double InitialStock { get; set; } = 0;
+        public double InitialCostPerUnit { get; set; } = 0;
+    }
+
     [Route("api/[controller]")]
     [ApiController]
     public class MaterialController : ControllerBase
@@ -165,6 +174,68 @@ namespace backend.Controllers
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetMaterial), new { id = material.Id }, material);
+        }
+
+        // POST: api/Material/bulk
+        [HttpPost("bulk")]
+        public async Task<IActionResult> PostMaterialsBulk([FromBody] List<BulkMaterialAddRequest> requests)
+        {
+            var invAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "1140");
+            var adjAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "5130");
+
+            foreach (var req in requests)
+            {
+                if (string.IsNullOrWhiteSpace(req.Name)) continue;
+
+                var material = new Material
+                {
+                    Name = req.Name,
+                    Unit = req.Unit,
+                    MinStock = req.MinStock,
+                    Stock = req.InitialStock,
+                    CostPerUnit = req.InitialCostPerUnit,
+                    LastUpdated = DateTime.UtcNow
+                };
+
+                _context.Materials.Add(material);
+                await _context.SaveChangesAsync(); // Save to get the ID
+
+                if (req.InitialStock > 0)
+                {
+                    var batch = new MaterialBatch
+                    {
+                        MaterialId = material.Id,
+                        OriginalQty = req.InitialStock,
+                        RemainingQty = req.InitialStock,
+                        UnitPrice = req.InitialCostPerUnit,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    _context.MaterialBatches.Add(batch);
+
+                    double totalValue = req.InitialStock * req.InitialCostPerUnit;
+                    if (totalValue > 0 && invAccount != null && adjAccount != null)
+                    {
+                        string refCode = $"ST-IN-{material.Id}-{DateTime.UtcNow.Ticks % 100000}";
+                        string desc = $"Input Awal (Bulk): {material.Name} {req.InitialStock} {material.Unit} @ Rp{req.InitialCostPerUnit}";
+
+                        var journal = new JournalEntry
+                        {
+                            Date = DateTime.UtcNow,
+                            Reference = refCode,
+                            Description = desc,
+                            Lines = new List<JournalEntryLine>
+                            {
+                                new JournalEntryLine { Account = invAccount, Debit = totalValue, Credit = 0 },
+                                new JournalEntryLine { Account = adjAccount, Debit = 0, Credit = totalValue }
+                            }
+                        };
+                        _context.JournalEntries.Add(journal);
+                    }
+                }
+            }
+            
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Bulk materials created successfully" });
         }
 
         // POST: api/Material/{id}/adjust

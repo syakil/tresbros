@@ -353,4 +353,45 @@ namespace backend.Models
         public double TotalExpense { get; set; } = 0;
         public string Notes { get; set; } = string.Empty;
     }
+
+    public class CalibrationLog
+    {
+        [Key]
+        public int Id { get; set; }
+        public DateTime Date { get; set; } = DateTime.UtcNow;
+        public string Shift { get; set; } = "Pagi"; // Pagi, Siang/Malam
+        public string BaristaName { get; set; } = string.Empty;
+        public string BeansName { get; set; } = string.Empty; // Legacy
+        
+        public int? MaterialId { get; set; }
+        [ForeignKey("MaterialId")]
+        public Material? Material { get; set; }
+
+        public ICollection<CalibrationTrial> Trials { get; set; } = new List<CalibrationTrial>();
+    }
+
+    public class CalibrationTrial
+    {
+        [Key]
+        public int Id { get; set; }
+        public int CalibrationLogId { get; set; }
+        public int TrialNumber { get; set; }
+        public string GrindSize { get; set; } = string.Empty;
+        public double Dose { get; set; }
+        public double Yield { get; set; }
+        public int Time { get; set; } // in seconds
+        
+        // Sensory Evaluation (bool flags)
+        public bool Sweetness { get; set; }
+        public bool Body { get; set; }
+        public bool Clean { get; set; }
+        public bool MilkMatch { get; set; }
+        
+        // Final Status
+        public bool Passed { get; set; }
+        
+        [ForeignKey("CalibrationLogId")]
+        [JsonIgnore]
+        public CalibrationLog? CalibrationLog { get; set; }
+    }
 }

@@ -32,6 +32,8 @@ namespace backend.Data
         public DbSet<RnDTestHistory> RnDTestHistories { get; set; }
         public DbSet<ClosingPeriod> ClosingPeriods { get; set; }
         public DbSet<Asset> Assets { get; set; }
+        public DbSet<CalibrationLog> CalibrationLogs { get; set; }
+        public DbSet<CalibrationTrial> CalibrationTrials { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
