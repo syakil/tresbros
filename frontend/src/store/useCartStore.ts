@@ -20,10 +20,11 @@ export interface CartItem extends Product {
 interface CartState {
   items: CartItem[];
   customerName: string;
+  customerId?: number;
   addItem: (product: Product, notes?: string) => void;
   removeItem: (cartItemId: string) => void;
   updateQuantity: (cartItemId: string, quantity: number) => void;
-  setCustomerName: (name: string) => void;
+  setCustomer: (name: string, id?: number, discountPercent?: number) => void;
   updateNotes: (cartItemId: string, notes: string, extraPrice?: number) => void;
   discountType: 'nominal' | 'percentage';
   discountAmount: number;
@@ -43,6 +44,7 @@ interface CartState {
 export const useCartStore = create<CartState>((set, get) => ({
   items: [],
   customerName: '',
+  customerId: undefined,
   discountType: 'nominal',
   discountAmount: 0,
   appliedCoupon: null,
@@ -91,7 +93,14 @@ export const useCartStore = create<CartState>((set, get) => ({
     }));
   },
   
-  setCustomerName: (name) => set({ customerName: name }),
+  setCustomer: (name, id, discountPercent) => {
+    set({ customerName: name, customerId: id });
+    if (discountPercent && discountPercent > 0) {
+      set({ discountType: 'percentage', discountAmount: discountPercent, appliedCoupon: null });
+    } else {
+      set({ discountType: 'nominal', discountAmount: 0 });
+    }
+  },
   
   updateNotes: (cartItemId, notes, extraPrice = 0) => {
     set((state) => ({

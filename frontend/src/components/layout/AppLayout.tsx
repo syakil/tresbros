@@ -54,6 +54,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     if (path.includes('/rnd')) return 'Research & Development';
     if (path.includes('/recipes')) return 'Recipes & BOM';
     if (path.includes('/items')) return 'Product Data';
+    if (path.includes('/customers')) return 'Pelanggan & Reseller';
     if (path.includes('/coupons')) return 'Discount Coupons';
     if (path.includes('/incomes')) return 'Incomes';
     if (path.includes('/expenses')) return 'Expenses';
@@ -150,6 +151,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 <Link href="/admin/coupons" onClick={() => setIsSidebarOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-r-xl transition ${getActiveStyle('/admin/coupons')}`}>
                   <Tag className="w-5 h-5" />
                   <span>Discount Coupons</span>
+                </Link>
+                <Link href="/admin/customers" onClick={() => setIsSidebarOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-r-xl transition ${getActiveStyle('/admin/customers')}`}>
+                  <Users className="w-5 h-5 text-purple-400" />
+                  <span>Pelanggan & Reseller</span>
                 </Link>
                 <Link href="/admin/items" onClick={() => setIsSidebarOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-r-xl transition ${getActiveStyle('/admin/items')}`}>
                   <Package className="w-5 h-5" />

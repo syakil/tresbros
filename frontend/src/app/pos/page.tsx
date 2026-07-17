@@ -5,13 +5,13 @@ import { useCartStore, Product } from '@/store/useCartStore';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Plus, Minus, Trash2, ShoppingCart, Coffee, Search, Pizza, User, Tag, X } from 'lucide-react';
+import { Plus, Minus, Trash2, ShoppingCart, Coffee, Search, Pizza, User, Tag, X, ChevronDown, Check } from 'lucide-react';
 
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 
 export default function PosPage() {
-  const { items, customerName, setCustomerName, addItem, removeItem, updateQuantity, getSubtotal, getTax, getTotal, clearCart, discountAmount, setDiscountAmount, discountType, setDiscountType, getCalculatedDiscount, appliedCoupon, setAppliedCoupon, setTaxEnabled, taxEnabled, updateNotes } = useCartStore();
+  const { items, customerName, customerId, setCustomer, addItem, removeItem, updateQuantity, getSubtotal, getTax, getTotal, clearCart, discountAmount, setDiscountAmount, discountType, setDiscountType, getCalculatedDiscount, appliedCoupon, setAppliedCoupon, setTaxEnabled, taxEnabled, updateNotes } = useCartStore();
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [showCheckout, setShowCheckout] = useState(false);
@@ -30,6 +30,14 @@ export default function PosPage() {
   const [cashAmountReceived, setCashAmountReceived] = useState<number | ''>('');
   const [printReceiptData, setPrintReceiptData] = useState<{ total: number; rounding: number; grandTotal: number; cashReceived: number; change: number; paymentMethod: string } | null>(null);
   const [showRoundingDropdown, setShowRoundingDropdown] = useState(false);
+  
+  // Add Customer Quick Modal State
+  const [showAddCustomerModal, setShowAddCustomerModal] = useState(false);
+  const [newCustomerForm, setNewCustomerForm] = useState({ name: '', phone: '', customerType: 'REGULAR', defaultDiscountPercent: 0 });
+  const [isSavingCustomer, setIsSavingCustomer] = useState(false);
+  
+  // Custom dropdown state
+  const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
 
   const getRoundedTotal = (total: number) => {
     switch (roundingType) {
@@ -50,6 +58,14 @@ export default function PosPage() {
       return res.data;
     },
     refetchInterval: 5000 // auto refresh setiap 5 detik
+  });
+
+  const { data: customers = [], refetch: refetchCustomers } = useQuery({
+    queryKey: ['pos-customers'],
+    queryFn: async () => {
+      const res = await axios.get('/api/customers');
+      return res.data;
+    }
   });
 
   const pendingOrders = orders?.filter((o: any) => o.paymentMethod === 'MIDTRANS' && o.paymentStatus === 'pending' && o.status === 'TODO') || [];
@@ -174,6 +190,7 @@ export default function PosPage() {
 
       const res = await axios.post('/api/orders', {
         customerName: customerName,
+        customerId: customerId,
         totalAmount: finalTotalAmount,
         couponCode: appliedCoupon?.code || null,
         discountAmount: getCalculatedDiscount(),
@@ -373,17 +390,79 @@ export default function PosPage() {
             <span className="ml-auto bg-zinc-200 text-zinc-700 text-xs font-bold px-2.5 py-1 rounded-full">{items.length} items</span>
           </div>
 
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-              <User className="h-4 w-4 text-zinc-400" />
+          <div className="flex gap-2 relative">
+            <div className="relative flex-1">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                <User className="h-4 w-4 text-zinc-400" />
+              </div>
+              <div className="relative">
+                <button
+                  onClick={() => setShowCustomerDropdown(!showCustomerDropdown)}
+                  className="w-full bg-white border border-zinc-200 text-zinc-900 text-sm rounded-xl pl-10 pr-10 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition shadow-sm text-left flex items-center justify-between"
+                >
+                  <span className="truncate">
+                    {!customerId 
+                      ? "Guest / Pelanggan Umum" 
+                      : customers.find((c: any) => c.id === customerId)?.name || "Guest / Pelanggan Umum"
+                    }
+                  </span>
+                  <ChevronDown className={`w-4 h-4 text-zinc-400 absolute right-3 transition-transform ${showCustomerDropdown ? 'rotate-180' : ''}`} />
+                </button>
+
+                {showCustomerDropdown && (
+                  <>
+                    <div 
+                      className="fixed inset-0 z-10" 
+                      onClick={() => setShowCustomerDropdown(false)}
+                    />
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-zinc-100 shadow-xl rounded-2xl z-20 overflow-hidden py-2 max-h-64 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200 custom-scrollbar-light">
+                      <button
+                        onClick={() => {
+                          setCustomer('', undefined, 0);
+                          setShowCustomerDropdown(false);
+                        }}
+                        className={`w-full text-left px-4 py-2.5 text-sm hover:bg-zinc-50 transition flex items-center justify-between ${!customerId ? 'bg-blue-50/50 text-blue-700 font-medium' : 'text-zinc-700'}`}
+                      >
+                        Guest / Pelanggan Umum
+                        {!customerId && <Check className="w-4 h-4 text-blue-600" />}
+                      </button>
+                      
+                      {customers.map((c: any) => (
+                        <button
+                          key={c.id}
+                          onClick={() => {
+                            setCustomer(c.name, c.id, c.defaultDiscountPercent);
+                            if (c.defaultDiscountPercent > 0) {
+                              showToast(`Diskon Reseller ${c.defaultDiscountPercent}% diterapkan!`, 'success');
+                            }
+                            setShowCustomerDropdown(false);
+                          }}
+                          className={`w-full text-left px-4 py-2.5 text-sm hover:bg-zinc-50 transition flex items-center justify-between ${customerId === c.id ? 'bg-blue-50/50 text-blue-700 font-medium' : 'text-zinc-700'}`}
+                        >
+                          <div className="flex flex-col">
+                            <span>{c.name}</span>
+                            {c.customerType === 'RESELLER' && (
+                              <span className="text-[10px] font-bold text-purple-600 uppercase tracking-wider mt-0.5">Reseller</span>
+                            )}
+                          </div>
+                          {customerId === c.id && <Check className="w-4 h-4 text-blue-600" />}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
-            <input
-              type="text"
-              placeholder="Customer Name (Optional)"
-              className="w-full bg-white border border-zinc-200 text-zinc-900 text-sm rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition shadow-sm"
-              value={customerName}
-              onChange={(e) => setCustomerName(e.target.value)}
-            />
+            <button 
+              onClick={() => {
+                setNewCustomerForm({ name: '', phone: '', customerType: 'REGULAR', defaultDiscountPercent: 0 });
+                setShowAddCustomerModal(true);
+              }}
+              className="px-3 bg-zinc-100 hover:bg-blue-50 text-zinc-600 hover:text-blue-600 rounded-xl transition flex items-center justify-center shrink-0 border border-zinc-200 shadow-sm"
+              title="Tambah Pelanggan Baru"
+            >
+              <Plus className="w-5 h-5" />
+            </button>
           </div>
         </div>
 
@@ -954,6 +1033,99 @@ export default function PosPage() {
               </Button>
             </div>
           </Card>
+        </div>
+      )}
+
+      {/* Modal Quick Add Customer */}
+      {showAddCustomerModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl relative animate-in zoom-in duration-200">
+            <button 
+              onClick={() => setShowAddCustomerModal(false)}
+              className="absolute right-6 top-6 text-zinc-400 hover:text-zinc-600 transition"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            <h2 className="text-2xl font-bold text-zinc-900 mb-6 font-display">Tambah Pelanggan</h2>
+            
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              setIsSavingCustomer(true);
+              try {
+                const res = await axios.post('/api/customers', newCustomerForm);
+                await refetchCustomers();
+                // Auto select newly created customer
+                setCustomer(res.data.name, res.data.id, res.data.defaultDiscountPercent);
+                if (res.data.defaultDiscountPercent > 0) {
+                  showToast(`Pelanggan baru disimpan. Diskon ${res.data.defaultDiscountPercent}% diterapkan!`, 'success');
+                } else {
+                  showToast('Pelanggan berhasil ditambahkan', 'success');
+                }
+                setShowAddCustomerModal(false);
+              } catch (err: any) {
+                showToast('Gagal menyimpan pelanggan baru', 'error');
+              } finally {
+                setIsSavingCustomer(false);
+              }
+            }} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 mb-1">Nama Lengkap</label>
+                <input 
+                  type="text" 
+                  required
+                  value={newCustomerForm.name}
+                  onChange={e => setNewCustomerForm({...newCustomerForm, name: e.target.value})}
+                  className="w-full px-4 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600/50 transition" 
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 mb-1">No. Telepon / WA (Opsional)</label>
+                <input 
+                  type="text" 
+                  value={newCustomerForm.phone}
+                  onChange={e => setNewCustomerForm({...newCustomerForm, phone: e.target.value})}
+                  className="w-full px-4 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600/50 transition" 
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 mb-1">Tipe Pelanggan</label>
+                <select 
+                  value={newCustomerForm.customerType}
+                  onChange={e => setNewCustomerForm({...newCustomerForm, customerType: e.target.value})}
+                  className="w-full px-4 py-2 bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600/50 transition"
+                >
+                  <option value="REGULAR">Biasa (Regular)</option>
+                  <option value="RESELLER">Reseller / Wholesale</option>
+                </select>
+              </div>
+
+              {newCustomerForm.customerType === 'RESELLER' && (
+                <div className="bg-purple-50 p-4 rounded-xl border border-purple-100">
+                  <label className="block text-sm font-medium text-purple-900 mb-1">
+                    Diskon Otomatis Reseller (%)
+                  </label>
+                  <input 
+                    type="number" 
+                    min="0" max="100" step="1"
+                    required
+                    value={newCustomerForm.defaultDiscountPercent}
+                    onChange={e => setNewCustomerForm({...newCustomerForm, defaultDiscountPercent: parseFloat(e.target.value) || 0})}
+                    className="w-full px-4 py-2 bg-white border border-purple-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-600/50 transition" 
+                  />
+                </div>
+              )}
+
+              <Button 
+                type="submit" 
+                className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl mt-2"
+                disabled={isSavingCustomer}
+              >
+                {isSavingCustomer ? 'Menyimpan...' : 'Simpan & Pilih Pelanggan'}
+              </Button>
+            </form>
+          </div>
         </div>
       )}
 

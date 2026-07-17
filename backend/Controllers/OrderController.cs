@@ -29,6 +29,7 @@ namespace backend.Controllers
                     .ThenInclude(i => i.Product)
                         .ThenInclude(p => p.RecipeItems)
                             .ThenInclude(r => r.Material)
+                .Include(o => o.Customer)
                 .OrderByDescending(o => o.CreatedAt)
                 .ToListAsync();
         }
@@ -42,6 +43,7 @@ namespace backend.Controllers
                     .ThenInclude(i => i.Product)
                         .ThenInclude(p => p.RecipeItems)
                             .ThenInclude(r => r.Material)
+                .Include(o => o.Customer)
                 .FirstOrDefaultAsync(o => o.Id == id);
 
             if (order == null)

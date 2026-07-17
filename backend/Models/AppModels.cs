@@ -16,6 +16,17 @@ namespace backend.Models
         public ICollection<Product> Products { get; set; } = new List<Product>();
     }
 
+    public class Customer
+    {
+        [Key]
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Phone { get; set; } = string.Empty;
+        public string CustomerType { get; set; } = "REGULAR"; // REGULAR, RESELLER
+        public double DefaultDiscountPercent { get; set; } = 0;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    }
+
     public class Product
     {
         [Key]
@@ -39,6 +50,10 @@ namespace backend.Models
         public string OrderNumber { get; set; } = string.Empty;
         public int QueueNumber { get; set; }
         public string? CustomerName { get; set; }
+        public int? CustomerId { get; set; }
+        [ForeignKey("CustomerId")]
+        public Customer? Customer { get; set; }
+        
         public double TotalAmount { get; set; }
         public string Status { get; set; } = "TODO";
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
