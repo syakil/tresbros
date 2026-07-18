@@ -331,7 +331,7 @@ export default function InventoryPage() {
               <h3 className="font-bold text-zinc-900 text-lg">Add New Raw Materials</h3>
               <p className="text-zinc-500 text-xs">Input multiple materials, initial stock, and unit prices at once.</p>
             </div>
-            <Button variant="outline" size="sm" onClick={() => setShowAdd(false)} className="bg-white">Close</Button>
+            <Button variant="outline" onClick={() => setShowAdd(false)} className="bg-white !py-1 !px-3 text-sm">Close</Button>
           </div>
           
           <div className="flex flex-col gap-3">
