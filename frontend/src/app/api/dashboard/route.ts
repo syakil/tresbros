@@ -161,7 +161,7 @@ export async function GET(request: Request) {
       itemsSold,
       paymentBreakdown,
       topProducts,
-      recentOrders: orders.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5),
+      recentOrders: orders.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
       chartData,
       allOrders: orders.map((o: any) => ({ id: `O-${o.id}`, date: o.createdAt, description: `Penjualan POS - ${o.paymentMethod}`, amount: o.totalAmount, type: 'IN' })),
       allIncomes: incomes.map((i: any) => ({ id: `I-${i.id}`, date: i.date, description: `Pemasukan Manual: ${i.description}`, amount: i.amount, type: 'IN' })),

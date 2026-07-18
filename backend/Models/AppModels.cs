@@ -65,6 +65,7 @@ namespace backend.Models
         public string? PaymentUrl { get; set; }
         public string? SnapToken { get; set; }
         public string PaymentStatus { get; set; } = "pending";
+        public string? CashierName { get; set; }
 
         public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
     }

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
@@ -28,6 +28,9 @@ export default function DashboardPage() {
     profit: false
   });
   const [modalData, setModalData] = useState<{title: string, transactions: any[]} | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 5;
 
   const openModal = (type: 'revenue' | 'expense' | 'profit') => {
     if (!data) return;
@@ -121,7 +124,7 @@ export default function DashboardPage() {
             ].map(tab => (
               <button
                 key={tab.id}
-                onClick={() => setFilter(tab.id)}
+                onClick={() => { setFilter(tab.id); setCurrentPage(1); }}
                 className={`px-4 py-1.5 text-sm rounded-md transition-all font-medium whitespace-nowrap ${filter === tab.id ? 'bg-white text-blue-600 shadow-sm ring-1 ring-black/5' : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-200/50'}`}
               >
                 {tab.label}
@@ -349,16 +352,18 @@ export default function DashboardPage() {
                       <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Order ID</th>
                       <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Completion Time</th>
                       <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Customer</th>
+                      <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Cashier</th>
                       <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs text-center">Method</th>
                       <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs text-right">Total Amount</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-100">
-                    {data?.recentOrders?.map((order: any) => (
-                      <tr key={order.id} className="hover:bg-zinc-50/80 transition-colors">
+                    {data?.recentOrders?.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((order: any) => (
+                      <tr key={order.id} className="hover:bg-zinc-50/80 transition-colors cursor-pointer" onClick={() => setSelectedOrder(order)}>
                         <td className="px-6 py-4 font-mono text-xs text-zinc-500">{order.orderNumber || order.id}</td>
                         <td className="px-6 py-4 text-zinc-700 font-medium">{new Date(order.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</td>
                         <td className="px-6 py-4 text-zinc-700">{order.customerName || '-'}</td>
+                        <td className="px-6 py-4 text-zinc-700">{order.cashierName || '-'}</td>
                         <td className="px-6 py-4 text-center">
                           <span className="bg-zinc-100 border border-zinc-200 text-zinc-600 px-2.5 py-1 rounded-md text-xs font-medium">
                             {order.paymentMethod === 'CASH' ? 'Cash' : order.paymentMethod}
@@ -369,12 +374,37 @@ export default function DashboardPage() {
                     ))}
                     {(!data?.recentOrders || data.recentOrders.length === 0) && (
                       <tr>
-                        <td colSpan={5} className="text-center py-12 text-zinc-400 bg-zinc-50/50">No transactions in this time range.</td>
+                        <td colSpan={6} className="text-center py-12 text-zinc-400 bg-zinc-50/50">No transactions in this time range.</td>
                       </tr>
                     )}
                   </tbody>
                 </table>
               </div>
+              
+              {/* Pagination */}
+              {data?.recentOrders && data.recentOrders.length > 0 && (
+                <div className="flex justify-between items-center p-4 border-t border-zinc-200">
+                  <span className="text-sm text-zinc-500">
+                    Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, data.recentOrders.length)} of {data.recentOrders.length} entries
+                  </span>
+                  <div className="flex gap-2">
+                    <button 
+                      disabled={currentPage === 1} 
+                      onClick={() => setCurrentPage(p => p - 1)} 
+                      className="px-3 py-1 bg-white border border-zinc-200 hover:bg-zinc-50 rounded text-sm disabled:opacity-50 transition"
+                    >
+                      Prev
+                    </button>
+                    <button 
+                      disabled={currentPage === Math.ceil((data.recentOrders.length || 0) / ITEMS_PER_PAGE) || data.recentOrders.length === 0} 
+                      onClick={() => setCurrentPage(p => p + 1)} 
+                      className="px-3 py-1 bg-white border border-zinc-200 hover:bg-zinc-50 rounded text-sm disabled:opacity-50 transition"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
             </Card>
           </div>
         </>
@@ -421,6 +451,57 @@ export default function DashboardPage() {
                   )}
                 </tbody>
               </table>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Order Detail Modal */}
+      {selectedOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 backdrop-blur-sm p-4 animate-in fade-in" onClick={() => setSelectedOrder(null)}>
+          <Card onClick={e => e.stopPropagation()} className="max-w-xl w-full flex flex-col max-h-[85vh] p-0 overflow-hidden shadow-2xl border-zinc-200/60 ring-1 ring-black/5">
+            <div className="flex justify-between items-center px-6 py-5 border-b border-zinc-100 bg-white">
+              <h2 className="text-lg font-bold text-zinc-900">Order Details - {selectedOrder.orderNumber || selectedOrder.id}</h2>
+              <button onClick={() => setSelectedOrder(null)} className="text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 p-1.5 rounded-lg transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-auto p-6 bg-white custom-scrollbar">
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                  <p className="text-xs text-zinc-500 font-medium mb-1">Customer</p>
+                  <p className="font-semibold text-zinc-900">{selectedOrder.customerName || '-'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-zinc-500 font-medium mb-1">Cashier</p>
+                  <p className="font-semibold text-zinc-900">{selectedOrder.cashierName || '-'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-zinc-500 font-medium mb-1">Date & Time</p>
+                  <p className="font-semibold text-zinc-900">{new Date(selectedOrder.createdAt).toLocaleString('id-ID')}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-zinc-500 font-medium mb-1">Payment Method</p>
+                  <p className="font-semibold text-zinc-900">{selectedOrder.paymentMethod === 'CASH' ? 'Cash' : selectedOrder.paymentMethod}</p>
+                </div>
+              </div>
+              <h3 className="font-semibold text-zinc-900 mb-3 border-b pb-2">Items</h3>
+              <div className="space-y-3">
+                {selectedOrder.items?.map((item: any, i: number) => (
+                  <div key={i} className="flex justify-between items-center">
+                    <div>
+                      <p className="font-medium text-zinc-900">{item.product?.name || `Product ${item.productId}`}</p>
+                      <p className="text-xs text-zinc-500">{item.quantity} x {formatRupiah(item.price)}</p>
+                    </div>
+                    <span className="font-semibold">{formatRupiah(item.quantity * item.price)}</span>
+                  </div>
+                ))}
+                {!selectedOrder.items?.length && <p className="text-sm text-zinc-500">No items data.</p>}
+              </div>
+              <div className="mt-6 pt-4 border-t border-zinc-100 flex justify-between items-center">
+                <span className="font-bold text-zinc-900">Total Amount</span>
+                <span className="text-xl font-bold text-blue-600">{formatRupiah(selectedOrder.totalAmount)}</span>
+              </div>
             </div>
           </Card>
         </div>

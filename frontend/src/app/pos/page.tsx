@@ -188,7 +188,17 @@ export default function PosPage() {
       const rawTotal = getTotal();
       const finalTotalAmount = paymentMethod === 'CASH' ? roundedTotal : rawTotal;
 
+      let cashierName = 'Admin';
+      try {
+        const userCookie = document.cookie.split('; ').find(row => row.startsWith('tresbros_user='));
+        if (userCookie) {
+          const user = JSON.parse(decodeURIComponent(userCookie.split('=')[1]));
+          cashierName = user.fullName || user.username || 'Admin';
+        }
+      } catch (e) {}
+
       const res = await axios.post('/api/orders', {
+        cashierName: cashierName,
         customerName: customerName,
         customerId: customerId,
         totalAmount: finalTotalAmount,
