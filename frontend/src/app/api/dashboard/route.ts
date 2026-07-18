@@ -98,7 +98,7 @@ export async function GET(request: Request) {
     let chartData = [];
     if (filter === '7days' || filter === 'thismonth') {
       // Group by day
-      const dailyData: Record<string, { date: string, revenue: number, expense: number }> = {};
+      const dailyData: Record<string, { date: string, revenue: number, expense: number, qty: number }> = {};
       
       // Init array of dates to ensure empty days are 0
       let currDate = new Date(localStart);
