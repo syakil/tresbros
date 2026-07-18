@@ -321,16 +321,16 @@ export default function DashboardPage() {
                 {data?.topProducts?.length === 0 ? (
                   <p className="text-zinc-500 text-sm text-center py-10 flex-1 flex items-center justify-center bg-zinc-50 rounded-xl mt-4 border border-zinc-100 border-dashed">No sales data yet.</p>
                 ) : (
-                  <div className="w-full mt-4 flex-1 flex flex-col justify-between min-h-[220px]">
-                    <div className="w-full h-[150px] flex-shrink-0">
+                  <div className="w-full mt-4 flex-1 flex flex-col justify-center items-center gap-6 min-h-[220px]">
+                    <div className="w-full flex-1 min-h-[200px] max-h-[350px]">
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                           <Pie
                             data={data?.topProducts}
                             cx="50%"
                             cy="50%"
-                            innerRadius={45}
-                            outerRadius={65}
+                            innerRadius="60%"
+                            outerRadius="80%"
                             paddingAngle={2}
                             dataKey="qty"
                             nameKey="name"
@@ -350,7 +350,7 @@ export default function DashboardPage() {
                       </ResponsiveContainer>
                     </div>
                     {/* Custom HTML Legend that wraps cleanly */}
-                    <div className="flex flex-wrap justify-center gap-x-3 gap-y-1.5 mt-4 text-[11px] font-medium text-zinc-600 px-2 pb-2">
+                    <div className="flex flex-wrap justify-center gap-x-3 gap-y-2 mt-2 text-[11px] font-medium text-zinc-600 px-2 pb-4">
                       {data?.topProducts?.map((entry: any, index: number) => {
                         const colors = ['#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe'];
                         const color = colors[index % colors.length];
