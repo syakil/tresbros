@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Plus, Pencil, Trash2, Users, Search, AlertCircle, Percent } from 'lucide-react';
+import { Plus, Pencil, Trash2, Users, Search, AlertCircle, Percent, CheckCircle, AlertTriangle, X, History, Receipt } from 'lucide-react';
 
 interface Customer {
   id: number;
@@ -19,6 +19,16 @@ export default function CustomersPage() {
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState<{text: string, type: 'success'|'error'|'warning'} | null>(null);
+  
+  const [historyModalCustomer, setHistoryModalCustomer] = useState<Customer | null>(null);
+  const [customerOrders, setCustomerOrders] = useState<any[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+
+  const showToast = (text: string, type: 'success' | 'error' | 'warning' = 'success') => {
+    setToastMessage({ text, type });
+    setTimeout(() => setToastMessage(null), 3000);
+  };
   
   const [formData, setFormData] = useState({
     id: 0,
@@ -58,6 +68,19 @@ export default function CustomersPage() {
     setIsModalOpen(true);
   };
 
+  const handleOpenHistory = async (customer: Customer) => {
+    setHistoryModalCustomer(customer);
+    setIsLoadingHistory(true);
+    try {
+      const res = await axios.get(`/api/customers/${customer.id}/orders`);
+      setCustomerOrders(res.data?.$values || res.data || []);
+    } catch (err: any) {
+      showToast('Gagal memuat riwayat transaksi', 'error');
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -68,8 +91,9 @@ export default function CustomersPage() {
       }
       setIsModalOpen(false);
       fetchCustomers();
+      showToast('Data pelanggan berhasil disimpan', 'success');
     } catch (err: any) {
-      alert('Gagal menyimpan data pelanggan');
+      showToast('Gagal menyimpan data pelanggan', 'error');
     }
   };
 
@@ -78,8 +102,9 @@ export default function CustomersPage() {
       try {
         await axios.delete(`/api/customers/${id}`);
         fetchCustomers();
+        showToast('Data pelanggan berhasil dihapus', 'success');
       } catch (err: any) {
-        alert('Gagal menghapus data. Mungkin data ini sudah digunakan di transaksi.');
+        showToast('Gagal menghapus data. Mungkin data ini sudah digunakan di transaksi.', 'error');
       }
     }
   };
@@ -173,7 +198,10 @@ export default function CustomersPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex justify-end gap-2">
-                        <button onClick={() => handleOpenModal(c)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition">
+                        <button onClick={() => handleOpenHistory(c)} className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition" title="Riwayat Transaksi">
+                          <History className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => handleOpenModal(c)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition" title="Edit">
                           <Pencil className="w-4 h-4" />
                         </button>
                         <button onClick={() => handleDelete(c.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition">
@@ -272,6 +300,102 @@ export default function CustomersPage() {
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {/* History Modal */}
+      {historyModalCustomer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl w-full max-w-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+            <div className="p-6 border-b border-zinc-100 flex items-center justify-between bg-zinc-50/50 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center text-purple-600">
+                  <Receipt className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-zinc-900">Riwayat Transaksi</h2>
+                  <p className="text-sm text-zinc-500">{historyModalCustomer.name}</p>
+                </div>
+              </div>
+              <button onClick={() => setHistoryModalCustomer(null)} className="p-2 text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 rounded-lg transition">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto bg-zinc-50 flex-1">
+              {isLoadingHistory ? (
+                <div className="text-center text-zinc-500 py-8">Memuat riwayat...</div>
+              ) : customerOrders.length === 0 ? (
+                <div className="text-center py-10 bg-white rounded-xl border border-dashed border-zinc-200 flex flex-col items-center">
+                  <AlertCircle className="w-8 h-8 text-zinc-300 mb-2" />
+                  <p className="text-zinc-500 text-sm">Belum ada transaksi dari pelanggan ini</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {customerOrders.map((order) => (
+                    <div key={order.id} className="bg-white border border-zinc-200 rounded-xl p-4 shadow-sm">
+                      <div className="flex items-start justify-between mb-3 border-b border-zinc-100 pb-3">
+                        <div>
+                          <div className="font-bold text-zinc-900">{order.orderNumber}</div>
+                          <div className="text-xs text-zinc-500">{new Date(order.createdAt).toLocaleString('id-ID')}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-bold text-emerald-600">Rp {order.totalAmount.toLocaleString('id-ID')}</div>
+                          <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-medium mt-1 ${
+                            order.paymentStatus === 'settlement' || order.paymentStatus === 'capture' || order.paymentMethod === 'CASH'
+                              ? 'bg-emerald-100 text-emerald-700'
+                              : 'bg-amber-100 text-amber-700'
+                          }`}>
+                            {order.paymentMethod} {order.paymentStatus !== 'pending' && `• ${order.paymentStatus}`}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        {order.items && order.items.$values ? order.items.$values.map((item: any) => (
+                          <div key={item.id} className="flex justify-between text-sm">
+                            <div className="text-zinc-700">
+                              <span className="font-medium">{item.quantity}x</span> {item.product?.name || 'Produk'}
+                            </div>
+                            <div className="text-zinc-900 font-medium">Rp {(item.quantity * item.price).toLocaleString('id-ID')}</div>
+                          </div>
+                        )) : order.items ? order.items.map((item: any) => (
+                          <div key={item.id} className="flex justify-between text-sm">
+                            <div className="text-zinc-700">
+                              <span className="font-medium">{item.quantity}x</span> {item.product?.name || 'Produk'}
+                            </div>
+                            <div className="text-zinc-900 font-medium">Rp {(item.quantity * item.price).toLocaleString('id-ID')}</div>
+                          </div>
+                        )) : null}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            <div className="p-4 border-t border-zinc-100 flex justify-end shrink-0">
+              <button 
+                onClick={() => setHistoryModalCustomer(null)}
+                className="px-4 py-2 border border-zinc-200 text-zinc-600 rounded-lg hover:bg-zinc-50 transition font-medium"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className={`fixed bottom-4 right-4 px-4 py-3 rounded-xl shadow-lg border text-sm font-medium animate-in slide-in-from-bottom-2 z-50 flex items-center gap-2 ${
+          toastMessage.type === 'success' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 
+          toastMessage.type === 'warning' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+          'bg-red-50 text-red-700 border-red-200'
+        }`}>
+          {toastMessage.type === 'success' ? <CheckCircle className="w-5 h-5" /> : 
+           toastMessage.type === 'warning' ? <AlertTriangle className="w-5 h-5" /> :
+           <X className="w-5 h-5" />}
+          {toastMessage.text}
         </div>
       )}
     </div>

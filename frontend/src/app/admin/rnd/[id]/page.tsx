@@ -83,6 +83,9 @@ export default function RnDDetailPage({ params }: { params: Promise<{ id: string
       const newActualCost = recipe.ingredients?.reduce((acc: number, ing: any) => acc + ((parseFloat(ing.quantity) || 0) * ing.costPerUnit), 0) || 0;
       const updatedRecipe = { 
         ...recipe, 
+        targetCostValue: recipe.targetCostValue === '' ? 0 : recipe.targetCostValue,
+        targetCost: recipe.targetCost === '' ? 0 : recipe.targetCost,
+        sellingPrice: recipe.sellingPrice === '' ? 0 : recipe.sellingPrice,
         actualCost: newActualCost,
         ingredients: recipe.ingredients?.map((ing: any) => ({
           id: ing.id,
@@ -110,6 +113,9 @@ export default function RnDDetailPage({ params }: { params: Promise<{ id: string
       const newActualCost = recipe.ingredients?.reduce((acc: number, ing: any) => acc + ((parseFloat(ing.quantity) || 0) * ing.costPerUnit), 0) || 0;
       const updatedRecipe = { 
         ...recipe, 
+        targetCostValue: recipe.targetCostValue === '' ? 0 : recipe.targetCostValue,
+        targetCost: recipe.targetCost === '' ? 0 : recipe.targetCost,
+        sellingPrice: recipe.sellingPrice === '' ? 0 : recipe.sellingPrice,
         actualCost: newActualCost,
         ingredients: recipe.ingredients?.map((ing: any) => ({
           id: ing.id,
@@ -314,17 +320,18 @@ export default function RnDDetailPage({ params }: { params: Promise<{ id: string
                 <Input 
                   label="Harga Jual (Rp)"
                   type="number"
-                  value={recipe.sellingPrice !== undefined && recipe.sellingPrice !== null ? recipe.sellingPrice : ''} 
+                  placeholder="0"
+                  value={recipe.sellingPrice === 0 ? '' : recipe.sellingPrice} 
                   onChange={(e) => {
                     const val = e.target.value;
-                    updateTargetCost({ sellingPrice: val === '' ? 0 : parseFloat(val) });
+                    updateTargetCost({ sellingPrice: val === '' ? '' : parseFloat(val) });
                   }}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-zinc-700 mb-1">Status</label>
                 <CustomSelect 
-                  className="w-full border border-zinc-200 rounded-lg p-2.5 text-sm bg-white"
+                  className="w-full bg-white border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3"
                   value={recipe.status}
                   onChange={(val) => setRecipe({...recipe, status: val})}
                   options={recipe.status === 'Approved' ? [
@@ -341,7 +348,7 @@ export default function RnDDetailPage({ params }: { params: Promise<{ id: string
               <div>
                 <label className="block text-sm font-medium text-zinc-700 mb-1">Format Target COGS</label>
                 <CustomSelect 
-                  className="w-full border border-zinc-200 rounded-lg p-2.5 text-sm bg-white"
+                  className="w-full bg-white border border-zinc-200 text-zinc-900 rounded-xl px-4 py-3"
                   value={recipe.targetCostType || 'nominal'}
                   onChange={(val) => updateTargetCost({ targetCostType: val })}
                   options={[
@@ -354,8 +361,9 @@ export default function RnDDetailPage({ params }: { params: Promise<{ id: string
                 <Input 
                   label={recipe.targetCostType === 'percentage' ? 'Target COGS (%)' : 'Target COGS (Rp)'}
                   type="number"
-                  value={recipe.targetCostValue !== undefined ? recipe.targetCostValue : recipe.targetCost} 
-                  onChange={(e) => updateTargetCost({ targetCostValue: parseFloat(e.target.value) || 0 })}
+                  placeholder="0"
+                  value={(recipe.targetCostValue !== undefined ? recipe.targetCostValue : recipe.targetCost) === 0 ? '' : (recipe.targetCostValue !== undefined ? recipe.targetCostValue : recipe.targetCost)} 
+                  onChange={(e) => updateTargetCost({ targetCostValue: e.target.value === '' ? '' : (parseFloat(e.target.value) || 0) })}
                 />
               </div>
             </div>
@@ -491,14 +499,44 @@ export default function RnDDetailPage({ params }: { params: Promise<{ id: string
                     <h3 className="font-bold text-zinc-900 bg-zinc-100 px-2 py-0.5 rounded text-sm">{test.testVersion}</h3>
                     <p className="text-xs text-zinc-500">{new Date(test.testedAt).toLocaleString()}</p>
                   </div>
-                  <label className="text-xs font-semibold text-zinc-600 block mb-1 uppercase tracking-wider">Tasting Notes / Feedback</label>
+                  <label className="text-xs font-semibold text-zinc-600 block mb-1 uppercase tracking-wider mt-3">Tasting Notes / Feedback</label>
                   <textarea
-                    className="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-none focus:border-blue-500 bg-zinc-50"
+                    className="w-full border border-zinc-200 rounded-lg p-2 text-sm focus:outline-none focus:border-blue-500 bg-zinc-50 mb-2"
                     rows={2}
                     placeholder="E.g., Too sweet, needs more salt..."
                     defaultValue={test.notes}
                     onBlur={(e) => handleUpdateTestNotes(test.id, e.target.value)}
                   />
+                  {test.ingredientsSnapshot && (
+                    <div className="mt-3">
+                      <label className="text-xs font-semibold text-zinc-600 block mb-1 uppercase tracking-wider">Materials Used</label>
+                      <div className="bg-zinc-50 border border-zinc-200 rounded-lg p-3 text-xs text-zinc-600 max-h-32 overflow-y-auto">
+                        <ul className="list-disc pl-4 space-y-1">
+                          {(() => {
+                            try {
+                              const snapshot = JSON.parse(test.ingredientsSnapshot);
+                              if (Array.isArray(snapshot) && snapshot.length > 0) {
+                                return snapshot.map((ing: any, idx: number) => {
+                                  const matName = ing.Material?.Name || ing.Material?.name || ing.materialName || materials?.find((m: any) => m.id === (ing.materialId || ing.MaterialId))?.name || 'Unknown Material';
+                                  return (
+                                    <li key={idx}>
+                                      <span className="font-medium text-zinc-900">{matName}</span>
+                                      {' — '}{ing.Quantity || ing.quantity} {ing.Unit || ing.unit} 
+                                      {' (Rp '}{(ing.CostPerUnit || ing.costPerUnit || 0).toLocaleString('id-ID')}/{ing.Unit || ing.unit}{')'}
+                                    </li>
+                                  );
+                                });
+                              } else {
+                                return <li className="text-zinc-400 italic list-none -ml-4">No materials recorded</li>;
+                              }
+                            } catch(e) {
+                              return <li className="text-red-500 list-none -ml-4">Error parsing snapshot data</li>;
+                            }
+                          })()}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="md:w-48 text-right flex flex-col justify-between items-end border-t md:border-t-0 md:border-l border-zinc-100 pt-4 md:pt-0 md:pl-4">
                   <div>
