@@ -104,13 +104,18 @@ export async function GET(request: Request) {
       let currDate = new Date(localStart);
       while (currDate <= localEnd) {
         const dateStr = currDate.toISOString().split('T')[0];
-        dailyData[dateStr] = { date: dateStr, revenue: 0, expense: 0 };
+        dailyData[dateStr] = { date: dateStr, revenue: 0, expense: 0, qty: 0 };
         currDate.setDate(currDate.getDate() + 1);
       }
 
       orders.forEach((order: any) => {
         const dateStr = new Date(new Date(order.createdAt).getTime() + TZ_OFFSET).toISOString().split('T')[0];
-        if (dailyData[dateStr]) dailyData[dateStr].revenue += order.totalAmount;
+        if (dailyData[dateStr]) {
+          dailyData[dateStr].revenue += order.totalAmount;
+          if (order.items) {
+            dailyData[dateStr].qty += order.items.reduce((sum: number, item: any) => sum + item.quantity, 0);
+          }
+        }
       });
 
       incomes.forEach((inc: any) => {
@@ -129,15 +134,18 @@ export async function GET(request: Request) {
       }));
     } else {
       // Group by hour for today/yesterday
-      const hourlyData: Record<number, { time: string, revenue: number, expense: number }> = {};
+      const hourlyData: Record<number, { time: string, revenue: number, expense: number, qty: number }> = {};
       
       for(let i=0; i<24; i++) {
-        hourlyData[i] = { time: `${i.toString().padStart(2, '0')}:00`, revenue: 0, expense: 0 };
+        hourlyData[i] = { time: `${i.toString().padStart(2, '0')}:00`, revenue: 0, expense: 0, qty: 0 };
       }
 
       orders.forEach((order: any) => {
         const hour = new Date(new Date(order.createdAt).getTime() + TZ_OFFSET).getUTCHours();
         hourlyData[hour].revenue += order.totalAmount;
+        if (order.items) {
+          hourlyData[hour].qty += order.items.reduce((sum: number, item: any) => sum + item.quantity, 0);
+        }
       });
       
       incomes.forEach((inc: any) => {

@@ -17,7 +17,9 @@ import {
   PieChart,
   Pie,
   Legend,
-  Cell
+  Cell,
+  BarChart,
+  Bar
 } from 'recharts';
 
 export default function DashboardPage() {
@@ -237,6 +239,31 @@ export default function DashboardPage() {
                       <Line hide={hiddenLines.expense} type="monotone" name="Expenses" dataKey="expense" stroke="#ef4444" strokeWidth={3} dot={false} activeDot={{ r: 6, fill: '#ef4444', stroke: '#ffffff', strokeWidth: 2 }} />
                       <Line hide={hiddenLines.profit} type="monotone" name="Profit" dataKey="profit" stroke="#10b981" strokeWidth={3} dot={false} activeDot={{ r: 6, fill: '#10b981', stroke: '#ffffff', strokeWidth: 2 }} />
                     </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </Card>
+
+              {/* Quantity Sold Chart */}
+              <Card className="p-6 flex flex-col h-[320px]">
+                <div className="mb-6 flex justify-between items-center">
+                  <div>
+                    <h2 className="text-lg font-display font-bold text-zinc-900">Quantity Sold Trend</h2>
+                    <p className="text-zinc-500 text-sm mt-1">Number of items sold over time.</p>
+                  </div>
+                </div>
+                <div className="flex-1 w-full mt-2">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartDataWithProfit} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e4e4e7" vertical={false} />
+                      <XAxis dataKey={filter === '7days' || filter === 'thismonth' ? 'date' : 'time'} stroke="#71717a" fontSize={12} tickMargin={12} minTickGap={20} axisLine={false} tickLine={false} />
+                      <YAxis stroke="#71717a" fontSize={12} tickFormatter={(val) => `${val}`} width={40} axisLine={false} tickLine={false} />
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e4e4e7', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} 
+                        itemStyle={{ color: '#18181b', fontWeight: 500 }} 
+                        formatter={(v: any) => [`${v} items`, 'Quantity']}
+                      />
+                      <Bar dataKey="qty" fill="#8b5cf6" radius={[4, 4, 0, 0]} name="Quantity Sold" />
+                    </BarChart>
                   </ResponsiveContainer>
                 </div>
               </Card>
