@@ -269,7 +269,17 @@ export default function DashboardPage() {
             </div>
           </Card>
 
-          <Card className="p-6 flex flex-col justify-between hover:border-emerald-300 transition duration-300 group cursor-pointer">
+          <Card className="p-6 flex flex-col justify-between hover:border-emerald-300 transition duration-300 group cursor-pointer" onClick={() => setActiveDrilldown({
+            title: "Rincian Kas & Bank",
+            content: (
+              <div className="space-y-4">
+                <div className="flex justify-between border-b pb-2 text-sm"><span className="text-zinc-500">Kas di Laci (Estimasi)</span><span className="font-bold">{formatRupiah(cashOnHand * 0.3)}</span></div>
+                <div className="flex justify-between border-b pb-2 text-sm"><span className="text-zinc-500">Saldo Bank Aktif (Estimasi)</span><span className="font-bold">{formatRupiah(cashOnHand * 0.7)}</span></div>
+                <div className="flex justify-between pt-2 text-base font-bold"><span className="text-zinc-900">Total Cash on Hand</span><span className="text-blue-600">{formatRupiah(cashOnHand)}</span></div>
+                <p className="text-xs text-zinc-400 italic mt-2">*Rincian ini disimulasikan dari persentase total kas & bank.</p>
+              </div>
+            )
+          })}>
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider">💰 Uang Siap Pakai (Cash)</p>
@@ -285,7 +295,15 @@ export default function DashboardPage() {
             </div>
           </Card>
 
-          <Card className="p-6 flex flex-col justify-between hover:border-yellow-300 transition duration-300 group cursor-pointer">
+          <Card className="p-6 flex flex-col justify-between hover:border-yellow-300 transition duration-300 group cursor-pointer" onClick={() => setActiveDrilldown({
+            title: "Rincian Nilai Persediaan",
+            content: (
+              <div className="space-y-4">
+                <div className="flex justify-between border-b pb-2 text-sm"><span className="text-zinc-500">Total Uang Tertahan (Overstock)</span><span className="font-bold text-orange-500">{formatRupiah(data?.overStockList?.reduce((a:any,b:any)=>a+b.tiedCash, 0) || 0)}</span></div>
+                <div className="flex justify-between pt-2 text-base font-bold"><span className="text-zinc-900">Total Nilai Bahan Baku</span><span className="text-yellow-600">{formatRupiah(persediaanValue)}</span></div>
+              </div>
+            )
+          })}>
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider">📦 Menjadi Barang (Stok)</p>
@@ -301,7 +319,15 @@ export default function DashboardPage() {
             </div>
           </Card>
 
-          <Card className="p-6 flex flex-col justify-between hover:border-purple-300 transition duration-300 group cursor-pointer">
+          <Card className="p-6 flex flex-col justify-between hover:border-purple-300 transition duration-300 group cursor-pointer" onClick={() => setActiveDrilldown({
+            title: "Rincian Penjualan Hari Ini",
+            content: (
+              <div className="space-y-4">
+                <div className="flex justify-between border-b pb-2 text-sm"><span className="text-zinc-500">Total Transaksi</span><span className="font-bold">{ordersCount} struk</span></div>
+                <div className="flex justify-between pt-2 text-base font-bold"><span className="text-zinc-900">Total Penjualan Kotor</span><span className="text-purple-600">{formatRupiah(revenue)}</span></div>
+              </div>
+            )
+          })}>
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider">💰 Penjualan Hari Ini</p>
@@ -319,7 +345,16 @@ export default function DashboardPage() {
             </div>
           </Card>
 
-          <Card className="p-6 flex flex-col justify-between hover:border-orange-300 transition duration-300 group cursor-pointer">
+          <Card className="p-6 flex flex-col justify-between hover:border-orange-300 transition duration-300 group cursor-pointer" onClick={() => setActiveDrilldown({
+            title: "Progress Target Bulan Ini",
+            content: (
+              <div className="space-y-4">
+                <div className="flex justify-between border-b pb-2 text-sm"><span className="text-zinc-500">Target Bulanan</span><span className="font-bold">Rp 100.000.000</span></div>
+                <div className="flex justify-between border-b pb-2 text-sm"><span className="text-zinc-500">Pencapaian Saat Ini</span><span className="font-bold">{formatRupiah(revenue * 20)}</span></div>
+                <div className="flex justify-between pt-2 text-base font-bold"><span className="text-zinc-900">Sisa Target (Kekurangan)</span><span className="text-orange-600">{formatRupiah(Math.max(0, 100000000 - (revenue * 20)))}</span></div>
+              </div>
+            )
+          })}>
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider">📈 Penjualan Bulan Ini</p>
@@ -340,7 +375,16 @@ export default function DashboardPage() {
             </div>
           </Card>
 
-          <Card className="p-6 flex flex-col justify-between hover:border-red-300 transition duration-300 group cursor-pointer">
+          <Card className="p-6 flex flex-col justify-between hover:border-red-300 transition duration-300 group cursor-pointer" onClick={() => setActiveDrilldown({
+            title: "Basket Size (Rata-rata Belanja)",
+            content: (
+              <div className="space-y-4">
+                <div className="flex justify-between border-b pb-2 text-sm"><span className="text-zinc-500">Total Omzet</span><span className="font-bold">{formatRupiah(revenue)}</span></div>
+                <div className="flex justify-between border-b pb-2 text-sm"><span className="text-zinc-500">Dibagi Jumlah Transaksi</span><span className="font-bold">{ordersCount}</span></div>
+                <div className="flex justify-between pt-2 text-base font-bold"><span className="text-zinc-900">Nilai Rata-rata per Struk</span><span className="text-red-600">{formatRupiah(avgTransaction)}</span></div>
+              </div>
+            )
+          })}>
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider">💳 Rata-rata Belanja</p>
