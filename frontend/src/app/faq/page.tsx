@@ -4,38 +4,38 @@ import Link from "next/link";
 export default function FAQPage() {
   const faqs = [
     {
-      question: "Bagaimana cara mendaftar akun Tres Bros?",
-      answer: "Anda dapat menghubungi tim sales kami atau mendaftar langsung melalui halaman utama."
+      question: "Bagaimana jika bahan baku di sistem tidak sesuai dengan fisik?",
+      answer: "Segera laporkan kepada Manajer atau bagian Gudang untuk dilakukan Penyesuaian Stok (Stock Adjustment) atau Stock Opname."
     },
     {
-      question: "Apakah sistem kasir bisa digunakan secara offline?",
-      answer: "Untuk saat ini, sistem kami membutuhkan koneksi internet agar data penjualan bisa sinkron secara real-time."
+      question: "Apakah sistem kasir bisa digunakan tanpa internet?",
+      answer: "Sistem membutuhkan koneksi internet atau jaringan lokal agar data pesanan bisa langsung masuk ke sistem Dapur (KDS) dan laporan stok bisa sinkron secara real-time."
     },
     {
-      question: "Bagaimana cara melakukan pembayaran?",
-      answer: "Kami menerima berbagai metode pembayaran termasuk transfer bank, e-wallet (OVO, GoPay, Dana), dan QRIS."
+      question: "Bagaimana cara membatalkan pesanan yang salah input?",
+      answer: "Jika pesanan belum diproses oleh dapur, kasir dapat membatalkannya langsung. Jika sudah diproses, hubungi dapur dan manajer untuk pembatalan atau penyesuaian bahan yang terbuang (waste)."
     },
     {
-      question: "Apakah saya bisa mengubah pesanan yang sudah diproses?",
-      answer: "Pesanan yang sudah diproses ke dapur tidak dapat dibatalkan melalui sistem kasir. Mohon hubungi manajer restoran untuk pembatalan manual."
+      question: "Apa yang harus dilakukan jika ada pelanggan yang minta tambahan menu setelah bayar?",
+      answer: "Buat transaksi baru di sistem POS untuk menu tambahan tersebut agar stok dan laporan keuangan tetap akurat."
     },
     {
-      question: "Apakah data saya aman?",
-      answer: "Tentu. Kami menggunakan enkripsi standar industri untuk melindungi seluruh data pelanggan dan transaksi Anda."
+      question: "Kenapa pesanan tidak bisa diproses saat input penjualan?",
+      answer: "Pastikan stok bahan baku mencukupi. Sistem akan otomatis menolak transaksi jika stok bahan baku di bawah kebutuhan resep."
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <div className="bg-white border-b sticky top-0 z-10">
+    <div className="h-full overflow-y-auto custom-scrollbar-light bg-gray-50 flex flex-col">
+      <div className="bg-white border-b sticky top-0 z-10 shrink-0">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <Link href="/" className="text-xl font-bold text-gray-900 tracking-tight">
-            Tres Bros
+            Tres Bros - Internal System
           </Link>
           <div className="flex space-x-6 text-sm font-medium text-gray-500">
-            <Link href="/faq" className="text-blue-600">FAQ</Link>
-            <Link href="/syarat-ketentuan" className="hover:text-gray-900 transition-colors">Syarat & Ketentuan</Link>
-            <Link href="/kebijakan-pengembalian" className="hover:text-gray-900 transition-colors">Kebijakan Pengembalian</Link>
+            <Link href="/faq" className="text-blue-600">Panduan & FAQ</Link>
+            <Link href="/syarat-ketentuan" className="hover:text-gray-900 transition-colors">Aturan Karyawan</Link>
+            <Link href="/kebijakan-pengembalian" className="hover:text-gray-900 transition-colors">SOP Pengembalian</Link>
           </div>
         </div>
       </div>
@@ -46,10 +46,10 @@ export default function FAQPage() {
             <HelpCircle className="w-8 h-8 text-blue-600" />
           </div>
           <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
-            Pertanyaan yang Sering Diajukan (FAQ)
+            Panduan Penggunaan Sistem (FAQ)
           </h1>
           <p className="mt-4 text-lg text-gray-500">
-            Temukan jawaban untuk pertanyaan umum seputar layanan Tres Bros.
+            Panduan operasional harian untuk Kasir, Barista, dan Staf Dapur.
           </p>
         </div>
 
@@ -75,11 +75,8 @@ export default function FAQPage() {
         </div>
 
         <div className="mt-12 bg-blue-50 rounded-2xl p-8 text-center border border-blue-100">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Masih butuh bantuan?</h3>
-          <p className="text-gray-600 mb-6">Tim dukungan pelanggan kami siap membantu Anda.</p>
-          <a href="mailto:support@tresbros.com" className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors">
-            Hubungi Kami
-          </a>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Mengalami masalah sistem?</h3>
+          <p className="text-gray-600 mb-6">Segera hubungi tim IT Support atau Manajer shift Anda.</p>
         </div>
       </main>
     </div>
