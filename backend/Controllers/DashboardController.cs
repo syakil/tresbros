@@ -138,6 +138,12 @@ namespace backend.Controllers
                 var materials = await _context.Materials.ToListAsync();
                 double persediaanValue = materials.Sum(m => m.Stock * m.CostPerUnit);
 
+                var inventoryDetails = materials.Where(m => m.Stock > 0)
+                                                .Select(m => new { name = m.Name, stock = m.Stock, unit = m.Unit, totalValue = m.Stock * m.CostPerUnit })
+                                                .OrderByDescending(m => m.totalValue)
+                                                .Take(50)
+                                                .ToList();
+
                 // Saldo Aset Tetap
                 var fixedAssets = await _context.Assets.Where(a => a.Status != "Disposed").ToListAsync();
                 double fixedAssetValue = fixedAssets.Sum(a => a.BookValue);
@@ -179,6 +185,7 @@ namespace backend.Controllers
                     fixedAssetValue,
                     criticalStockList,
                     overStockList,
+                    inventoryDetails,
                     wasteSummary
                 });
             }

@@ -301,6 +301,25 @@ export default function DashboardPage() {
               <div className="space-y-4">
                 <div className="flex justify-between border-b pb-2 text-sm"><span className="text-zinc-500">Total Uang Tertahan (Overstock)</span><span className="font-bold text-orange-500">{formatRupiah(data?.overStockList?.reduce((a:any,b:any)=>a+b.tiedCash, 0) || 0)}</span></div>
                 <div className="flex justify-between pt-2 text-base font-bold"><span className="text-zinc-900">Total Nilai Bahan Baku</span><span className="text-yellow-600">{formatRupiah(persediaanValue)}</span></div>
+                
+                <div className="mt-4 pt-4 border-t border-zinc-100">
+                  <p className="text-xs font-bold text-zinc-500 mb-3">Detail Stok (Top 50 Nilai Terbesar):</p>
+                  <div className="max-h-[300px] overflow-y-auto pr-2 space-y-2">
+                    {data?.inventoryDetails?.length > 0 ? (
+                      data.inventoryDetails.map((item: any, idx: number) => (
+                        <div key={idx} className="flex justify-between items-center text-sm bg-zinc-50 p-2 rounded-lg border border-zinc-100">
+                          <div>
+                            <p className="font-medium text-zinc-800">{item.name}</p>
+                            <p className="text-xs text-zinc-500">{item.stock} {item.unit}</p>
+                          </div>
+                          <p className="font-bold text-zinc-700">{formatRupiah(item.totalValue)}</p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-xs text-zinc-400 italic">Belum ada data persediaan barang.</p>
+                    )}
+                  </div>
+                </div>
               </div>
             )
           })}>
