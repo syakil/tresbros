@@ -123,7 +123,7 @@ namespace backend.Controllers
 
             var entry = new JournalEntry
             {
-                Date = dto.Date,
+                Date = DateTime.SpecifyKind(dto.Date, DateTimeKind.Utc),
                 Reference = dto.Reference,
                 Description = dto.Description
             };

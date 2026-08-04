@@ -78,8 +78,18 @@ export default function JournalsPage() {
        alert(`Unbalanced! Debit: ${totalDebit}, Credit: ${totalCredit}`);
        return;
     }
+    
+    // Parse accountId to int and ensure dates are correctly processed
+    const payload = {
+      ...newJournal,
+      lines: lines.map(l => ({
+        ...l,
+        accountId: Number(l.accountId)
+      }))
+    };
+
     try {
-       await axios.post('/api/accounting/journals', { ...newJournal, lines });
+       await axios.post('/api/accounting/journals', payload);
        setShowCreateModal(false);
        setNewJournal({
          date: new Date().toISOString().split('T')[0],
@@ -355,7 +365,7 @@ export default function JournalsPage() {
       {/* Create Manual Journal Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-zinc-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <Card className="max-w-4xl w-full max-h-[90vh] overflow-y-auto bg-white p-6 rounded-2xl flex flex-col gap-6">
+          <Card className="max-w-4xl w-full min-h-[500px] pb-40 max-h-[90vh] overflow-y-auto bg-white p-6 rounded-2xl flex flex-col gap-6">
             <div className="flex justify-between items-center border-b border-zinc-100 pb-4">
               <h3 className="text-xl font-bold font-display text-zinc-900">Buat Jurnal Manual</h3>
               <button onClick={() => setShowCreateModal(false)} className="p-2 bg-zinc-100 hover:bg-zinc-200 rounded-full text-zinc-600 transition">
