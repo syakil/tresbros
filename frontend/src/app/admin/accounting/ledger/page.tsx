@@ -108,6 +108,11 @@ export default function LedgerPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-100 text-zinc-700 text-sm">
+                <tr className="bg-blue-50/50 font-semibold text-zinc-900">
+                  <td className="p-4" colSpan={4}>Saldo Awal (Opening Balance)</td>
+                  <td className="p-4 text-right text-blue-700">Rp {ledgerData.openingBalance?.toLocaleString('id-ID') || '0'}</td>
+                </tr>
+
                 {ledgerData.lines.map((line: any, i: number) => {
                   const isDebit = line.debit > 0;
                   const isCredit = line.credit > 0;
@@ -127,11 +132,19 @@ export default function LedgerPage() {
                     </tr>
                   )
                 })}
+
                 {ledgerData.lines.length === 0 && (
                   <tr>
                     <td colSpan={5} className="p-8 text-center text-zinc-500">No transactions in this period.</td>
                   </tr>
                 )}
+
+                <tr className="bg-blue-50/50 font-bold text-zinc-900 border-t-2 border-zinc-200">
+                  <td className="p-4" colSpan={2}>Saldo Akhir (Closing Balance)</td>
+                  <td className="p-4 text-emerald-600">Rp {ledgerData.totalDebit?.toLocaleString('id-ID') || '0'}</td>
+                  <td className="p-4 text-red-600">Rp {ledgerData.totalCredit?.toLocaleString('id-ID') || '0'}</td>
+                  <td className="p-4 text-right text-blue-700 text-lg">Rp {ledgerData.closingBalance?.toLocaleString('id-ID') || '0'}</td>
+                </tr>
               </tbody>
             </table>
           </div>

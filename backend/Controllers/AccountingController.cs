@@ -100,6 +100,27 @@ namespace backend.Controllers
                 return NotFound();
             }
 
+            double openingBalance = 0;
+
+            if (startDate.HasValue)
+            {
+                var priorQuery = _context.JournalEntryLines
+                    .Include(l => l.JournalEntry)
+                    .Where(l => l.AccountId == accountId && l.JournalEntry!.Date.Date < startDate.Value.Date);
+
+                double priorDebit = await priorQuery.SumAsync(l => l.Debit);
+                double priorCredit = await priorQuery.SumAsync(l => l.Credit);
+
+                if (account.Type == "ASSET" || account.Type == "EXPENSE")
+                {
+                    openingBalance = priorDebit - priorCredit;
+                }
+                else
+                {
+                    openingBalance = priorCredit - priorDebit;
+                }
+            }
+
             var query = _context.JournalEntryLines
                 .Include(l => l.JournalEntry)
                 .Where(l => l.AccountId == accountId)
@@ -124,9 +145,26 @@ namespace backend.Controllers
                 })
                 .ToListAsync();
 
+            double totalDebit = lines.Sum(l => l.debit);
+            double totalCredit = lines.Sum(l => l.credit);
+            
+            double closingBalance = openingBalance;
+            if (account.Type == "ASSET" || account.Type == "EXPENSE")
+            {
+                closingBalance += (totalDebit - totalCredit);
+            }
+            else
+            {
+                closingBalance += (totalCredit - totalDebit);
+            }
+
             return new
             {
                 Account = account,
+                OpeningBalance = openingBalance,
+                ClosingBalance = closingBalance,
+                TotalDebit = totalDebit,
+                TotalCredit = totalCredit,
                 Lines = lines
             };
         }
