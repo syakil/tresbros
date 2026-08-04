@@ -121,12 +121,24 @@ namespace backend.Controllers
 
                 // 4. Asset Valuations (Real-time snapshot, mengabaikan rentang waktu karena merupakan saldo)
                 
-                // Saldo Kas & Piutang
-                var coaList = await _context.ChartOfAccounts.ToListAsync();
-                double cashOnHand = coaList.Where(c => c.Type == "ASSET" && (c.Name.ToLower().Contains("kas") || c.Name.ToLower().Contains("bank")))
-                                           .Sum(c => c.Balance);
-                double piutangValue = coaList.Where(c => c.Type == "ASSET" && c.Name.ToLower().Contains("piutang"))
-                                             .Sum(c => c.Balance);
+                // Saldo Kas & Piutang dihitung dari JournalEntryLines agar akurat
+                var kasAccountIds = await _context.ChartOfAccounts
+                    .Where(c => c.Type == "ASSET" && (c.Name.ToLower().Contains("kas") || c.Name.ToLower().Contains("bank")))
+                    .Select(c => c.Id)
+                    .ToListAsync();
+                    
+                double cashOnHand = kasAccountIds.Any() 
+                    ? await _context.JournalEntryLines.Where(l => kasAccountIds.Contains(l.AccountId)).SumAsync(l => l.Debit - l.Credit) 
+                    : 0;
+
+                var piutangAccountIds = await _context.ChartOfAccounts
+                    .Where(c => c.Type == "ASSET" && c.Name.ToLower().Contains("piutang"))
+                    .Select(c => c.Id)
+                    .ToListAsync();
+                    
+                double piutangValue = piutangAccountIds.Any()
+                    ? await _context.JournalEntryLines.Where(l => piutangAccountIds.Contains(l.AccountId)).SumAsync(l => l.Debit - l.Credit)
+                    : 0;
 
                 // Jika belum ada CoA, gunakan fallback netProfit
                 if (cashOnHand == 0 && revenue > 0) 
