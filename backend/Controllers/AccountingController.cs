@@ -90,6 +90,60 @@ namespace backend.Controllers
                 .ToListAsync();
         }
 
+        public class CreateJournalLineDto
+        {
+            public int AccountId { get; set; }
+            public double Debit { get; set; }
+            public double Credit { get; set; }
+        }
+
+        public class CreateJournalDto
+        {
+            public DateTime Date { get; set; }
+            public string Reference { get; set; } = string.Empty;
+            public string Description { get; set; } = string.Empty;
+            public List<CreateJournalLineDto> Lines { get; set; } = new List<CreateJournalLineDto>();
+        }
+
+        // POST: api/Accounting/Journals
+        [HttpPost("Journals")]
+        public async Task<IActionResult> PostJournal([FromBody] CreateJournalDto dto)
+        {
+            if (dto.Lines == null || dto.Lines.Count == 0)
+                return BadRequest(new { message = "Journal must have at least one line." });
+
+            double totalDebit = dto.Lines.Sum(l => l.Debit);
+            double totalCredit = dto.Lines.Sum(l => l.Credit);
+
+            // Using Math.Round to avoid floating point precision issues when checking balance
+            if (Math.Round(totalDebit, 2) != Math.Round(totalCredit, 2))
+            {
+                return BadRequest(new { message = "Debit and Credit must be balanced." });
+            }
+
+            var entry = new JournalEntry
+            {
+                Date = dto.Date,
+                Reference = dto.Reference,
+                Description = dto.Description
+            };
+
+            foreach (var lineDto in dto.Lines)
+            {
+                entry.Lines.Add(new JournalEntryLine
+                {
+                    AccountId = lineDto.AccountId,
+                    Debit = lineDto.Debit,
+                    Credit = lineDto.Credit
+                });
+            }
+
+            _context.JournalEntries.Add(entry);
+            await _context.SaveChangesAsync();
+
+            return Ok(entry);
+        }
+
         // GET: api/Accounting/Ledger
         [HttpGet("Ledger")]
         public async Task<ActionResult<object>> GetLedger([FromQuery] int accountId, [FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)

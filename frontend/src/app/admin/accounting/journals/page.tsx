@@ -11,6 +11,19 @@ export default function JournalsPage() {
   const [journals, setJournals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedJournal, setSelectedJournal] = useState<any | null>(null);
+  
+  // Manual Journal State
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [accounts, setAccounts] = useState<any[]>([]);
+  const [newJournal, setNewJournal] = useState({
+    date: new Date().toISOString().split('T')[0],
+    reference: '',
+    description: '',
+    lines: [
+      { accountId: '', debit: 0, credit: 0 },
+      { accountId: '', debit: 0, credit: 0 }
+    ]
+  });
 
   // Filters & Pagination State
   const [searchQuery, setSearchQuery] = useState('');
@@ -22,7 +35,17 @@ export default function JournalsPage() {
 
   useEffect(() => {
     fetchJournals();
+    fetchAccounts();
   }, []);
+
+  const fetchAccounts = async () => {
+    try {
+      const res = await axios.get('/api/accounting/coa');
+      setAccounts(res.data);
+    } catch (err) {
+      console.error("Failed to fetch Accounts", err);
+    }
+  };
 
   const fetchJournals = async () => {
     try {
@@ -37,6 +60,40 @@ export default function JournalsPage() {
 
   const formatRupiah = (num: number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
+  };
+
+  const handleCreateJournal = async () => {
+    if (!newJournal.reference || !newJournal.description) {
+      alert("Reference and Description are required!");
+      return;
+    }
+    const lines = newJournal.lines.filter(l => l.accountId !== '');
+    if (lines.length < 2) {
+      alert("At least two valid lines are required!");
+      return;
+    }
+    const totalDebit = lines.reduce((acc, curr) => acc + Number(curr.debit), 0);
+    const totalCredit = lines.reduce((acc, curr) => acc + Number(curr.credit), 0);
+    if (totalDebit !== totalCredit) {
+       alert(`Unbalanced! Debit: ${totalDebit}, Credit: ${totalCredit}`);
+       return;
+    }
+    try {
+       await axios.post('/api/accounting/journals', { ...newJournal, lines });
+       setShowCreateModal(false);
+       setNewJournal({
+         date: new Date().toISOString().split('T')[0],
+         reference: '',
+         description: '',
+         lines: [
+           { accountId: '', debit: 0, credit: 0 },
+           { accountId: '', debit: 0, credit: 0 }
+         ]
+       });
+       fetchJournals();
+    } catch(err: any) {
+       alert(err.response?.data?.error || "Failed to create journal.");
+    }
   };
 
   // Filter Logic
@@ -79,9 +136,12 @@ export default function JournalsPage() {
 
   return (
     <div className="p-6 space-y-6 max-w-6xl mx-auto w-full">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-display font-bold text-zinc-900">Financial Journals</h1>
-        <p className="text-zinc-500">General journal transaction history list</p>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-display font-bold text-zinc-900">Financial Journals</h1>
+          <p className="text-zinc-500">General journal transaction history list</p>
+        </div>
+        <Button variant="primary" onClick={() => setShowCreateModal(true)}>Buat Jurnal Manual</Button>
       </div>
 
       {/* Toolbar Filter & Search */}
@@ -288,6 +348,153 @@ export default function JournalsPage() {
             </div>
             <div className="p-4 border-t border-zinc-200 bg-zinc-50 flex justify-end">
               <Button variant="outline" onClick={() => setSelectedJournal(null)}>Close</Button>
+            </div>
+          </Card>
+        </div>
+      )}
+      {/* Create Manual Journal Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-zinc-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <Card className="max-w-4xl w-full max-h-[90vh] overflow-y-auto bg-white p-6 rounded-2xl flex flex-col gap-6">
+            <div className="flex justify-between items-center border-b border-zinc-100 pb-4">
+              <h3 className="text-xl font-bold font-display text-zinc-900">Buat Jurnal Manual</h3>
+              <button onClick={() => setShowCreateModal(false)} className="p-2 bg-zinc-100 hover:bg-zinc-200 rounded-full text-zinc-600 transition">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="text-xs font-semibold text-zinc-600 mb-1 block">Date</label>
+                <input 
+                  type="date" 
+                  value={newJournal.date} 
+                  onChange={e => setNewJournal({ ...newJournal, date: e.target.value })} 
+                  className="w-full border border-zinc-200 rounded-lg px-3 py-2 focus:border-blue-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-zinc-600 mb-1 block">Reference</label>
+                <input 
+                  type="text" 
+                  value={newJournal.reference} 
+                  onChange={e => setNewJournal({ ...newJournal, reference: e.target.value })} 
+                  className="w-full border border-zinc-200 rounded-lg px-3 py-2 focus:border-blue-500 outline-none"
+                  placeholder="e.g. MAN-001"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-zinc-600 mb-1 block">Description</label>
+                <input 
+                  type="text" 
+                  value={newJournal.description} 
+                  onChange={e => setNewJournal({ ...newJournal, description: e.target.value })} 
+                  className="w-full border border-zinc-200 rounded-lg px-3 py-2 focus:border-blue-500 outline-none"
+                  placeholder="e.g. Saldo awal atau penyesuaian kas"
+                />
+              </div>
+            </div>
+
+            <div className="border border-zinc-200 rounded-xl overflow-hidden">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-zinc-50 border-b border-zinc-200">
+                  <tr>
+                    <th className="p-3 font-semibold text-zinc-600">Account</th>
+                    <th className="p-3 font-semibold text-zinc-600 w-40">Debit</th>
+                    <th className="p-3 font-semibold text-zinc-600 w-40">Credit</th>
+                    <th className="p-3 font-semibold text-zinc-600 w-16 text-center">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-100">
+                  {newJournal.lines.map((line, idx) => (
+                    <tr key={idx}>
+                      <td className="p-2">
+                        <select 
+                          value={line.accountId}
+                          onChange={(e) => {
+                            const newLines = [...newJournal.lines];
+                            newLines[idx].accountId = e.target.value;
+                            setNewJournal({ ...newJournal, lines: newLines });
+                          }}
+                          className="w-full border border-zinc-200 rounded-lg px-2 py-1.5 focus:border-blue-500 outline-none text-sm"
+                        >
+                          <option value="">-- Pilih Akun --</option>
+                          {accounts.map(acc => (
+                            <option key={acc.id} value={acc.id}>[{acc.code}] {acc.name}</option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="p-2">
+                        <input 
+                          type="number" 
+                          min="0"
+                          value={line.debit} 
+                          onChange={(e) => {
+                            const newLines = [...newJournal.lines];
+                            newLines[idx].debit = parseFloat(e.target.value) || 0;
+                            if (newLines[idx].debit > 0) newLines[idx].credit = 0;
+                            setNewJournal({ ...newJournal, lines: newLines });
+                          }}
+                          className="w-full border border-zinc-200 rounded-lg px-2 py-1.5 focus:border-blue-500 outline-none text-sm text-right"
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input 
+                          type="number" 
+                          min="0"
+                          value={line.credit} 
+                          onChange={(e) => {
+                            const newLines = [...newJournal.lines];
+                            newLines[idx].credit = parseFloat(e.target.value) || 0;
+                            if (newLines[idx].credit > 0) newLines[idx].debit = 0;
+                            setNewJournal({ ...newJournal, lines: newLines });
+                          }}
+                          className="w-full border border-zinc-200 rounded-lg px-2 py-1.5 focus:border-blue-500 outline-none text-sm text-right"
+                        />
+                      </td>
+                      <td className="p-2 text-center">
+                        {newJournal.lines.length > 2 && (
+                          <button 
+                            onClick={() => {
+                              const newLines = newJournal.lines.filter((_, i) => i !== idx);
+                              setNewJournal({ ...newJournal, lines: newLines });
+                            }}
+                            className="text-red-500 hover:bg-red-50 p-1.5 rounded-lg transition"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot className="bg-zinc-50 font-bold border-t border-zinc-200">
+                  <tr>
+                    <td className="p-3 text-right">Total:</td>
+                    <td className="p-3 text-right">{formatRupiah(newJournal.lines.reduce((acc, curr) => acc + curr.debit, 0))}</td>
+                    <td className="p-3 text-right">{formatRupiah(newJournal.lines.reduce((acc, curr) => acc + curr.credit, 0))}</td>
+                    <td></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            <div className="flex justify-between items-center mt-2">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setNewJournal({
+                    ...newJournal,
+                    lines: [...newJournal.lines, { accountId: '', debit: 0, credit: 0 }]
+                  });
+                }}
+              >
+                + Tambah Baris
+              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setShowCreateModal(false)}>Batal</Button>
+                <Button variant="primary" onClick={handleCreateJournal}>Simpan Jurnal</Button>
+              </div>
             </div>
           </Card>
         </div>
