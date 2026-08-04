@@ -9,6 +9,49 @@ import { Plus, Edit2, Trash2 } from 'lucide-react';
 export default function CoaPage() {
   const [coas, setCoas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
+  const [selectedCoa, setSelectedCoa] = useState<any | null>(null);
+  const [formData, setFormData] = useState({ code: '', name: '', type: 'ASSET' });
+
+  const handleOpenModal = (mode: 'create' | 'edit', coa: any = null) => {
+    setModalMode(mode);
+    setSelectedCoa(coa);
+    if (coa) {
+      setFormData({ code: coa.code, name: coa.name, type: coa.type });
+    } else {
+      setFormData({ code: '', name: '', type: 'ASSET' });
+    }
+    setShowModal(true);
+  };
+
+  const handleSave = async () => {
+    if (!formData.code || !formData.name || !formData.type) {
+      alert("All fields are required!");
+      return;
+    }
+    try {
+      if (modalMode === 'create') {
+        await axios.post('/api/accounting/coa', formData);
+      } else {
+        await axios.put(`/api/accounting/coa/${selectedCoa.id}`, { ...selectedCoa, ...formData });
+      }
+      setShowModal(false);
+      fetchCoas();
+    } catch (err: any) {
+      alert(err.response?.data?.error || "Failed to save account");
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this account?")) return;
+    try {
+      await axios.delete(`/api/accounting/coa/${id}`);
+      fetchCoas();
+    } catch (err: any) {
+      alert(err.response?.data?.error || "Failed to delete account");
+    }
+  };
 
   useEffect(() => {
     fetchCoas();
@@ -34,7 +77,7 @@ export default function CoaPage() {
           <h1 className="text-3xl font-display font-bold text-zinc-900">Chart of Accounts</h1>
           <p className="text-zinc-500">Manage system financial accounts</p>
         </div>
-        <Button variant="primary">
+        <Button variant="primary" onClick={() => handleOpenModal('create')}>
           <Plus className="w-4 h-4 mr-2" /> Add Account
         </Button>
       </div>
@@ -61,10 +104,10 @@ export default function CoaPage() {
                     </span>
                   </td>
                   <td className="p-4 text-right flex justify-end gap-2">
-                    <button className="p-2 bg-zinc-50 hover:bg-zinc-100 text-zinc-600 hover:text-zinc-950 rounded-lg transition-colors border border-zinc-200">
+                    <button onClick={() => handleOpenModal('edit', coa)} className="p-2 bg-zinc-50 hover:bg-zinc-100 text-zinc-600 hover:text-zinc-950 rounded-lg transition-colors border border-zinc-200">
                       <Edit2 className="w-4 h-4" />
                     </button>
-                    <button className="p-2 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 rounded-lg transition-colors border border-red-200">
+                    <button onClick={() => handleDelete(coa.id)} className="p-2 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 rounded-lg transition-colors border border-red-200">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </td>
@@ -79,6 +122,59 @@ export default function CoaPage() {
           </table>
         </div>
       </Card>
+
+      {/* COA Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-zinc-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <Card className="max-w-md w-full bg-white p-6 rounded-2xl flex flex-col gap-6 shadow-xl">
+            <h3 className="text-xl font-bold font-display text-zinc-900">
+              {modalMode === 'create' ? 'Add Account' : 'Edit Account'}
+            </h3>
+            
+            <div className="flex flex-col gap-4">
+              <div>
+                <label className="text-xs font-semibold text-zinc-600 mb-1 block">Account Code</label>
+                <input 
+                  type="text" 
+                  value={formData.code}
+                  onChange={e => setFormData({ ...formData, code: e.target.value })}
+                  placeholder="e.g. 1-100"
+                  className="w-full border border-zinc-200 rounded-lg px-3 py-2 focus:border-blue-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-zinc-600 mb-1 block">Account Name</label>
+                <input 
+                  type="text" 
+                  value={formData.name}
+                  onChange={e => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="e.g. Cash in Bank"
+                  className="w-full border border-zinc-200 rounded-lg px-3 py-2 focus:border-blue-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-zinc-600 mb-1 block">Account Type</label>
+                <select 
+                  value={formData.type}
+                  onChange={e => setFormData({ ...formData, type: e.target.value })}
+                  className="w-full border border-zinc-200 rounded-lg px-3 py-2 focus:border-blue-500 outline-none bg-white"
+                >
+                  <option value="ASSET">Asset</option>
+                  <option value="LIABILITY">Liability</option>
+                  <option value="EQUITY">Equity</option>
+                  <option value="REVENUE">Revenue</option>
+                  <option value="EXPENSE">Expense</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 mt-2">
+              <Button variant="outline" onClick={() => setShowModal(false)}>Cancel</Button>
+              <Button variant="primary" onClick={handleSave}>Save</Button>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
