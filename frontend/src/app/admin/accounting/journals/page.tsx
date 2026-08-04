@@ -395,7 +395,7 @@ export default function JournalsPage() {
               </div>
             </div>
 
-            <div className="border border-zinc-200 rounded-xl overflow-hidden">
+            <div className="border border-zinc-200 rounded-xl overflow-visible">
               <table className="w-full text-left text-sm">
                 <thead className="bg-zinc-50 border-b border-zinc-200">
                   <tr>
