@@ -111,7 +111,18 @@ namespace backend.Controllers
             if (endDate.HasValue)
                 query = query.Where(l => l.JournalEntry!.Date.Date <= endDate.Value.Date);
 
-            var lines = await query.OrderBy(l => l.JournalEntry!.Date).ToListAsync();
+            var lines = await query.OrderBy(l => l.JournalEntry!.Date)
+                .Select(l => new {
+                    id = l.Id,
+                    debit = l.Debit,
+                    credit = l.Credit,
+                    journalEntry = new {
+                        date = l.JournalEntry!.Date,
+                        reference = l.JournalEntry.Reference,
+                        description = l.JournalEntry.Description
+                    }
+                })
+                .ToListAsync();
 
             return new
             {
