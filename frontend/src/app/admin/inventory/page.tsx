@@ -304,6 +304,40 @@ export default function InventoryPage() {
     updateMasterMaterial.mutate(editMaterialData);
   };
 
+  const handleExportCsv = async () => {
+    try {
+      const res = await axios.get('/api/materials/export', { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'stock_export.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showAlert("Export successful!", "success");
+    } catch (err) {
+      showAlert("Failed to export CSV", "error");
+    }
+  };
+
+  const handleImportCsv = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+      await axios.post('/api/materials/import', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      queryClient.invalidateQueries({ queryKey: ['materials'] });
+      showAlert("Import successful!", "success");
+    } catch (err: any) {
+      showAlert(err.response?.data?.error || "Failed to import CSV", "error");
+    }
+    e.target.value = '';
+  };
+
   const filteredMaterials = materials.filter((m: any) => {
     const matchesSearch = m.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesFilter = filterMode === 'all' || (filterMode === 'low' && m.stock <= m.minStock);
@@ -316,7 +350,16 @@ export default function InventoryPage() {
         <h1 className="text-3xl font-display font-bold text-zinc-900">Stock Opname & Inventory</h1>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <p className="text-zinc-500 text-sm md:text-base">Monitor stock opname, raw material availability, and stock movement</p>
-          <div className="flex gap-2 w-full md:w-auto">
+          <div className="flex flex-wrap gap-2 w-full md:w-auto">
+            <Button variant="outline" className="shadow-sm justify-center" onClick={handleExportCsv}>
+              <ArrowDownToLine className="w-4 h-4 mr-2" /> Export CSV
+            </Button>
+            <label className="cursor-pointer">
+              <input type="file" accept=".csv" className="hidden" onChange={handleImportCsv} />
+              <div className="inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 disabled:pointer-events-none disabled:opacity-50 border border-zinc-200 bg-white hover:bg-zinc-100 hover:text-zinc-900 h-10 px-4 py-2 shadow-sm w-full md:w-auto">
+                <ArrowUpFromLine className="w-4 h-4 mr-2" /> Import CSV
+              </div>
+            </label>
             <Button variant="primary" className="shadow-md w-full md:w-auto justify-center" onClick={() => setShowAdd(!showAdd)}>
               <Plus className="w-4 h-4 mr-2" /> Add Raw Material
             </Button>

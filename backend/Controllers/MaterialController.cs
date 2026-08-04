@@ -2,6 +2,8 @@ using backend.Data;
 using backend.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
+using System.IO;
 
 namespace backend.Controllers
 {
@@ -163,6 +165,149 @@ namespace backend.Controllers
             }
 
             return NoContent();
+        }
+
+        // GET: api/Material/export
+        [HttpGet("export")]
+        public async Task<IActionResult> ExportCsv()
+        {
+            var materials = await _context.Materials.ToListAsync();
+            var builder = new StringBuilder();
+            builder.AppendLine("Id,Name,Stock,MinStock,Unit,CostPerUnit");
+            
+            foreach (var m in materials)
+            {
+                var name = m.Name?.Contains(",") == true ? $"\"{m.Name}\"" : m.Name;
+                var unit = m.Unit?.Contains(",") == true ? $"\"{m.Unit}\"" : m.Unit;
+                
+                builder.AppendLine($"{m.Id},{name},{m.Stock.ToString(System.Globalization.CultureInfo.InvariantCulture)},{m.MinStock.ToString(System.Globalization.CultureInfo.InvariantCulture)},{unit},{m.CostPerUnit.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
+            }
+            
+            return File(Encoding.UTF8.GetBytes(builder.ToString()), "text/csv", "stock_export.csv");
+        }
+
+        private List<string> ParseCsvLine(string line)
+        {
+            var result = new List<string>();
+            bool inQuotes = false;
+            var currentField = new StringBuilder();
+            
+            for (int i = 0; i < line.Length; i++)
+            {
+                char c = line[i];
+                if (c == '\"')
+                {
+                    inQuotes = !inQuotes;
+                }
+                else if (c == ',' && !inQuotes)
+                {
+                    result.Add(currentField.ToString());
+                    currentField.Clear();
+                }
+                else
+                {
+                    currentField.Append(c);
+                }
+            }
+            result.Add(currentField.ToString());
+            return result;
+        }
+
+        // POST: api/Material/import
+        [HttpPost("import")]
+        public async Task<IActionResult> ImportCsv(IFormFile file)
+        {
+            if (file == null || file.Length == 0) return BadRequest(new { message = "File is empty" });
+            
+            using var reader = new StreamReader(file.OpenReadStream());
+            string? headerLine = await reader.ReadLineAsync();
+            if (string.IsNullOrEmpty(headerLine)) return BadRequest(new { message = "Invalid CSV" });
+            
+            var materials = await _context.Materials.ToListAsync();
+            
+            while (!reader.EndOfStream)
+            {
+                var line = await reader.ReadLineAsync();
+                if (string.IsNullOrWhiteSpace(line)) continue;
+                
+                var values = ParseCsvLine(line);
+                if (values.Count < 6) continue;
+                
+                if (int.TryParse(values[0], out int id))
+                {
+                    var existing = materials.FirstOrDefault(m => m.Id == id);
+                    if (existing != null)
+                    {
+                        existing.Name = values[1];
+                        if (double.TryParse(values[2], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double stock))
+                            existing.Stock = stock;
+                        if (double.TryParse(values[3], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double minStock))
+                            existing.MinStock = minStock;
+                        existing.Unit = values[4];
+                        if (double.TryParse(values[5], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double cost))
+                            existing.CostPerUnit = cost;
+                            
+                        existing.LastUpdated = DateTime.UtcNow;
+                        _context.Entry(existing).State = EntityState.Modified;
+
+                        // Overwrite batches to match new stock without journal entries
+                        var activeBatches = await _context.MaterialBatches
+                            .Where(b => b.MaterialId == existing.Id && b.RemainingQty > 0)
+                            .ToListAsync();
+                        foreach (var batch in activeBatches)
+                        {
+                            batch.RemainingQty = 0;
+                            _context.Entry(batch).State = EntityState.Modified;
+                        }
+                        if (existing.Stock > 0)
+                        {
+                            var newBatch = new MaterialBatch
+                            {
+                                MaterialId = existing.Id,
+                                OriginalQty = existing.Stock,
+                                RemainingQty = existing.Stock,
+                                UnitPrice = existing.CostPerUnit,
+                                CreatedAt = DateTime.UtcNow
+                            };
+                            _context.MaterialBatches.Add(newBatch);
+                        }
+                    }
+                }
+                else
+                {
+                    var newMaterial = new Material
+                    {
+                        Name = values[1],
+                        Unit = values[4],
+                        LastUpdated = DateTime.UtcNow
+                    };
+                    if (double.TryParse(values[2], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double stock))
+                        newMaterial.Stock = stock;
+                    if (double.TryParse(values[3], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double minStock))
+                        newMaterial.MinStock = minStock;
+                    if (double.TryParse(values[5], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double cost))
+                        newMaterial.CostPerUnit = cost;
+                        
+                    _context.Materials.Add(newMaterial);
+                    await _context.SaveChangesAsync(); // Save to get ID
+
+                    if (newMaterial.Stock > 0)
+                    {
+                        var newBatch = new MaterialBatch
+                        {
+                            MaterialId = newMaterial.Id,
+                            OriginalQty = newMaterial.Stock,
+                            RemainingQty = newMaterial.Stock,
+                            UnitPrice = newMaterial.CostPerUnit,
+                            CreatedAt = DateTime.UtcNow
+                        };
+                        _context.MaterialBatches.Add(newBatch);
+                    }
+                }
+            }
+            
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Import successful" });
         }
 
         // POST: api/Material
