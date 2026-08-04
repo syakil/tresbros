@@ -409,20 +409,20 @@ export default function JournalsPage() {
                   {newJournal.lines.map((line, idx) => (
                     <tr key={idx}>
                       <td className="p-2">
-                        <select 
+                        <CustomSelect 
                           value={line.accountId}
-                          onChange={(e) => {
+                          onChange={(val) => {
                             const newLines = [...newJournal.lines];
-                            newLines[idx].accountId = e.target.value;
+                            newLines[idx].accountId = val;
                             setNewJournal({ ...newJournal, lines: newLines });
                           }}
-                          className="w-full border border-zinc-200 rounded-lg px-2 py-1.5 focus:border-blue-500 outline-none text-sm"
-                        >
-                          <option value="">-- Pilih Akun --</option>
-                          {accounts.map(acc => (
-                            <option key={acc.id} value={acc.id}>[{acc.code}] {acc.name}</option>
-                          ))}
-                        </select>
+                          options={accounts.map(acc => ({
+                            value: acc.id.toString(),
+                            label: `[${acc.code}] ${acc.name}`
+                          }))}
+                          className="bg-white border border-zinc-200 text-zinc-900 rounded-lg px-3 py-2 text-sm"
+                          placeholder="-- Pilih Akun --"
+                        />
                       </td>
                       <td className="p-2">
                         <input 
