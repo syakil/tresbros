@@ -41,8 +41,10 @@ export async function GET(request: Request) {
     // Filter di Node.js
     const orders = allOrders.filter((o: any) => {
       const d = new Date(o.createdAt);
-      return d >= startDate && d <= endDate && o.paymentStatus === 'success';
+      return d >= startDate && d <= endDate;
     });
+    
+    const successOrders = orders.filter((o: any) => o.paymentStatus === 'success');
 
     const expenses = allExpenses.filter((e: any) => {
       const d = new Date(e.date);
@@ -61,7 +63,7 @@ export async function GET(request: Request) {
     // Kalkulasi Produk Terlaris
     const productSales: Record<number, { name: string, qty: number }> = {};
 
-    orders.forEach((order: any) => {
+    successOrders.forEach((order: any) => {
       totalRevenue += order.totalAmount;
       
       if (order.paymentMethod === 'CASH') paymentBreakdown.CASH += order.totalAmount;
@@ -78,7 +80,7 @@ export async function GET(request: Request) {
       }
     });
 
-    const totalOrders = orders.length;
+    const totalOrders = successOrders.length;
     const itemsSold = Object.values(productSales).reduce((sum, p) => sum + p.qty, 0);
     const topProducts = Object.values(productSales)
                               .sort((a, b) => b.qty - a.qty)
@@ -108,7 +110,7 @@ export async function GET(request: Request) {
         currDate.setDate(currDate.getDate() + 1);
       }
 
-      orders.forEach((order: any) => {
+      successOrders.forEach((order: any) => {
         const dateStr = new Date(new Date(order.createdAt).getTime() + TZ_OFFSET).toISOString().split('T')[0];
         if (dailyData[dateStr]) {
           dailyData[dateStr].revenue += order.totalAmount;
@@ -140,7 +142,7 @@ export async function GET(request: Request) {
         hourlyData[i] = { time: `${i.toString().padStart(2, '0')}:00`, revenue: 0, expense: 0, qty: 0 };
       }
 
-      orders.forEach((order: any) => {
+      successOrders.forEach((order: any) => {
         const hour = new Date(new Date(order.createdAt).getTime() + TZ_OFFSET).getUTCHours();
         hourlyData[hour].revenue += order.totalAmount;
         if (order.items) {
@@ -171,7 +173,7 @@ export async function GET(request: Request) {
       topProducts,
       recentOrders: orders.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
       chartData,
-      allOrders: orders.map((o: any) => ({ id: `O-${o.id}`, date: o.createdAt, description: `Penjualan POS - ${o.paymentMethod}`, amount: o.totalAmount, type: 'IN' })),
+      allOrders: successOrders.map((o: any) => ({ id: `O-${o.id}`, date: o.createdAt, description: `Penjualan POS - ${o.paymentMethod}`, amount: o.totalAmount, type: 'IN' })),
       allIncomes: incomes.map((i: any) => ({ id: `I-${i.id}`, date: i.date, description: `Pemasukan Manual: ${i.description}`, amount: i.amount, type: 'IN' })),
       allExpenses: expenses.map((e: any) => ({ id: `E-${e.id}`, date: e.date, description: `Pengeluaran: ${e.description}`, amount: e.amount, type: 'OUT' }))
     });

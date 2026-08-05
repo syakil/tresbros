@@ -31,6 +31,7 @@ export default function DashboardPage() {
   });
   const [modalData, setModalData] = useState<{title: string, transactions: any[]} | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [cancellingOrder, setCancellingOrder] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 5;
 
@@ -62,7 +63,7 @@ export default function DashboardPage() {
     }));
   };
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, refetch } = useQuery({
     queryKey: ['dashboardStats', filter],
     queryFn: async () => {
       const res = await axios.get(`/api/dashboard?filter=${filter}`);
@@ -70,6 +71,22 @@ export default function DashboardPage() {
     },
     refetchInterval: 10000
   });
+
+  const handleCancelOrder = async (orderId: number) => {
+    if (!confirm('Apakah Anda yakin ingin membatalkan transaksi ini? Stok bahan baku dan pembukuan akan dikembalikan otomatis.')) return;
+    
+    setCancellingOrder(orderId);
+    try {
+      await axios.post(`/api/Order/${orderId}/cancel`);
+      alert('Transaksi berhasil dibatalkan.');
+      setSelectedOrder(null);
+      refetch();
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Gagal membatalkan transaksi');
+    } finally {
+      setCancellingOrder(null);
+    }
+  };
 
   const formatRupiah = (num: number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num || 0);
@@ -386,17 +403,25 @@ export default function DashboardPage() {
                   </thead>
                   <tbody className="divide-y divide-zinc-100">
                     {data?.recentOrders?.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((order: any) => (
-                      <tr key={order.id} className="hover:bg-zinc-50/80 transition-colors cursor-pointer" onClick={() => setSelectedOrder(order)}>
+                      <tr key={order.id} className={`hover:bg-zinc-50/80 transition-colors cursor-pointer ${order.status === 'CANCELLED' ? 'opacity-60' : ''}`} onClick={() => setSelectedOrder(order)}>
                         <td className="px-6 py-4 font-mono text-xs text-zinc-500">{order.orderNumber || order.id}</td>
                         <td className="px-6 py-4 text-zinc-700 font-medium">{new Date(order.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</td>
                         <td className="px-6 py-4 text-zinc-700">{order.customerName || '-'}</td>
                         <td className="px-6 py-4 text-zinc-700">{order.cashierName || '-'}</td>
                         <td className="px-6 py-4 text-center">
-                          <span className="bg-zinc-100 border border-zinc-200 text-zinc-600 px-2.5 py-1 rounded-md text-xs font-medium">
-                            {order.paymentMethod === 'CASH' ? 'Cash' : order.paymentMethod}
-                          </span>
+                          {order.status === 'CANCELLED' ? (
+                            <span className="bg-red-100 border border-red-200 text-red-700 px-2.5 py-1 rounded-md text-xs font-medium">
+                              Dibatalkan
+                            </span>
+                          ) : (
+                            <span className="bg-zinc-100 border border-zinc-200 text-zinc-600 px-2.5 py-1 rounded-md text-xs font-medium">
+                              {order.paymentMethod === 'CASH' ? 'Cash' : order.paymentMethod}
+                            </span>
+                          )}
                         </td>
-                        <td className="px-6 py-4 font-semibold text-zinc-900 text-right">{formatRupiah(order.totalAmount)}</td>
+                        <td className={`px-6 py-4 font-semibold text-right ${order.status === 'CANCELLED' ? 'line-through text-zinc-400' : 'text-zinc-900'}`}>
+                          {formatRupiah(order.totalAmount)}
+                        </td>
                       </tr>
                     ))}
                     {(!data?.recentOrders || data.recentOrders.length === 0) && (
@@ -525,10 +550,29 @@ export default function DashboardPage() {
                 ))}
                 {!selectedOrder.items?.length && <p className="text-sm text-zinc-500">No items data.</p>}
               </div>
-              <div className="mt-6 pt-4 border-t border-zinc-100 flex justify-between items-center">
+              <div className="mt-6 pt-4 border-t border-zinc-100 flex justify-between items-center mb-6">
                 <span className="font-bold text-zinc-900">Total Amount</span>
-                <span className="text-xl font-bold text-blue-600">{formatRupiah(selectedOrder.totalAmount)}</span>
+                <span className={`text-xl font-bold ${selectedOrder.status === 'CANCELLED' ? 'text-zinc-400 line-through' : 'text-blue-600'}`}>
+                  {formatRupiah(selectedOrder.totalAmount)}
+                </span>
               </div>
+              
+              {selectedOrder.status !== 'CANCELLED' && (
+                <div className="border-t border-zinc-100 pt-4 flex justify-end">
+                  <button 
+                    onClick={() => handleCancelOrder(selectedOrder.id)}
+                    disabled={cancellingOrder === selectedOrder.id}
+                    className="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {cancellingOrder === selectedOrder.id ? 'Membatalkan...' : 'Batalkan Transaksi'}
+                  </button>
+                </div>
+              )}
+              {selectedOrder.status === 'CANCELLED' && (
+                <div className="bg-red-50 border border-red-200 p-3 rounded-lg text-red-700 text-sm font-medium text-center">
+                  Transaksi ini telah dibatalkan
+                </div>
+              )}
             </div>
           </Card>
         </div>

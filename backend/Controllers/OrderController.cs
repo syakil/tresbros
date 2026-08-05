@@ -223,6 +223,77 @@ namespace backend.Controllers
             return NoContent();
         }
 
+        // POST: api/Order/5/cancel
+        [HttpPost("{id}/cancel")]
+        public async Task<IActionResult> CancelOrder(int id)
+        {
+            var order = await _context.Orders
+                .Include(o => o.Items)
+                .ThenInclude(i => i.Product)
+                .ThenInclude(p => p.RecipeItems)
+                .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (order == null)
+            {
+                return NotFound(new { message = "Order not found." });
+            }
+
+            if (order.Status == "CANCELLED")
+            {
+                return BadRequest(new { message = "Order is already cancelled." });
+            }
+
+            string oldStatus = order.Status;
+            
+            // 1. Update Status
+            order.Status = "CANCELLED";
+            order.PaymentStatus = "refunded";
+            _context.Entry(order).State = EntityState.Modified;
+
+            // 2. Revert Stock (if it was DONE or TAKEN)
+            if (oldStatus == "DONE" || oldStatus == "TAKEN")
+            {
+                foreach (var item in order.Items)
+                {
+                    if (item.Product?.RecipeItems != null)
+                    {
+                        foreach (var recipe in item.Product.RecipeItems)
+                        {
+                            var material = await _context.Materials.FindAsync(recipe.MaterialId);
+                            if (material != null)
+                            {
+                                material.Stock += (recipe.Quantity * item.Quantity);
+                                _context.Entry(material).State = EntityState.Modified;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 3. Delete associated JournalEntry to reverse accounting impact
+            var journalEntry = await _context.JournalEntries
+                .Include(j => j.Lines)
+                .FirstOrDefaultAsync(j => j.Reference == order.OrderNumber);
+                
+            if (journalEntry != null)
+            {
+                _context.JournalEntryLines.RemoveRange(journalEntry.Lines);
+                _context.JournalEntries.Remove(journalEntry);
+            }
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error cancelling order.", details = ex.Message });
+            }
+
+            return Ok(new { message = "Order cancelled successfully.", order });
+        }
+
+
         // DELETE: api/Order/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteOrder(int id)
