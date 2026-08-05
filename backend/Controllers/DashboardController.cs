@@ -184,6 +184,26 @@ namespace backend.Controllers
                     }
                 };
 
+                DateTime localMonthStart = new DateTime(localNow.Year, localNow.Month, 1);
+                DateTime utcMonthStart = TimeZoneInfo.ConvertTimeToUtc(localMonthStart, wibZone);
+
+                var thisMonthRevenue = await _context.Orders
+                    .Where(o => o.CreatedAt >= utcMonthStart && o.CreatedAt <= utcNow && o.PaymentStatus == "success")
+                    .SumAsync(o => o.TotalAmount);
+
+                var thirtyDaysAgo = utcNow.AddDays(-30);
+                var deadStockList = materials.Where(m => m.Stock > 0 && m.LastUpdated < thirtyDaysAgo)
+                                             .Select(m => new { name = m.Name, days = (int)(utcNow - m.LastUpdated).TotalDays, value = m.Stock * m.CostPerUnit })
+                                             .OrderByDescending(m => m.value)
+                                             .Take(5)
+                                             .ToList();
+
+                var notificationList = new List<object>();
+                foreach (var critical in criticalStockList)
+                {
+                    notificationList.Add(new { id = Guid.NewGuid().ToString(), type = "stock", text = $"Stok {critical.name} kritis ({critical.stock} sisa). Segera restock!", time = "Baru saja" });
+                }
+
                 return Ok(new
                 {
                     revenue,
@@ -198,7 +218,10 @@ namespace backend.Controllers
                     criticalStockList,
                     overStockList,
                     inventoryDetails,
-                    wasteSummary
+                    wasteSummary,
+                    thisMonthRevenue,
+                    deadStockList,
+                    notificationList
                 });
             }
             catch (Exception ex)

@@ -94,15 +94,9 @@ export default function DashboardPage() {
   const criticalStockList: any[] = data?.criticalStockList || [];
   const overStockList: any[] = data?.overStockList || [];
 
-  const deadStockList = [
-    { name: "Matcha Powder Premium", days: 45, value: 1200000 },
-    { name: "Red Velvet Powder", days: 60, value: 850000 }
-  ];
+  const deadStockList: any[] = data?.deadStockList || [];
 
-  const expiredList = [
-    { name: "Whip Cream Aerosol", daysLeft: 2, qty: 6, lossValue: 360000 },
-    { name: "Roti Tawar Bandung", daysLeft: 1, qty: 10, lossValue: 150000 }
-  ];
+  const thisMonthRevenue = data?.thisMonthRevenue || 0;
 
   const wasteSummary = data?.wasteSummary || {
     today: 0,
@@ -110,34 +104,31 @@ export default function DashboardPage() {
     breakdown: [] as any[]
   };
 
-  const staffList = [
-    { name: "Rian (Cashier)", role: "Kasir Terbaik", metric: "35 Transaksi / jam", speed: "1.2m avg/tx" },
-    { name: "Devi (Barista)", role: "Barista Tercepat", metric: "48 Cup / jam", speed: "45s avg/drink" },
-  ];
 
-  const notificationList = [
-    { id: 1, type: "stock", text: "Stok Fresh Milk kritis di bawah batas aman.", time: "10 menit lalu" },
-    { id: 2, type: "void", text: "Supervisor melakukan VOID order senilai Rp125.000.", time: "1 jam lalu" },
-    { id: 3, type: "bill", text: "Tagihan Supplier Jaya Makmur jatuh tempo besok.", time: "3 jam lalu" }
-  ];
+
+  const notificationList: any[] = data?.notificationList || [];
 
   // CFO Advisor & AI Insights Engine
   const getAIInsights = () => {
     const insights = [];
-    if (revenue > 0) {
-      const margin = (netProfit / revenue) * 100;
-      insights.push(`Penjualan Anda periode ini mencapai ${formatRupiah(revenue)}. Margin keuntungan bersih berada di angka ${margin.toFixed(1)}%.`);
+    if (thisMonthRevenue > 0) {
+      const margin = (netProfit / (revenue || 1)) * 100;
+      insights.push(`Penjualan Anda bulan ini mencapai ${formatRupiah(thisMonthRevenue)}.`);
       if (margin < 20) {
-        insights.push("Margin bersih agak tipis (<20%). Coba tinjau pengeluaran operasional atau naikkan harga menu unggulan sebesar 5%.");
+        insights.push("Margin bersih agak tipis (<20%). Coba tinjau pengeluaran operasional atau naikkan harga menu unggulan.");
       } else {
-        insights.push("Kesehatan margin keuntungan bersih Anda sangat prima!");
+        insights.push("Kesehatan margin keuntungan bersih Anda cukup prima!");
       }
     }
     if (expenses > (revenue * 0.4)) {
       insights.push("Beban pengeluaran melampaui 40% dari omzet. Disarankan meninjau pengeluaran bahan baku atau kebocoran stok (waste).");
     }
-    insights.push("Fresh Milk Diamond terindikasi habis besok pagi. Silakan lakukan PO otomatis hari ini untuk menghindari kehilangan penjualan.");
-    insights.push("Matcha Powder terindikasi mati (Dead Stock > 30 hari). Rekomendasi: Buat paket menu bundling 'Matcha Latte + Croissant' minggu ini.");
+    if (notificationList.length > 0) {
+      insights.push(`Ada ${notificationList.length} barang yang stoknya kritis. Silakan periksa notifikasi.`);
+    }
+    if (deadStockList.length > 0) {
+      insights.push(`Ada ${deadStockList.length} barang yang mangkrak (Dead Stock > 30 hari). Rekomendasi: Buat paket menu bundling minggu ini.`);
+    }
     return insights;
   };
 
@@ -369,15 +360,15 @@ export default function DashboardPage() {
             content: (
               <div className="space-y-4">
                 <div className="flex justify-between border-b pb-2 text-sm"><span className="text-zinc-500">Target Bulanan</span><span className="font-bold">Rp 100.000.000</span></div>
-                <div className="flex justify-between border-b pb-2 text-sm"><span className="text-zinc-500">Pencapaian Saat Ini</span><span className="font-bold">{formatRupiah(revenue * 20)}</span></div>
-                <div className="flex justify-between pt-2 text-base font-bold"><span className="text-zinc-900">Sisa Target (Kekurangan)</span><span className="text-orange-600">{formatRupiah(Math.max(0, 100000000 - (revenue * 20)))}</span></div>
+                <div className="flex justify-between border-b pb-2 text-sm"><span className="text-zinc-500">Pencapaian Saat Ini</span><span className="font-bold">{formatRupiah(thisMonthRevenue)}</span></div>
+                <div className="flex justify-between pt-2 text-base font-bold"><span className="text-zinc-900">Sisa Target (Kekurangan)</span><span className="text-orange-600">{formatRupiah(Math.max(0, 100000000 - thisMonthRevenue))}</span></div>
               </div>
             )
           })}>
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider">📈 Penjualan Bulan Ini</p>
-                <h3 className="text-2xl font-bold font-display text-zinc-950 mt-2">{formatRupiah(revenue * 20)}</h3>
+                <h3 className="text-2xl font-bold font-display text-zinc-950 mt-2">{formatRupiah(thisMonthRevenue)}</h3>
               </div>
               <div className="bg-orange-50 text-orange-600 p-2 rounded-xl border border-orange-100">
                 <Activity className="w-5 h-5" />
@@ -389,7 +380,7 @@ export default function DashboardPage() {
                 <span>Rp100.000.000</span>
               </div>
               <div className="w-full bg-zinc-100 rounded-full h-1.5 overflow-hidden">
-                <div className="bg-brand-sage h-full rounded-full" style={{ width: `${Math.min(100, ((revenue * 20) / 100000000) * 100)}%` }}></div>
+                <div className="bg-brand-sage h-full rounded-full" style={{ width: `${Math.min(100, (thisMonthRevenue / 100000000) * 100)}%` }}></div>
               </div>
             </div>
           </Card>
@@ -617,24 +608,19 @@ export default function DashboardPage() {
           </div>
 
           <div className="space-y-3 mt-4 flex-1">
-            <div className="flex justify-between items-center border border-zinc-200 rounded-xl p-3 bg-zinc-50">
-              <div>
-                <h4 className="font-bold text-xs text-zinc-800">Red Velvet Cake Slice</h4>
-                <p className="text-[10px] text-zinc-500 mt-0.5">Sisa stok: 8 porsi | Terjual 30 hari: 2 porsi</p>
+            {deadStockList.length > 0 ? deadStockList.map((item: any, idx: number) => (
+              <div key={idx} className="flex justify-between items-center border border-zinc-200 rounded-xl p-3 bg-zinc-50">
+                <div>
+                  <h4 className="font-bold text-xs text-zinc-800">{item.name}</h4>
+                  <p className="text-[10px] text-zinc-500 mt-0.5">Nilai Stok: {formatRupiah(item.value)}</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] font-bold text-red-600 bg-red-50 border border-red-100 px-2 py-0.5 rounded-full uppercase">Mangkrak {item.days} Hari</span>
+                </div>
               </div>
-              <div className="text-right">
-                <span className="text-[10px] font-bold text-red-600 bg-red-50 border border-red-100 px-2 py-0.5 rounded-full uppercase">Kritis</span>
-              </div>
-            </div>
-            <div className="flex justify-between items-center border border-zinc-200 rounded-xl p-3 bg-zinc-50">
-              <div>
-                <h4 className="font-bold text-xs text-zinc-800">Croissant Almond Premium</h4>
-                <p className="text-[10px] text-zinc-500 mt-0.5">Sisa stok: 12 porsi | Terjual 30 hari: 5 porsi</p>
-              </div>
-              <div className="text-right">
-                <span className="text-[10px] font-bold text-orange-600 bg-orange-50 border border-orange-100 px-2 py-0.5 rounded-full uppercase">Perlu Perhatian</span>
-              </div>
-            </div>
+            )) : (
+              <div className="text-xs text-zinc-500 text-center py-4">Tidak ada dead stock.</div>
+            )}
           </div>
 
           <div className="bg-yellow-50/70 border border-yellow-200 text-yellow-900 rounded-2xl p-4 text-xs space-y-2 mt-4">
@@ -680,8 +666,8 @@ export default function DashboardPage() {
               <p className="text-base font-bold text-red-600 mt-1">{criticalStockList.length} SKU</p>
             </div>
             <div className="border border-zinc-200 rounded-xl p-2.5 bg-zinc-50 text-center">
-              <p className="text-[10px] text-zinc-400 font-bold uppercase">Akan Expired</p>
-              <p className="text-base font-bold text-orange-600 mt-1">{expiredList.length} SKU</p>
+              <p className="text-[10px] text-zinc-400 font-bold uppercase">Dead Stock</p>
+              <p className="text-base font-bold text-orange-600 mt-1">{deadStockList.length} SKU</p>
             </div>
           </div>
         </Card>
@@ -753,32 +739,7 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        {/* Expiring Items (Section 15) */}
-        <Card className="p-6 flex flex-col justify-between">
-          <div>
-            <h2 className="text-base font-bold text-zinc-900 mb-4 flex items-center gap-2">
-              <Clock className="w-4 h-4 text-zinc-600" />
-              Barang Mendekati Kedaluwarsa (Expired)
-            </h2>
-            <div className="space-y-4">
-              {expiredList.map((item, idx) => (
-                <div key={idx} className="border border-zinc-200 rounded-xl p-3 bg-zinc-50 flex justify-between items-center text-xs">
-                  <div>
-                    <h4 className="font-bold text-zinc-800">{item.name}</h4>
-                    <p className="text-[10px] text-red-600 font-medium mt-0.5">Tinggal {item.daysLeft} hari lagi</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-zinc-900">{formatRupiah(item.lossValue)}</p>
-                    <p className="text-[9px] text-red-500 font-semibold uppercase mt-0.5">Potensi Kerugian</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <Button variant="outline" className="text-xs py-2 mt-4 rounded-xl w-full border-red-200 text-red-600 hover:bg-red-50">
-            Catat Tindakan Waste/Pembuangan Bahan
-          </Button>
-        </Card>
+
 
         {/* Purchase Forecast (Section 16) */}
         <Card className="p-6 flex flex-col justify-between">
