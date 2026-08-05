@@ -366,23 +366,23 @@ export default function PosPage() {
             filteredProducts.map((product) => (
             <Card 
               key={product.id} 
-              className="flex flex-col justify-between h-44 active:scale-95 hover:border-blue-300 hover:shadow-md transition-all group relative p-5 bg-white cursor-pointer"
+              className="flex flex-col justify-between h-auto min-h-[9rem] sm:min-h-[11rem] active:scale-95 hover:border-blue-300 hover:shadow-md transition-all group relative p-3 sm:p-5 bg-white cursor-pointer"
               onClick={() => addItem(product)}
             >
               {typeof product.availableCount === 'number' && product.availableCount <= 0 && (
                 <div className="absolute inset-0 bg-white/80 rounded-2xl z-10 flex items-center justify-center backdrop-blur-[2px]">
-                  <div className="bg-red-50 text-red-600 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm border border-red-200">
+                  <div className="bg-red-50 text-red-600 text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-1 sm:py-1.5 rounded-full shadow-sm border border-red-200">
                     Out of Stock / Low Stock
                   </div>
                 </div>
               )}
               <div className="relative z-0">
-                <div className="w-10 h-10 bg-zinc-100 group-hover:bg-blue-50 group-hover:text-blue-600 rounded-xl flex items-center justify-center mb-4 transition-colors">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-zinc-100 group-hover:bg-blue-50 group-hover:text-blue-600 rounded-lg sm:rounded-xl flex items-center justify-center mb-2 sm:mb-4 transition-colors">
                   {getCategoryIcon(product.category)}
                 </div>
-                <h3 className="font-medium text-zinc-900 text-[15px] leading-tight line-clamp-2">{product.name}</h3>
+                <h3 className="font-medium text-zinc-900 text-xs sm:text-[15px] leading-snug sm:leading-tight line-clamp-3 sm:line-clamp-2">{product.name}</h3>
               </div>
-              <p className="font-display font-bold text-blue-600 mt-2 text-lg">{formatRupiah(product.price)}</p>
+              <p className="font-display font-bold text-blue-600 mt-2 text-sm sm:text-lg">{formatRupiah(product.price)}</p>
             </Card>
             ))
           )}

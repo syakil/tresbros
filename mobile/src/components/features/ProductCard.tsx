@@ -51,10 +51,11 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: Colors.white,
     borderRadius: Shape.borderRadius.xl,
-    padding: Spacing.base,
+    padding: Spacing.md,
     ...Shape.shadow.sm,
-    minHeight: 100,
-    justifyContent: 'center',
+    minHeight: 120,
+    flex: 1,
+    justifyContent: 'space-between',
   },
   unavailable: {
     opacity: 0.5,
