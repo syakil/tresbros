@@ -188,9 +188,15 @@ namespace backend.Controllers
                 DateTime localMonthStart = new DateTime(localNow.Year, localNow.Month, 1);
                 DateTime utcMonthStart = TimeZoneInfo.ConvertTimeToUtc(localMonthStart, wibZone);
 
-                var thisMonthRevenue = await _context.Orders
+                var thisMonthPosRevenue = await _context.Orders
                     .Where(o => o.CreatedAt >= utcMonthStart && o.CreatedAt <= utcNow && o.PaymentStatus == "success")
                     .SumAsync(o => o.TotalAmount);
+
+                var thisMonthManualIncome = await _context.Incomes
+                    .Where(i => i.Date >= utcMonthStart && i.Date <= utcNow)
+                    .SumAsync(i => i.Amount);
+
+                var thisMonthRevenue = thisMonthPosRevenue + thisMonthManualIncome;
 
                 var thirtyDaysAgo = utcNow.AddDays(-30);
                 var deadStockList = materials.Where(m => m.Stock > 0 && m.LastUpdated < thirtyDaysAgo)
