@@ -71,7 +71,8 @@ namespace backend.Controllers
                     .Where(o => o.CreatedAt >= utcStart && o.CreatedAt <= utcEnd && o.PaymentStatus == "success")
                     .ToListAsync();
 
-                double revenue = orders.Sum(o => o.TotalAmount);
+                double posRevenue = orders.Sum(o => o.TotalAmount);
+                double revenue = posRevenue;
                 int ordersCount = orders.Count;
 
                 // Hitung Top Products
@@ -221,7 +222,9 @@ namespace backend.Controllers
                     wasteSummary,
                     thisMonthRevenue,
                     deadStockList,
-                    notificationList
+                    notificationList,
+                    posRevenue,
+                    manualIncome
                 });
             }
             catch (Exception ex)

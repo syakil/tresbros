@@ -47,10 +47,12 @@ export default function DashboardPage() {
 
   // Helper values derived or simulated from real data to satisfy FnB ERP visual requirements
   const revenue = data?.revenue || 0;
+  const posRevenue = data?.posRevenue || 0;
+  const manualIncome = data?.manualIncome || 0;
   const expenses = data?.expenses || 0;
   const netProfit = data?.netProfit || 0;
   const ordersCount = data?.orders || 0;
-  const avgTransaction = ordersCount > 0 ? Math.round(revenue / ordersCount) : 0;
+  const avgTransaction = ordersCount > 0 ? Math.round(posRevenue / ordersCount) : 0;
   
   // Health Score simulations linked to actual profit margins
   const profitMarginPercent = revenue > 0 ? (netProfit / revenue) * 100 : 0;
@@ -333,7 +335,9 @@ export default function DashboardPage() {
             title: "Rincian Penjualan Hari Ini",
             content: (
               <div className="space-y-4">
-                <div className="flex justify-between border-b pb-2 text-sm"><span className="text-zinc-500">Total Transaksi</span><span className="font-bold">{ordersCount} struk</span></div>
+                <div className="flex justify-between border-b pb-2 text-sm"><span className="text-zinc-500">Total Transaksi Kasir</span><span className="font-bold">{ordersCount} struk</span></div>
+                <div className="flex justify-between border-b pb-2 text-sm"><span className="text-zinc-500">Total Omzet Kasir</span><span className="font-bold">{formatRupiah(posRevenue)}</span></div>
+                <div className="flex justify-between border-b pb-2 text-sm"><span className="text-zinc-500">Pemasukan Manual</span><span className="font-bold">{formatRupiah(manualIncome)}</span></div>
                 <div className="flex justify-between pt-2 text-base font-bold"><span className="text-zinc-900">Total Penjualan Kotor</span><span className="text-purple-600">{formatRupiah(revenue)}</span></div>
               </div>
             )
@@ -389,7 +393,7 @@ export default function DashboardPage() {
             title: "Basket Size (Rata-rata Belanja)",
             content: (
               <div className="space-y-4">
-                <div className="flex justify-between border-b pb-2 text-sm"><span className="text-zinc-500">Total Omzet</span><span className="font-bold">{formatRupiah(revenue)}</span></div>
+                <div className="flex justify-between border-b pb-2 text-sm"><span className="text-zinc-500">Total Omzet Kasir (POS)</span><span className="font-bold">{formatRupiah(posRevenue)}</span></div>
                 <div className="flex justify-between border-b pb-2 text-sm"><span className="text-zinc-500">Dibagi Jumlah Transaksi</span><span className="font-bold">{ordersCount}</span></div>
                 <div className="flex justify-between pt-2 text-base font-bold"><span className="text-zinc-900">Nilai Rata-rata per Struk</span><span className="text-red-600">{formatRupiah(avgTransaction)}</span></div>
               </div>
