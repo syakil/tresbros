@@ -93,7 +93,11 @@ input[type="number"] {
   }
   
   body, html {
+    margin: 0 !important;
+    padding: 0 !important;
     background: white !important;
     color: black !important;
+    -webkit-font-smoothing: none !important;
+    text-rendering: geometricPrecision !important;
   }
 }

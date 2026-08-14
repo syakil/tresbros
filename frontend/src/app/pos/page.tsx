@@ -28,7 +28,7 @@ export default function PosPage() {
   const [isCancellingOrder, setIsCancellingOrder] = useState<boolean>(false);
   const [roundingType, setRoundingType] = useState<'NONE' | 'DOWN_100' | 'UP_100' | 'DOWN_500' | 'UP_500' | 'DOWN_1000' | 'UP_1000'>('NONE');
   const [cashAmountReceived, setCashAmountReceived] = useState<number | ''>('');
-  const [printReceiptData, setPrintReceiptData] = useState<{ total: number; rounding: number; grandTotal: number; cashReceived: number; change: number; paymentMethod: string } | null>(null);
+  const [printReceiptData, setPrintReceiptData] = useState<{ total: number; rounding: number; grandTotal: number; cashReceived: number; change: number; paymentMethod: string; customerName?: string; items?: any[] } | null>(null);
   const [showRoundingDropdown, setShowRoundingDropdown] = useState(false);
   
   // Add Customer Quick Modal State
@@ -225,7 +225,9 @@ export default function PosPage() {
         grandTotal: roundedTotal,
         cashReceived: received,
         change: changeAmount,
-        paymentMethod: paymentMethod
+        paymentMethod: paymentMethod,
+        customerName: customerName,
+        items: items
       });
 
       if (paymentMethod === 'MIDTRANS') {
@@ -1142,11 +1144,9 @@ export default function PosPage() {
     </div>
 
     {/* Struk Print Out (Hidden in browser, visible in print) */}
-    <div className="hidden print:block w-[58mm] max-w-[58mm] bg-white text-black font-mono text-[12px] leading-tight p-0 m-0">
+    <div className="hidden print:block w-[42mm] max-w-[42mm] bg-white text-black font-mono text-[12px] leading-tight p-0 m-0">
       <div className="text-center mb-4">
         <h1 className="font-bold text-[16px]">TRESBROS COFFEE</h1>
-        <p>Jl. Contoh Bisnis No. 123</p>
-        <p>Telp: 0812-3456-7890</p>
       </div>
       
       <div className="border-b border-black border-dashed mb-2"></div>
@@ -1156,16 +1156,16 @@ export default function PosPage() {
         <p>Time : {isMounted ? new Date().toLocaleString('id-ID') : ''}</p>
         {lastOrderNumber && <p>Order No: {lastOrderNumber}</p>}
         {lastQueueNumber && <p className="font-bold text-[14px] mt-1 mb-1">Queue No: {lastQueueNumber}</p>}
-        {customerName && <p>Name  : {customerName}</p>}
+        {(printReceiptData?.customerName || customerName) && <p>Name  : {printReceiptData?.customerName || customerName}</p>}
       </div>
       
       <div className="border-b border-black border-dashed mb-2"></div>
       
       <div className="mb-2">
-        {items.map(item => (
+        {(printReceiptData?.items || items).map((item: any) => (
           <div key={item.cartItemId} className="mb-1">
             <div className="font-bold">{item.name}</div>
-            {item.notes && <div className="text-[10px] text-zinc-600 italic pl-2">- {item.notes}</div>}
+            {item.notes && <div className="pl-2">- {item.notes}</div>}
             <div className="flex justify-between">
               <span>{item.quantity} x {formatRupiah(item.price)}</span>
               <span>{formatRupiah(item.quantity * item.price)}</span>
