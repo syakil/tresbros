@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { Clock, CheckCircle2, ChefHat, User, X } from 'lucide-react';
+import { Clock, CheckCircle2, ChefHat, User, X, Printer } from 'lucide-react';
 
 interface OrderItem {
   id: number;
@@ -59,6 +59,17 @@ const Timer = ({ createdAt }: { createdAt: string }) => {
 export default function KdsPage() {
   const queryClient = useQueryClient();
   const [selectedRecipeItem, setSelectedRecipeItem] = useState<OrderItem | null>(null);
+  const [itemToPrint, setItemToPrint] = useState<{ order: Order; item: OrderItem } | null>(null);
+
+  useEffect(() => {
+    if (itemToPrint) {
+      setTimeout(() => {
+        window.print();
+        // Beri jeda kecil sebelum clear agar dialog print sempat menangkap DOM
+        setTimeout(() => setItemToPrint(null), 500);
+      }, 300);
+    }
+  }, [itemToPrint]);
 
   // Fetch orders with polling every 3 seconds
   const { data: orders = [], isLoading } = useQuery<Order[]>({
@@ -83,7 +94,7 @@ export default function KdsPage() {
   const inProgressOrders = orders.filter(o => o.status === 'IN_PROGRESS' && o.paymentStatus === 'success');
   const doneOrders = orders.filter(o => o.status === 'DONE' && o.paymentStatus === 'success');
 
-  const OrderCardItem = ({ item }: { item: OrderItem }) => {
+  const OrderCardItem = ({ item, order }: { item: OrderItem, order: Order }) => {
     const [showRecipe, setShowRecipe] = useState(false);
     return (
       <div className="flex flex-col gap-2 text-sm border-b border-zinc-100 pb-2.5 last:border-0 last:pb-0 text-left">
@@ -95,12 +106,21 @@ export default function KdsPage() {
             <span className="inline-flex items-center justify-center font-bold text-blue-600 bg-blue-50 border border-blue-100 px-1.5 py-0.5 rounded text-xs mr-2">{item.quantity}x</span> 
             {item.product.name}
           </span>
-          <button 
-            className="text-[10px] uppercase font-bold tracking-wider border border-zinc-200 bg-zinc-50 hover:bg-zinc-105 text-zinc-650 hover:text-zinc-800 px-2.5 py-1 rounded-lg transition-colors whitespace-nowrap ml-2 cursor-pointer"
-            onClick={() => setSelectedRecipeItem(item)}
-          >
-            View Recipe
-          </button>
+          <div className="flex gap-1.5">
+            <button 
+              className="text-[10px] uppercase font-bold tracking-wider border border-zinc-200 bg-zinc-50 hover:bg-zinc-105 text-zinc-650 hover:text-zinc-800 px-2 py-1 rounded-lg transition-colors whitespace-nowrap cursor-pointer flex items-center gap-1"
+              onClick={() => setItemToPrint({ order, item })}
+              title="Print Tiket per Item"
+            >
+              <Printer className="w-3 h-3" /> Print
+            </button>
+            <button 
+              className="text-[10px] uppercase font-bold tracking-wider border border-zinc-200 bg-zinc-50 hover:bg-zinc-105 text-zinc-650 hover:text-zinc-800 px-2 py-1 rounded-lg transition-colors whitespace-nowrap cursor-pointer"
+              onClick={() => setSelectedRecipeItem(item)}
+            >
+              View Recipe
+            </button>
+          </div>
         </div>
         {item.notes && (
           <p className="text-xs text-amber-850 bg-amber-50/70 border border-amber-100 px-2.5 py-1.5 rounded-lg font-medium leading-relaxed">
@@ -172,11 +192,11 @@ export default function KdsPage() {
         
         <div className="flex flex-col gap-3 flex-1 mt-2">
           {order.items.map(item => (
-            <OrderCardItem key={item.id} item={item} />
+            <OrderCardItem key={item.id} item={item} order={order} />
           ))}
         </div>
 
-        <div className="pt-3 border-t border-zinc-100 mt-2">
+        <div className="pt-3 border-t border-zinc-100 mt-2 flex gap-2">
           {order.status === 'TODO' && (
             <Button 
               variant="primary" 
@@ -213,7 +233,8 @@ export default function KdsPage() {
   };
 
   return (
-    <div className="h-[calc(100vh-8rem)] flex flex-col">
+    <>
+    <div className="h-[calc(100vh-8rem)] flex flex-col print:hidden">
       <div className="mb-6 flex justify-between items-end">
         <div>
           <h1 className="text-3xl font-display font-black text-zinc-900 tracking-tight">Kitchen Display System</h1>
@@ -322,5 +343,29 @@ export default function KdsPage() {
       )}
 
     </div>
+
+    {/* KDS Print Output (Visible only when printing tickets) */}
+    {itemToPrint && (
+      <div className="hidden print:block w-[42mm] max-w-[42mm] bg-white text-black font-mono text-[12px] leading-tight p-0 m-0">
+        {Array.from({ length: itemToPrint.item.quantity }).map((_, idx) => (
+            <div key={`${itemToPrint.item.id}-${idx}`} className="break-after-page mb-0 pb-0">
+              <div className="text-center font-bold mb-1 text-[16px] leading-none">
+                {itemToPrint.order.queueNumber || '-'} ( {itemToPrint.order.customerName || 'Guest'} )
+              </div>
+              
+              <div className="border-b border-black border-dashed mb-1"></div>
+              
+              <div className="mb-1">
+                <div className="font-bold text-[14px] leading-tight mb-0.5">{itemToPrint.item.product.name}</div>
+                <div className="text-[10px] leading-none mb-0.5">Cup {idx + 1} of {itemToPrint.item.quantity}</div>
+                {itemToPrint.item.notes && <div className="pl-2 leading-tight">- {itemToPrint.item.notes}</div>}
+              </div>
+              
+              <div className="border-b border-black border-dashed mb-1"></div>
+            </div>
+        ))}
+      </div>
+    )}
+    </>
   );
 }
