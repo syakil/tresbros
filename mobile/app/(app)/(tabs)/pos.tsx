@@ -767,7 +767,6 @@ const styles = StyleSheet.create({
   },
   badgeText: { color: Colors.white, fontSize: 10, fontWeight: '700' },
   categoryScroll: {
-    maxHeight: 44,
     marginVertical: Spacing.sm,
   },
   categoryContent: {
@@ -777,7 +776,7 @@ const styles = StyleSheet.create({
   },
   categoryChip: {
     paddingHorizontal: Spacing.md,
-    paddingVertical: 6,
+    height: 36,
     borderRadius: Shape.borderRadius.full,
     backgroundColor: Colors.white,
     borderWidth: 1,
@@ -789,7 +788,7 @@ const styles = StyleSheet.create({
   categoryText: { ...Typography.captionMedium, color: Colors.zinc600 },
   categoryTextActive: { color: Colors.white },
   productRow: { gap: Spacing.sm, paddingHorizontal: Spacing.base },
-  productList: { paddingTop: Spacing.md, paddingBottom: 80 },
+  productList: { paddingTop: Spacing.md, paddingBottom: 80, gap: Spacing.sm },
   productCol: { flex: 1 },
   cartBar: {
     position: 'absolute',

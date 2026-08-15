@@ -43,6 +43,7 @@ export default function AppLayout() {
       <Stack.Screen name="admin/accounting/profit-loss" />
       <Stack.Screen name="admin/rnd/index" />
       <Stack.Screen name="admin/rnd/[id]" />
+      <Stack.Screen name="admin/transaction-history" />
       <Stack.Screen name="orders/[id]" />
     </Stack>
   );

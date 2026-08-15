@@ -29,7 +29,13 @@ export interface OrderResponse {
 }
 
 export const ordersApi = {
-  getAll: () => client.get<OrderResponse[]>('/api/orders').then((r) => r.data),
+  getAll: (startDate?: string, endDate?: string) => {
+    const params = new URLSearchParams();
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+    return client.get<OrderResponse[]>(`/api/orders${queryString}`).then((r) => r.data);
+  },
 
   getById: (id: number) =>
     client.get<OrderResponse>(`/api/orders/${id}`).then((r) => r.data),

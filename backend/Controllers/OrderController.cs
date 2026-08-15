@@ -22,16 +22,28 @@ namespace backend.Controllers
 
         // GET: api/Order
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Order>>> GetOrders()
+        public async Task<ActionResult<IEnumerable<Order>>> GetOrders([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
         {
-            return await _context.Orders
+            var query = _context.Orders
                 .Include(o => o.Items)
                     .ThenInclude(i => i.Product)
                         .ThenInclude(p => p.RecipeItems)
                             .ThenInclude(r => r.Material)
                 .Include(o => o.Customer)
-                .OrderByDescending(o => o.CreatedAt)
-                .ToListAsync();
+                .AsQueryable();
+
+            if (startDate.HasValue)
+            {
+                query = query.Where(o => o.CreatedAt >= startDate.Value);
+            }
+            if (endDate.HasValue)
+            {
+                // Add 1 day to include the entire end date if it's just the date without time
+                var end = endDate.Value.Date.AddDays(1).AddTicks(-1);
+                query = query.Where(o => o.CreatedAt <= end);
+            }
+
+            return await query.OrderByDescending(o => o.CreatedAt).ToListAsync();
         }
 
         // GET: api/Order/5
@@ -78,59 +90,9 @@ namespace backend.Controllers
             order.QueueNumber = maxQueueToday + 1;
             order.OrderNumber = $"{localTime:yyyyMMdd}{order.QueueNumber:D3}";
 
-            if (order.PaymentMethod == "CASH")
+            if (order.PaymentMethod == "CASH" || order.PaymentMethod == "QRIS")
             {
                 order.PaymentStatus = "success";
-            }
-
-            // Midtrans Integration
-            if (order.PaymentMethod == "MIDTRANS")
-            {
-                var serverKey = _configuration["Midtrans:ServerKey"];
-                var isProduction = _configuration.GetValue<bool>("Midtrans:IsProduction");
-                var snapUrl = isProduction ? "https://app.midtrans.com/snap/v1/transactions" : "https://app.sandbox.midtrans.com/snap/v1/transactions";
-
-                var authString = Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes($"{serverKey}:"));
-                
-                using var client = new HttpClient();
-                client.DefaultRequestHeaders.Add("Authorization", $"Basic {authString}");
-                client.DefaultRequestHeaders.Add("Accept", "application/json");
-
-                var payload = new
-                {
-                    transaction_details = new
-                    {
-                        order_id = $"{order.OrderNumber}-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}",
-                        gross_amount = (int)order.TotalAmount
-                    },
-                    customer_details = new
-                    {
-                        first_name = order.CustomerName ?? "Guest"
-                    }
-                };
-
-                try
-                {
-                    var response = await client.PostAsJsonAsync(snapUrl, payload);
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var result = await response.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
-                        order.SnapToken = result.GetProperty("token").GetString();
-                        order.PaymentUrl = result.GetProperty("redirect_url").GetString();
-                        order.PaymentStatus = "pending";
-                    }
-                    else
-                    {
-                        var errorResponse = await response.Content.ReadAsStringAsync();
-                        Console.WriteLine($"[MIDTRANS ERROR] Status Code: {response.StatusCode}, Response: {errorResponse}");
-                        return BadRequest("Failed to create Midtrans transaction. Check API Key in backend.");
-                    }
-                }
-                catch (System.Exception ex)
-                {
-                    Console.WriteLine($"[MIDTRANS EXCEPTION] {ex.Message}");
-                    return BadRequest("Failed to create Midtrans transaction. Check API Key in backend.");
-                }
             }
 
             _context.Orders.Add(order);
@@ -138,8 +100,8 @@ namespace backend.Controllers
 
             Console.WriteLine($"[ORDER CREATED] ID: {order.Id}, OrderNo: {order.OrderNumber}, Queue: {order.QueueNumber}, PaymentMethod: '{order.PaymentMethod}', TotalAmount: {order.TotalAmount}");
 
-            // Process stock deduction & journal immediately for CASH order
-            if (order.PaymentMethod == "CASH")
+            // Process stock deduction & journal immediately for CASH and QRIS orders
+            if (order.PaymentMethod == "CASH" || order.PaymentMethod == "QRIS")
             {
                 var reloadedOrder = await _context.Orders
                     .Include(o => o.Items)

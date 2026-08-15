@@ -11,29 +11,16 @@ async function requestBluetoothPermission(): Promise<boolean> {
   // On Android 12 (API level 31) and higher
   if (Number(Platform.Version) >= 31) {
     try {
-      const connectGranted = await PermissionsAndroid.request(
+      const granted = await PermissionsAndroid.requestMultiple([
         PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-        {
-          title: 'Izin Koneksi Bluetooth',
-          message: 'Aplikasi membutuhkan izin Bluetooth untuk mencetak struk.',
-          buttonNeutral: 'Tanya Nanti',
-          buttonNegative: 'Batal',
-          buttonPositive: 'OK',
-        }
-      );
-      const scanGranted = await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-        {
-          title: 'Izin Scan Bluetooth',
-          message: 'Aplikasi membutuhkan izin Bluetooth untuk mencari printer.',
-          buttonNeutral: 'Tanya Nanti',
-          buttonNegative: 'Batal',
-          buttonPositive: 'OK',
-        }
-      );
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+      ]);
+      
       return (
-        connectGranted === PermissionsAndroid.RESULTS.GRANTED &&
-        scanGranted === PermissionsAndroid.RESULTS.GRANTED
+        granted[PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT] === PermissionsAndroid.RESULTS.GRANTED &&
+        granted[PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN] === PermissionsAndroid.RESULTS.GRANTED &&
+        granted[PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION] === PermissionsAndroid.RESULTS.GRANTED
       );
     } catch (err) {
       console.warn("Failed to request Android 12 Bluetooth permissions", err);
@@ -130,21 +117,35 @@ export const usePrinterStore = create<PrinterState>((set, get) => ({
     }
     set({ isScanning: true, foundDevices: [], pairedDevices: [] });
     try {
-      const isEnabled = await get().checkBluetoothStatus();
+      let isEnabled = await get().checkBluetoothStatus();
       if (!isEnabled) {
         try {
           await BluetoothManager.enableBluetooth();
-          set({ isBluetoothEnabled: true });
+          
+          // Tunggu sampai Bluetooth benar-benar menyala (polling)
+          let retries = 0;
+          while (!isEnabled && retries < 10) {
+            await new Promise(res => setTimeout(res, 1000));
+            isEnabled = await get().checkBluetoothStatus();
+            retries++;
+          }
+          
+          if (!isEnabled) {
+            throw new Error("Gagal mengaktifkan Bluetooth. Pastikan Bluetooth menyala.");
+          }
         } catch {
           set({ isScanning: false });
-          throw new Error("Mohon aktifkan Bluetooth terlebih dahulu.");
+          throw new Error("Mohon aktifkan Bluetooth terlebih dahulu secara manual.");
         }
       }
+
+      // Beri waktu sedikit agar adapter stabil sebelum memulai scan
+      await new Promise(res => setTimeout(res, 500));
 
       const scanResultStr = await BluetoothManager.scanDevices();
       let scanResult = typeof scanResultStr === 'string' ? JSON.parse(scanResultStr) : scanResultStr;
       
-      const paired: BluetoothDevice[] = (scanResult.devices || []).map((d: any) => ({
+      const paired: BluetoothDevice[] = (scanResult.paired || scanResult.devices || []).map((d: any) => ({
         name: d.name || 'Unnamed Device',
         address: d.address
       }));

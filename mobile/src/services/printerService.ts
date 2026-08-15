@@ -7,7 +7,7 @@ try {
   console.warn("BluetoothEscposPrinter not available.", e);
 }
 
-export const printReceipt = async (order: any, storeName: string = 'Tres Bros Caffè') => {
+export const printReceipt = async (order: any, storeName: string = 'TresBros') => {
   if (!BluetoothEscposPrinter) {
     throw new Error("Modul printer tidak tersedia.");
   }
@@ -100,7 +100,7 @@ export const printReceipt = async (order: any, storeName: string = 'Tres Bros Ca
 
     // 5. Footer & Feeding Paper
     await BluetoothEscposPrinter.printText("Terima Kasih Atas Kunjungan Anda\n", {});
-    await BluetoothEscposPrinter.printText("     Tres Bros Caffè App     \n", {});
+    await BluetoothEscposPrinter.printText("        TresBros App        \n", {});
     await BluetoothEscposPrinter.printText("\n\n", {});
     
     await BluetoothEscposPrinter.printAndFeed(3);

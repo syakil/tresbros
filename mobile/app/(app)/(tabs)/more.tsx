@@ -157,6 +157,22 @@ export default function MoreScreen() {
           <Text style={styles.opnameArrow}>›</Text>
         </TouchableOpacity>
 
+        {/* Riwayat Transaksi */}
+        <TouchableOpacity
+          style={styles.opnameCard}
+          activeOpacity={0.7}
+          onPress={() => router.push('/(app)/admin/transaction-history' as any)}
+        >
+          <View style={styles.opnameLeft}>
+            <Text style={styles.opnameIcon}>🧾</Text>
+            <View>
+              <Text style={styles.opnameTitle}>Riwayat Transaksi</Text>
+              <Text style={styles.opnameDesc}>Lihat & print ulang struk</Text>
+            </View>
+          </View>
+          <Text style={styles.opnameArrow}>›</Text>
+        </TouchableOpacity>
+
         {/* Logout */}
         <View style={styles.logoutContainer}>
           <Button title="Keluar" variant="danger" onPress={handleLogout} fullWidth />
