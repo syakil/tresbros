@@ -43,7 +43,7 @@ export default function POSScreen() {
   const [showCart, setShowCart] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
 
-  const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'MIDTRANS'>('CASH');
+  const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'QRIS'>('CASH');
   const [cashAmountReceived, setCashAmountReceived] = useState<number | ''>('');
   const [roundingType, setRoundingType] = useState<'NONE' | 'DOWN_100' | 'UP_100' | 'DOWN_500' | 'UP_500' | 'DOWN_1000' | 'UP_1000'>('NONE');
   const [showRoundingDropdown, setShowRoundingDropdown] = useState(false);
@@ -136,15 +136,7 @@ export default function POSScreen() {
       setShowCheckout(false);
       setShowCart(false);
       
-      if (order.paymentMethod === 'MIDTRANS' && order.paymentUrl) {
-        try {
-          await WebBrowser.openBrowserAsync(order.paymentUrl);
-        } catch (err) {
-          Alert.alert('Gagal', 'Gagal membuka halaman pembayaran');
-        }
-      } else {
-        setShowSuccessModal(true);
-      }
+      setShowSuccessModal(true);
     },
     onError: (err: Error) => {
       Alert.alert('Gagal', err.message || 'Gagal membuat pesanan');
@@ -412,17 +404,17 @@ export default function POSScreen() {
                 <TouchableOpacity
                   style={[
                     styles.methodBtn,
-                    paymentMethod === 'MIDTRANS' && styles.methodBtnActive,
+                    paymentMethod === 'QRIS' && styles.methodBtnActive,
                   ]}
-                  onPress={() => setPaymentMethod('MIDTRANS')}
+                  onPress={() => setPaymentMethod('QRIS')}
                 >
                   <Text
                     style={[
                       styles.methodBtnText,
-                      paymentMethod === 'MIDTRANS' && styles.methodBtnTextActive,
+                      paymentMethod === 'QRIS' && styles.methodBtnTextActive,
                     ]}
                   >
-                    💳 Midtrans (QRIS/VA)
+                    💳 QRIS (Manual)
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -560,9 +552,9 @@ export default function POSScreen() {
               ) : (
                 <View style={styles.midtransContainer}>
                   <View style={styles.midtransInfoBox}>
-                    <Text style={styles.midtransTitle}>Pembayaran Online</Text>
+                    <Text style={styles.midtransTitle}>Pembayaran QRIS</Text>
                     <Text style={styles.midtransDesc}>
-                      Pesanan akan dikirimkan ke Midtrans untuk diproses. Aplikasi akan membuka halaman pembayaran (Snap) secara aman langsung di dalam aplikasi.
+                      Silakan arahkan pelanggan untuk memindai kode QRIS toko Anda. Setelah pembayaran dikonfirmasi, tekan tombol proses.
                     </Text>
                   </View>
                   <View style={styles.rowInfoActive}>
@@ -582,7 +574,7 @@ export default function POSScreen() {
                 style={{ flex: 1 }}
               />
               <Button
-                title={paymentMethod === 'CASH' ? 'Proses Bayar' : 'Bayar via Midtrans'}
+                title={paymentMethod === 'CASH' ? 'Proses Bayar' : 'Konfirmasi QRIS'}
                 onPress={processCheckout}
                 loading={createOrder.isPending}
                 disabled={
