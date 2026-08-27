@@ -1,0 +1,41 @@
+# Tresbros Caffè — Global Cline Rules
+
+## Mandatory Context Bootstrap
+
+Before answering, planning, or editing:
+
+1. Read `docs/agent-context/01-project-overview.md`.
+2. Read `docs/agent-context/02-repository-structure.md`.
+3. Read `docs/agent-context/03-technology-and-commands.md`.
+4. Read `docs/agent-context/04-system-architecture.md`.
+5. Read the specialist context document relevant to the task.
+6. Inspect actual source/configuration before making assumptions.
+
+For frontend work, also read `frontend/AGENTS.md` and `frontend/CLAUDE.md` when present.
+
+## Source-of-Truth Rules
+
+- Source code and runtime configuration outrank README, BRD, feature specs, and plans.
+- Treat `mobile/PLAN.md` and `brd.md` as requirements/plans unless verified in source.
+- Redis, RabbitMQ, workers, Prometheus, and Grafana are TBA; do not treat them as active dependencies without evidence.
+- Use only dependencies already confirmed in the relevant manifest unless the task explicitly requires a new one.
+
+## Work Method
+
+- Explain understanding, scope, affected files, implementation plan, and validation plan before editing.
+- Search for the nearest existing implementation and follow its conventions.
+- Make the smallest change that solves the task.
+- Preserve API contracts, auth checks, stock invariants, accounting invariants, and existing UX.
+- Do not modify unrelated files.
+- Do not expose or copy secrets, passwords, tokens, API keys, or DSNs.
+- Use absolute paths in reports.
+
+## Validation
+
+After editing:
+
+- Review every changed file and the final diff.
+- Run the relevant lint, typecheck, build, and tests.
+- If validation cannot run, state the exact reason.
+- Update `docs/agent-context/` when architecture, commands, security, or conventions change.
+- Report files changed, checks run, results, and remaining risks.

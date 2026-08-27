@@ -61,6 +61,9 @@ export const ordersApi = {
   updateStatus: (id: number, status: string) =>
     client.patch(`/api/orders/${id}`, { status }).then((r) => r.data),
 
+  cancel: (id: number) =>
+    client.post(`/api/orders/${id}/cancel`).then((r) => r.data),
+
   delete: (id: number) =>
     client.delete(`/api/orders/${id}`).then((r) => r.data),
 };

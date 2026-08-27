@@ -11,7 +11,7 @@ import { Shape } from '@/theme/shape';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { ordersApi, OrderResponse } from '@/api/orders';
-import { formatCurrency } from '@/utils/formatters';
+import { formatCurrency } from '@/utils/format';
 import { usePrinterStore } from '@/store/usePrinterStore';
 import { printReceipt } from '@/services/printerService';
 
@@ -80,6 +80,25 @@ export default function TransactionHistoryScreen() {
     }
   };
 
+  const handleCancel = (order: OrderResponse) => {
+    Alert.alert('Konfirmasi', 'Apakah Anda yakin ingin membatalkan transaksi ini? Stok akan dikembalikan.', [
+      { text: 'Tidak' },
+      {
+        text: 'Ya, Batalkan',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await ordersApi.cancel(order.id);
+            Alert.alert('Sukses', 'Transaksi berhasil dibatalkan.');
+            fetchOrders(selectedFilter);
+          } catch (e: any) {
+            Alert.alert('Error', e.message || 'Gagal membatalkan transaksi.');
+          }
+        },
+      },
+    ]);
+  };
+
   const getFilterLabel = (filter: string) => {
     if (filter === 'today') return 'Hari Ini';
     if (filter === 'yesterday') return 'Kemarin';
@@ -94,8 +113,15 @@ export default function TransactionHistoryScreen() {
           <Text style={styles.orderNumber}>{item.orderNumber}</Text>
           <Text style={styles.orderDate}>{format(new Date(item.createdAt), 'dd MMM yyyy, HH:mm', { locale: id })}</Text>
         </View>
-        <View style={styles.paymentBadge}>
-          <Text style={styles.paymentText}>{item.paymentMethod}</Text>
+        <View style={styles.badgesContainer}>
+          <View style={styles.paymentBadge}>
+            <Text style={styles.paymentText}>{item.paymentMethod}</Text>
+          </View>
+          {item.status === 'CANCELLED' && (
+            <View style={[styles.paymentBadge, { backgroundColor: Colors.danger }]}>
+              <Text style={[styles.paymentText, { color: Colors.white }]}>DIBATALKAN</Text>
+            </View>
+          )}
         </View>
       </View>
 
@@ -106,13 +132,23 @@ export default function TransactionHistoryScreen() {
           <Text style={styles.totalLabel}>Total Transaksi</Text>
           <Text style={styles.totalAmount}>{formatCurrency(item.totalAmount)}</Text>
         </View>
-        <TouchableOpacity 
-          style={styles.printBtn} 
-          onPress={() => handlePrint(item)}
-          disabled={isPrinting}
-        >
-          <Text style={styles.printBtnText}>Print Ulang</Text>
-        </TouchableOpacity>
+        <View style={styles.actionButtons}>
+          {item.status !== 'CANCELLED' && (
+            <TouchableOpacity 
+              style={styles.cancelBtn} 
+              onPress={() => handleCancel(item)}
+            >
+              <Text style={styles.cancelBtnText}>Batalkan</Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity 
+            style={styles.printBtn} 
+            onPress={() => handlePrint(item)}
+            disabled={isPrinting || item.status === 'CANCELLED'}
+          >
+            <Text style={styles.printBtnText}>Print Ulang</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </Card>
   );
@@ -247,6 +283,27 @@ const styles = StyleSheet.create({
     ...Typography.bodyLarge,
     fontWeight: 'bold',
     color: Colors.olive,
+  },
+  badgesContainer: {
+    alignItems: 'flex-end',
+    gap: 4,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  cancelBtn: {
+    backgroundColor: Colors.white,
+    borderWidth: 1,
+    borderColor: Colors.danger,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: Shape.borderRadius.md,
+  },
+  cancelBtnText: {
+    ...Typography.captionMedium,
+    color: Colors.danger,
+    fontWeight: '600',
   },
   printBtn: {
     backgroundColor: Colors.zinc800,
