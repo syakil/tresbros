@@ -635,6 +635,33 @@ namespace backend.Controllers
                 return NotFound();
             }
 
+            // Check dependencies
+            bool inRecipe = await _context.RecipeItems.AnyAsync(r => r.MaterialId == id);
+            bool inPurchase = await _context.PurchaseItems.AnyAsync(p => p.MaterialId == id);
+            bool inRnD = await _context.RnDRecipeIngredients.AnyAsync(r => r.MaterialId == id);
+
+            if (inRecipe || inPurchase || inRnD)
+            {
+                return BadRequest(new { 
+                    error = "Tidak dapat menghapus material.", 
+                    message = "Bahan baku ini masih digunakan dalam resep, riwayat pembelian, atau resep R&D. Jika tidak digunakan lagi, ubah stok menjadi 0." 
+                });
+            }
+
+            // Safe to delete. First, delete associated batches
+            var batches = await _context.MaterialBatches.Where(b => b.MaterialId == id).ToListAsync();
+            if (batches.Any())
+            {
+                _context.MaterialBatches.RemoveRange(batches);
+            }
+
+            // Handle CalibrationLogs (set MaterialId to null)
+            var logs = await _context.CalibrationLogs.Where(c => c.MaterialId == id).ToListAsync();
+            foreach (var log in logs)
+            {
+                log.MaterialId = null;
+            }
+
             _context.Materials.Remove(material);
             await _context.SaveChangesAsync();
 

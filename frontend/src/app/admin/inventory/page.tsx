@@ -278,10 +278,32 @@ export default function InventoryPage() {
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['materials'] });
       queryClient.invalidateQueries({ queryKey: ['material-batches', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['material-batches', variables.id] });
       setEditMaterialData(null);
-      showAlert("Material master updated successfully!", "success");
+      showAlert("Master data updated successfully!", "success");
     }
   });
+
+  const deleteMaterial = useMutation({
+    mutationFn: async (id: number) => {
+      const { data } = await axios.delete(`/api/materials/${id}`);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['materials'] });
+      showAlert("Material deleted successfully!", "success");
+    },
+    onError: (error: any) => {
+      const msg = error.response?.data?.message || "Failed to delete material.";
+      showAlert(msg, "error");
+    }
+  });
+
+  const handleDeleteMaterial = (id: number, name: string) => {
+    if (window.confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
+      deleteMaterial.mutate(id);
+    }
+  };
 
   const handleAddBulkMaterial = () => {
     if (bulkItems.every(i => !i.name.trim())) return showAlert("At least one material name is required!", "error");
@@ -525,12 +547,20 @@ export default function InventoryPage() {
               {/* Collapsible Action Area */}
               {isExpanded && (
                 <div className="bg-zinc-50 p-3 flex flex-col gap-3 border-t border-zinc-100 shadow-inner animate-in fade-in slide-in-from-top-4 duration-300">
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); setEditMaterialData(item); }} 
-                    className="w-full bg-white hover:bg-zinc-100 py-2 rounded-lg text-zinc-600 hover:text-zinc-900 text-xs font-medium border border-zinc-200 transition shadow-sm"
-                  >
-                    Edit Master Data
-                  </button>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); setEditMaterialData(item); }} 
+                      className="flex-1 bg-white hover:bg-zinc-100 py-2 rounded-lg text-zinc-600 hover:text-zinc-900 text-xs font-medium border border-zinc-200 transition shadow-sm"
+                    >
+                      Edit Master Data
+                    </button>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); handleDeleteMaterial(item.id, item.name); }} 
+                      className="bg-red-50 hover:bg-red-100 py-2 px-3 rounded-lg text-red-600 hover:text-red-700 text-xs font-bold border border-red-200 transition shadow-sm"
+                    >
+                      Delete
+                    </button>
+                  </div>
                   
                   {/* Detail Batches */}
                   <MaterialBatchesSection materialId={item.id} unit={item.unit} showAlert={showAlert} />
@@ -667,14 +697,21 @@ export default function InventoryPage() {
                           className="bg-white border-zinc-200 text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 shadow-sm"
                           onClick={() => setEditMaterialData(item)}
                         >
-                          Edit Data
+                          Edit
                         </Button>
                         <Button 
                           variant="outline" 
                           className={`shadow-sm border-zinc-200 transition-colors ${showAdjust === item.id ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-white text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900'}`}
                           onClick={() => setShowAdjust(showAdjust === item.id ? null : item.id)}
                         >
-                          Adjust Stock
+                          Adjust
+                        </Button>
+                        <Button 
+                          variant="danger" 
+                          className="shadow-sm"
+                          onClick={() => handleDeleteMaterial(item.id, item.name)}
+                        >
+                          Delete
                         </Button>
                       </div>
                     </td>
