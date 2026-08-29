@@ -211,6 +211,9 @@ export default function InventoryPage() {
   // State edit popup
   const [editMaterialData, setEditMaterialData] = useState<any>(null);
 
+  // State delete confirm modal
+  const [deleteConfirm, setDeleteConfirm] = useState<{id: number, name: string} | null>(null);
+
   const { data: materials = [], isLoading } = useQuery({
     queryKey: ['materials'],
     queryFn: async () => {
@@ -300,9 +303,7 @@ export default function InventoryPage() {
   });
 
   const handleDeleteMaterial = (id: number, name: string) => {
-    if (window.confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
-      deleteMaterial.mutate(id);
-    }
+    setDeleteConfirm({ id, name });
   };
 
   const handleAddBulkMaterial = () => {
@@ -864,6 +865,22 @@ export default function InventoryPage() {
               <Button variant="outline" onClick={() => setEditMaterialData(null)} className="bg-white border-zinc-200 hover:bg-zinc-50 text-zinc-700">Cancel</Button>
               <Button variant="primary" onClick={handleUpdateMaster} disabled={updateMasterMaterial.isPending}>
                 {updateMasterMaterial.isPending ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Modal Confirm Delete */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-md bg-white border border-zinc-200 shadow-xl">
+            <h2 className="text-xl font-display font-bold text-zinc-900 mb-2">Delete Material</h2>
+            <p className="text-zinc-600 mb-6 text-sm">Are you sure you want to delete &quot;<span className="font-bold text-zinc-800">{deleteConfirm.name}</span>&quot;? This action cannot be undone.</p>
+            <div className="flex gap-3 justify-end">
+              <Button variant="outline" onClick={() => setDeleteConfirm(null)} className="bg-white border-zinc-200 hover:bg-zinc-50 text-zinc-700">Cancel</Button>
+              <Button variant="primary" className="bg-red-600 hover:bg-red-700 text-white border-transparent" onClick={() => { deleteMaterial.mutate(deleteConfirm.id); setDeleteConfirm(null); }} disabled={deleteMaterial.isPending}>
+                {deleteMaterial.isPending ? 'Deleting...' : 'Delete'}
               </Button>
             </div>
           </Card>
