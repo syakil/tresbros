@@ -104,21 +104,30 @@ namespace backend.Controllers
 
             // Create Journal Entry
             var invAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "1140");
-            var cashAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "1110");
             
-            if (invAccount != null && cashAccount != null)
+            string creditCode = purchase.PaymentMethod switch
+            {
+                "CASH" => "1110",
+                "QRIS" => "1111",
+                "BANK" => "1120",
+                "UTANG" => "2110",
+                _ => "1110"
+            };
+            var creditAccount = await _context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == creditCode);
+            
+            if (invAccount != null && creditAccount != null)
             {
                 var journal = new JournalEntry
                 {
                     Date = DateTime.UtcNow,
                     Reference = purchase.PurchaseNo,
-                    Description = $"Pembelian bahan baku {purchase.PurchaseNo}",
+                    Description = $"Pembelian bahan baku {purchase.PurchaseNo} ({purchase.PaymentMethod})",
                     Lines = new List<JournalEntryLine>()
                 };
 
-                // Debit Inventory, Credit Cash
+                // Debit Inventory, Credit Source
                 journal.Lines.Add(new JournalEntryLine { Account = invAccount, Debit = purchase.TotalAmount, Credit = 0 });
-                journal.Lines.Add(new JournalEntryLine { Account = cashAccount, Debit = 0, Credit = purchase.TotalAmount });
+                journal.Lines.Add(new JournalEntryLine { Account = creditAccount, Debit = 0, Credit = purchase.TotalAmount });
 
                 _context.JournalEntries.Add(journal);
             }

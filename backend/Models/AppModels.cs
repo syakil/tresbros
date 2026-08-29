@@ -148,6 +148,7 @@ namespace backend.Models
         public string SupplierName { get; set; } = string.Empty;
         public double TotalAmount { get; set; }
         public string Status { get; set; } = "COMPLETED";
+        public string PaymentMethod { get; set; } = "CASH"; // CASH, BANK, QRIS, UTANG
         public string? ReceiptUrl { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public ICollection<PurchaseItem> Items { get; set; } = new List<PurchaseItem>();

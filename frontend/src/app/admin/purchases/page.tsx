@@ -11,6 +11,7 @@ export default function PurchasesPage() {
   const queryClient = useQueryClient();
   const [showAdd, setShowAdd] = useState(false);
   const [supplier, setSupplier] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('CASH');
   const [purchaseItems, setPurchaseItems] = useState([
     { materialId: '', qty: '', price: '' }
   ]);
@@ -57,6 +58,7 @@ export default function PurchasesPage() {
       queryClient.invalidateQueries({ queryKey: ['materials'] });
       setShowAdd(false);
       setSupplier('');
+      setPaymentMethod('CASH');
       setPurchaseItems([{ materialId: '', qty: '', price: '' }]);
       setReceiptFile(null);
       setReceiptBase64('');
@@ -128,6 +130,7 @@ export default function PurchasesPage() {
     createPurchase.mutate({
       purchaseNo: "",
       supplierName: supplier,
+      paymentMethod,
       receiptBase64,
       receiptFileName: receiptFile?.name,
       items: validItems.map(item => ({
@@ -215,7 +218,7 @@ export default function PurchasesPage() {
             </div>
 
             <div className="flex flex-col md:flex-row gap-6">
-              <div className="w-full md:w-1/2">
+              <div className="w-full md:w-1/3">
                 <label className="text-xs font-semibold text-zinc-600 mb-1.5 block uppercase tracking-wider">Supplier / Store Name</label>
                 <input
                   type="text"
@@ -226,7 +229,22 @@ export default function PurchasesPage() {
                 />
               </div>
 
-              <div className="w-full md:w-1/2">
+              <div className="w-full md:w-1/3">
+                <label className="text-xs font-semibold text-zinc-600 mb-1.5 block uppercase tracking-wider">Sumber Dana</label>
+                <CustomSelect
+                  value={paymentMethod}
+                  onChange={setPaymentMethod}
+                  options={[
+                    { value: 'CASH', label: 'Kas Kecil (CASH)' },
+                    { value: 'BANK', label: 'Transfer Bank' },
+                    { value: 'QRIS', label: 'Saldo QRIS' },
+                    { value: 'UTANG', label: 'Hutang (Bayar Nanti)' }
+                  ]}
+                  className="bg-white border-zinc-200"
+                />
+              </div>
+
+              <div className="w-full md:w-1/3">
                 <label className="text-xs font-semibold text-zinc-600 mb-1.5 block uppercase tracking-wider">Upload Receipt Photo (Optional)</label>
                 <div className="flex items-center gap-4">
                   <label className="cursor-pointer bg-white hover:bg-zinc-50 border border-zinc-200 text-zinc-700 rounded-xl px-4 py-3 flex items-center gap-2 transition-colors w-full md:w-auto justify-center shadow-sm">
@@ -417,6 +435,7 @@ export default function PurchasesPage() {
                 <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Supplier</th>
                 <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Date</th>
                 <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Shopping Items</th>
+                <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs text-center">Source</th>
                 <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs text-right">Total Amount</th>
                 <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs text-center">Status</th>
               </tr>
@@ -445,6 +464,11 @@ export default function PurchasesPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4">{po.items.length} Types of Materials</td>
+                  <td className="px-6 py-4 text-center">
+                    <span className="bg-zinc-100 text-zinc-700 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                      {po.paymentMethod || 'CASH'}
+                    </span>
+                  </td>
                   <td className="px-6 py-4 text-right font-semibold text-zinc-900">
                     Rp {po.totalAmount.toLocaleString('id-ID')}
                   </td>
@@ -491,7 +515,7 @@ export default function PurchasesPage() {
             {/* Content (Scrollable) */}
             <div className="overflow-y-auto p-4 md:p-6 flex flex-col gap-6">
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div className="bg-zinc-50 p-4 rounded-xl border border-zinc-200">
                   <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1 font-semibold">Supplier Name</p>
                   <p className="font-medium text-zinc-900">{selectedPO.supplierName}</p>
@@ -499,6 +523,12 @@ export default function PurchasesPage() {
                 <div className="bg-zinc-50 p-4 rounded-xl border border-zinc-200">
                   <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1 font-semibold">Transaction Time</p>
                   <p className="font-medium text-zinc-900">{new Date(selectedPO.createdAt).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}</p>
+                </div>
+                <div className="bg-zinc-50 p-4 rounded-xl border border-zinc-200 col-span-2 md:col-span-1">
+                  <p className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1 font-semibold">Payment Source</p>
+                  <span className="inline-block bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-md font-bold uppercase tracking-wider">
+                    {selectedPO.paymentMethod || 'CASH'}
+                  </span>
                 </div>
               </div>
 
