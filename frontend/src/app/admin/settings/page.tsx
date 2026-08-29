@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button';
 import axios from 'axios';
 import { Save, Trash2, BookOpen, ShoppingCart, Package } from 'lucide-react';
 
-type ResetScope = 'journals' | 'transactions' | 'stock';
+type ResetScope = 'journals' | 'transactions' | 'stock' | 'products';
 
 interface ResetCardProps {
   scope: ResetScope;

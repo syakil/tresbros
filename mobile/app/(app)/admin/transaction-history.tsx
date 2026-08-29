@@ -8,8 +8,9 @@ import { Colors } from '@/theme/colors';
 import { Typography } from '@/theme/typography';
 import { Spacing } from '@/theme/spacing';
 import { Shape } from '@/theme/shape';
-import { format, subDays, startOfDay, endOfDay } from 'date-fns';
+import { format, startOfDay, endOfDay, isSameDay } from 'date-fns';
 import { id } from 'date-fns/locale';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { ordersApi, OrderResponse } from '@/api/orders';
 import { formatCurrency } from '@/utils/format';
 import { usePrinterStore } from '@/store/usePrinterStore';
@@ -20,35 +21,24 @@ export default function TransactionHistoryScreen() {
   const printer = usePrinterStore();
   const [orders, setOrders] = useState<OrderResponse[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedFilter, setSelectedFilter] = useState<'today' | 'yesterday' | 'last7days' | 'all'>('today');
+  
+  const [startDate, setStartDate] = useState<Date>(startOfDay(new Date()));
+  const [endDate, setEndDate] = useState<Date>(endOfDay(new Date()));
+  const [showPicker, setShowPicker] = useState<'start' | 'end' | null>(null);
+
   const [selectedPayment, setSelectedPayment] = useState<'ALL' | 'CASH' | 'QRIS'>('ALL');
-  const [showFilterModal, setShowFilterModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
 
   useEffect(() => {
-    fetchOrders(selectedFilter);
-  }, [selectedFilter, selectedPayment]);
+    fetchOrders();
+  }, [startDate, endDate, selectedPayment]);
 
-  const fetchOrders = async (filter: 'today' | 'yesterday' | 'last7days' | 'all') => {
+  const fetchOrders = async () => {
     setLoading(true);
     try {
-      const now = new Date();
-      let start: Date | undefined;
-      let end: Date | undefined;
-
-      if (filter === 'today') {
-        start = startOfDay(now);
-      } else if (filter === 'yesterday') {
-        start = startOfDay(subDays(now, 1));
-        end = endOfDay(subDays(now, 1));
-      } else if (filter === 'last7days') {
-        start = startOfDay(subDays(now, 7));
-      }
-      // 'all' => no date filter
-
-      const startDateStr = start?.toISOString();
-      const endDateStr = end?.toISOString();
+      const startDateStr = startDate.toISOString();
+      const endDateStr = endDate.toISOString();
 
       const data = await ordersApi.getAll(startDateStr, endDateStr, selectedPayment);
       setOrders(data);
@@ -57,6 +47,26 @@ export default function TransactionHistoryScreen() {
       Alert.alert('Error', 'Gagal memuat riwayat transaksi');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const onDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    const isStart = showPicker === 'start';
+    if (selectedDate) {
+      if (isStart) {
+        setStartDate(startOfDay(selectedDate));
+        if (event.type !== 'dismissed') {
+          // Open end date picker automatically if they didn't dismiss
+          setShowPicker('end');
+        } else {
+          setShowPicker(null);
+        }
+      } else {
+        setEndDate(endOfDay(selectedDate));
+        setShowPicker(null);
+      }
+    } else {
+      setShowPicker(null);
     }
   };
 
@@ -93,7 +103,7 @@ export default function TransactionHistoryScreen() {
           try {
             await ordersApi.cancel(order.id);
             Alert.alert('Sukses', 'Transaksi berhasil dibatalkan.');
-            fetchOrders(selectedFilter);
+            fetchOrders();
           } catch (e: any) {
             Alert.alert('Error', e.message || 'Gagal membatalkan transaksi.');
           }
@@ -102,12 +112,11 @@ export default function TransactionHistoryScreen() {
     ]);
   };
 
-  const getFilterLabel = (filter: string) => {
-    if (filter === 'today') return 'Hari Ini';
-    if (filter === 'yesterday') return 'Kemarin';
-    if (filter === 'last7days') return '7 Hari';
-    if (filter === 'all') return 'Semua';
-    return '';
+  const getFilterLabel = () => {
+    if (isSameDay(startDate, endDate)) {
+      return format(startDate, 'dd MMM', { locale: id });
+    }
+    return `${format(startDate, 'dd MMM')} - ${format(endDate, 'dd MMM')}`;
   };
 
   const getPaymentLabel = (pm: string) => {
@@ -172,8 +181,8 @@ export default function TransactionHistoryScreen() {
         onBack={() => router.back()}
         rightElement={
           <View style={styles.headerFilters}>
-            <TouchableOpacity onPress={() => setShowFilterModal(true)} style={styles.headerFilterBtn}>
-              <Text style={styles.filterText}>{getFilterLabel(selectedFilter)}</Text>
+            <TouchableOpacity onPress={() => setShowPicker('start')} style={styles.headerFilterBtn}>
+              <Text style={styles.filterText}>{getFilterLabel()}</Text>
               <Text style={styles.filterChevron}>▾</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setShowPaymentModal(true)} style={styles.headerFilterBtn}>
@@ -203,32 +212,14 @@ export default function TransactionHistoryScreen() {
         />
       )}
 
-      {/* Filter Modal */}
-      <Modal
-        visible={showFilterModal}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setShowFilterModal(false)}
-      >
-        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setShowFilterModal(false)}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Pilih Periode</Text>
-            
-            {(['today', 'yesterday', 'last7days', 'all'] as const).map((opt) => (
-              <TouchableOpacity
-                key={opt}
-                style={[styles.filterOption, selectedFilter === opt && styles.filterOptionActive]}
-                onPress={() => {
-                  setSelectedFilter(opt);
-                  setShowFilterModal(false);
-                }}
-              >
-                <Text style={[styles.filterOptionText, selectedFilter === opt && styles.filterOptionTextActive]}>
-                  {getFilterLabel(opt)}
-                </Text>
-                {selectedFilter === opt && <Text style={styles.checkmark}>✓</Text>}
-              </TouchableOpacity>
-            ))}
+      {showPicker && (
+        <DateTimePicker
+          value={showPicker === 'start' ? startDate : endDate}
+          mode="date"
+          display="default"
+          onChange={onDateChange}
+        />
+      )}
 
       {/* Payment Method Modal */}
       <Modal
