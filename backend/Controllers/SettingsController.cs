@@ -71,12 +71,12 @@ namespace backend.Controllers
                     UPDATE ""ChartOfAccounts"" SET ""Balance"" = 0;
                     COMMIT;");
 
-                return Ok(new { message = "Journal entries cleared successfully." });
+                return Ok(new { message = "Jurnal berhasil di-reset. Semua journal entries dan saldo COA telah direset ke 0." });
             }
             catch (System.Exception ex)
             {
                 try { await _context.Database.ExecuteSqlRawAsync(@"ROLLBACK;"); } catch { }
-                return StatusCode(500, new { error = "Reset journals failed: " + ex.Message });
+                return StatusCode(500, new { error = "Gagal reset jurnal. Error: " + ex.Message + ". Pastikan tidak ada foreign key constraint yang aktif." });
             }
         }
 
@@ -101,12 +101,12 @@ namespace backend.Controllers
                     UPDATE ""ChartOfAccounts"" SET ""Balance"" = 0;
                     COMMIT;");
 
-                return Ok(new { message = "Transactions cleared successfully." });
+                return Ok(new { message = "Transaksi berhasil di-reset. Semua orders, purchases, expenses, dan incomes telah dihapus." });
             }
             catch (System.Exception ex)
             {
                 try { await _context.Database.ExecuteSqlRawAsync(@"ROLLBACK;"); } catch { }
-                return StatusCode(500, new { error = "Reset transactions failed: " + ex.Message });
+                return StatusCode(500, new { error = "Gagal reset transaksi. Error: " + ex.Message + ". Pastikan tidak ada foreign key constraint yang aktif." });
             }
         }
 
@@ -131,12 +131,12 @@ namespace backend.Controllers
                     DELETE FROM ""Assets"";
                     COMMIT;");
 
-                return Ok(new { message = "Stock and products cleared successfully." });
+                return Ok(new { message = "Stok berhasil di-reset. Semua materials, products, dan recipes telah dihapus." });
             }
             catch (System.Exception ex)
             {
                 try { await _context.Database.ExecuteSqlRawAsync(@"ROLLBACK;"); } catch { }
-                return StatusCode(500, new { error = "Reset stock failed: " + ex.Message });
+                return StatusCode(500, new { error = "Gagal reset stok. Error: " + ex.Message + ". Pastikan tidak ada foreign key constraint yang aktif." });
             }
         }
 
@@ -178,12 +178,12 @@ namespace backend.Controllers
                     UPDATE ""ChartOfAccounts"" SET ""Balance"" = 0;
                     COMMIT;");
 
-                return Ok(new { message = "Database reset successfully." });
+                return Ok(new { message = "Database berhasil di-reset semua data. Users, roles, dan settings tetap aman." });
             }
             catch (System.Exception ex)
             {
                 try { await _context.Database.ExecuteSqlRawAsync(@"ROLLBACK;"); } catch { }
-                return StatusCode(500, new { error = "Reset database failed: " + ex.Message });
+                return StatusCode(500, new { error = "Gagal reset database. Error: " + ex.Message + ". Pastikan tidak ada foreign key constraint yang aktif." });
             }
         }
     }
