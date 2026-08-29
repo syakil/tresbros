@@ -3,7 +3,7 @@ import { backendClient } from '@/lib/backendClient';
 
 export async function POST() {
   try {
-    const response = await backendClient.post('/api/Settings/reset-transactions');
+    const response = await backendClient.post('/api/Settings/reset-transactions', {});
     return NextResponse.json(response.data, { status: 200 });
   } catch (error: any) {
     return NextResponse.json(

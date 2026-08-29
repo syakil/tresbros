@@ -7,7 +7,7 @@ export async function POST(req: Request, context: any) {
     const orderId = parseInt(params.id);
 
     // Forward cancel request to .NET backend
-    await backendClient.post(`/api/Order/${orderId}/cancel`);
+    await backendClient.post(`/api/Order/${orderId}/cancel`, {});
 
     return NextResponse.json({ success: true, message: 'Order cancelled successfully' });
   } catch (error: any) {
