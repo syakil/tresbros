@@ -29,12 +29,21 @@ export interface OrderResponse {
 }
 
 export const ordersApi = {
-  getAll: (startDate?: string, endDate?: string) => {
+  getAll: (startDate?: string, endDate?: string, paymentMethod?: 'ALL' | 'CASH' | 'QRIS') => {
     const params = new URLSearchParams();
     if (startDate) params.append('startDate', startDate);
     if (endDate) params.append('endDate', endDate);
     const queryString = params.toString() ? `?${params.toString()}` : '';
-    return client.get<OrderResponse[]>(`/api/orders${queryString}`).then((r) => r.data);
+    return client.get<OrderResponse[]>(`/api/orders${queryString}`).then((r) => {
+      let orders = r.data;
+      // Filter by payment method on client side
+      if (paymentMethod && paymentMethod !== 'ALL') {
+        orders = orders.filter((o) => o.paymentMethod === paymentMethod);
+      }
+      // Sort by createdAt descending (newest first)
+      orders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      return orders;
+    });
   },
 
   getById: (id: number) =>

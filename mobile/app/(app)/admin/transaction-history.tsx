@@ -20,34 +20,37 @@ export default function TransactionHistoryScreen() {
   const printer = usePrinterStore();
   const [orders, setOrders] = useState<OrderResponse[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedFilter, setSelectedFilter] = useState<'today' | 'yesterday' | 'last7days'>('today');
+  const [selectedFilter, setSelectedFilter] = useState<'today' | 'yesterday' | 'last7days' | 'all'>('today');
+  const [selectedPayment, setSelectedPayment] = useState<'ALL' | 'CASH' | 'QRIS'>('ALL');
   const [showFilterModal, setShowFilterModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
 
   useEffect(() => {
     fetchOrders(selectedFilter);
-  }, [selectedFilter]);
+  }, [selectedFilter, selectedPayment]);
 
-  const fetchOrders = async (filter: 'today' | 'yesterday' | 'last7days') => {
+  const fetchOrders = async (filter: 'today' | 'yesterday' | 'last7days' | 'all') => {
     setLoading(true);
     try {
       const now = new Date();
-      let start: Date;
-      let end: Date = now;
+      let start: Date | undefined;
+      let end: Date | undefined;
 
       if (filter === 'today') {
         start = startOfDay(now);
       } else if (filter === 'yesterday') {
         start = startOfDay(subDays(now, 1));
         end = endOfDay(subDays(now, 1));
-      } else {
+      } else if (filter === 'last7days') {
         start = startOfDay(subDays(now, 7));
       }
+      // 'all' => no date filter
 
-      const startDateStr = start.toISOString();
-      const endDateStr = end.toISOString();
+      const startDateStr = start?.toISOString();
+      const endDateStr = end?.toISOString();
 
-      const data = await ordersApi.getAll(startDateStr, endDateStr);
+      const data = await ordersApi.getAll(startDateStr, endDateStr, selectedPayment);
       setOrders(data);
     } catch (error) {
       console.error(error);
@@ -102,8 +105,16 @@ export default function TransactionHistoryScreen() {
   const getFilterLabel = (filter: string) => {
     if (filter === 'today') return 'Hari Ini';
     if (filter === 'yesterday') return 'Kemarin';
-    if (filter === 'last7days') return '7 Hari Terakhir';
+    if (filter === 'last7days') return '7 Hari';
+    if (filter === 'all') return 'Semua';
     return '';
+  };
+
+  const getPaymentLabel = (pm: string) => {
+    if (pm === 'ALL') return 'Semua Metode';
+    if (pm === 'CASH') return 'Tunai (Cash)';
+    if (pm === 'QRIS') return 'QRIS';
+    return pm;
   };
 
   const renderItem = ({ item }: { item: OrderResponse }) => (
@@ -160,9 +171,18 @@ export default function TransactionHistoryScreen() {
         showBack 
         onBack={() => router.back()}
         rightElement={
-          <TouchableOpacity onPress={() => setShowFilterModal(true)}>
-            <Text style={styles.filterText}>{getFilterLabel(selectedFilter)} ▾</Text>
-          </TouchableOpacity>
+          <View style={styles.headerFilters}>
+            <TouchableOpacity onPress={() => setShowFilterModal(true)} style={styles.headerFilterBtn}>
+              <Text style={styles.filterText}>{getFilterLabel(selectedFilter)}</Text>
+              <Text style={styles.filterChevron}>▾</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setShowPaymentModal(true)} style={styles.headerFilterBtn}>
+              <Text style={[styles.filterText, selectedPayment !== 'ALL' && styles.filterTextActive]}>
+                {selectedPayment === 'ALL' ? 'Semua' : selectedPayment}
+              </Text>
+              <Text style={styles.filterChevron}>▾</Text>
+            </TouchableOpacity>
+          </View>
         }
       />
 
@@ -194,8 +214,8 @@ export default function TransactionHistoryScreen() {
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Pilih Periode</Text>
             
-            {(['today', 'yesterday', 'last7days'] as const).map((opt) => (
-              <TouchableOpacity 
+            {(['today', 'yesterday', 'last7days', 'all'] as const).map((opt) => (
+              <TouchableOpacity
                 key={opt}
                 style={[styles.filterOption, selectedFilter === opt && styles.filterOptionActive]}
                 onPress={() => {
@@ -206,8 +226,39 @@ export default function TransactionHistoryScreen() {
                 <Text style={[styles.filterOptionText, selectedFilter === opt && styles.filterOptionTextActive]}>
                   {getFilterLabel(opt)}
                 </Text>
+                {selectedFilter === opt && <Text style={styles.checkmark}>✓</Text>}
               </TouchableOpacity>
             ))}
+
+      {/* Payment Method Modal */}
+      <Modal
+        visible={showPaymentModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowPaymentModal(false)}
+      >
+        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setShowPaymentModal(false)}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Metode Pembayaran</Text>
+
+            {(['ALL', 'CASH', 'QRIS'] as const).map((opt) => (
+              <TouchableOpacity
+                key={opt}
+                style={[styles.filterOption, selectedPayment === opt && styles.filterOptionActive]}
+                onPress={() => {
+                  setSelectedPayment(opt);
+                  setShowPaymentModal(false);
+                }}
+              >
+                <Text style={[styles.filterOptionText, selectedPayment === opt && styles.filterOptionTextActive]}>
+                  {getPaymentLabel(opt)}
+                </Text>
+                {selectedPayment === opt && <Text style={styles.checkmark}>✓</Text>}
+              </TouchableOpacity>
+            ))}
+          </View>
+        </TouchableOpacity>
+      </Modal>
           </View>
         </TouchableOpacity>
       </Modal>
@@ -348,5 +399,32 @@ const styles = StyleSheet.create({
   filterOptionTextActive: {
     fontWeight: 'bold',
     color: Colors.olive,
+  },
+  checkmark: {
+    ...Typography.bodyMedium,
+    color: Colors.olive,
+    fontWeight: 'bold',
+  },
+  headerFilters: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  headerFilterBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
+    borderRadius: Shape.borderRadius.md,
+    backgroundColor: Colors.zinc100,
+  },
+  filterChevron: {
+    ...Typography.caption,
+    color: Colors.zinc500,
+  },
+  filterTextActive: {
+    color: Colors.olive,
+    fontWeight: '600',
   },
 });
