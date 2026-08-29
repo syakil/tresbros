@@ -253,11 +253,19 @@ export default function SettingsPage() {
           />
           <ResetCard
             scope="stock"
-            title="Reset Stock & Products"
-            description="Hapus semua data stok (materials, batches), produk, kategori, resep, dan kupon."
+            title="Reset Stock"
+            description="Nol-kan semua stok material dan hapus data riwayat stok masuk (batches)."
             icon={<Package className="w-5 h-5" />}
             confirmWord="STOK"
-            affectedData="materials, material batches, products, categories, recipes, dan coupons"
+            affectedData="material batches (stok material akan menjadi 0)"
+          />
+          <ResetCard
+            scope="products"
+            title="Reset Products"
+            description="Hapus semua data produk, kategori, resep, dan kupon."
+            icon={<Package className="w-5 h-5" />}
+            confirmWord="PRODUK"
+            affectedData="products, categories, recipes, dan coupons"
           />
         </div>
       </div>

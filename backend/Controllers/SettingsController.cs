@@ -3,6 +3,7 @@ using backend.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 
 namespace backend.Controllers
 {
@@ -54,6 +55,40 @@ namespace backend.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(setting);
+        }
+
+        [AllowAnonymous]
+        [HttpPost("reseed-coa")]
+        public async Task<IActionResult> ReseedCOA()
+        {
+            try
+            {
+                var sql = @"
+                INSERT INTO ""ChartOfAccounts"" (""Id"", ""Balance"", ""Code"", ""IsActive"", ""Name"", ""Type"") VALUES 
+                (1, 0.0, '1110', TRUE, 'Kas Kecil (Cash on Hand)', 'ASSET'),
+                (2, 0.0, '1120', TRUE, 'Piutang Payment Gateway (Midtrans)', 'ASSET'),
+                (3, 0.0, '1130', TRUE, 'Kas di Bank', 'ASSET'),
+                (4, 0.0, '1140', TRUE, 'Persediaan Bahan Baku', 'ASSET'),
+                (5, 0.0, '2110', TRUE, 'Hutang Usaha (AP)', 'LIABILITY'),
+                (6, 0.0, '2120', TRUE, 'Hutang Pajak (PB1)', 'LIABILITY'),
+                (7, 0.0, '3110', TRUE, 'Modal Pemilik', 'EQUITY'),
+                (8, 0.0, '3120', TRUE, 'Laba Ditahan', 'EQUITY'),
+                (9, 0.0, '4110', TRUE, 'Pendapatan Penjualan', 'REVENUE'),
+                (10, 0.0, '4120', TRUE, 'Diskon & Promo', 'REVENUE'),
+                (11, 0.0, '5110', TRUE, 'Harga Pokok Penjualan (HPP)', 'EXPENSE'),
+                (12, 0.0, '5120', TRUE, 'Biaya Admin Payment Gateway', 'EXPENSE'),
+                (13, 0.0, '6110', TRUE, 'Beban Operasional', 'EXPENSE'),
+                (14, 0.0, '5130', TRUE, 'Penyesuaian Persediaan', 'EXPENSE')
+                ON CONFLICT (""Id"") DO NOTHING;
+                SELECT setval('""ChartOfAccounts_Id_seq""', (SELECT MAX(""Id"") FROM ""ChartOfAccounts""));";
+
+                await _context.Database.ExecuteSqlRawAsync(sql);
+                return Ok(new { message = "COA Reseeded Successfully" });
+            }
+            catch (System.Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
 
         /// <summary>
@@ -122,7 +157,7 @@ namespace backend.Controllers
         }
 
         /// <summary>
-        /// Reset Stock and Products — clears materials, batches, products, categories, coupons, and R&D data.
+        /// Reset Stock — clears material batches and sets stock to 0.
         /// </summary>
         [HttpPost("reset-stock")]
         public async Task<IActionResult> ResetStock()
@@ -132,6 +167,33 @@ namespace backend.Controllers
                 await _context.Database.ExecuteSqlRawAsync(
                     @"BEGIN;
                     DELETE FROM ""MaterialBatches"";
+                    UPDATE ""Materials"" SET ""Stock"" = 0;
+                    COMMIT;");
+
+                return Ok(new { message = "Stok berhasil di-reset menjadi 0. Semua MaterialBatches telah dihapus." });
+            }
+            catch (System.Exception ex)
+            {
+                try { await _context.Database.ExecuteSqlRawAsync(@"ROLLBACK;"); } catch { }
+                return StatusCode(500, new {
+                    error = "Gagal reset stok.",
+                    type = ex.GetType().Name,
+                    message = ex.Message ?? "null",
+                    inner = ex.InnerException?.Message ?? "null"
+                });
+            }
+        }
+
+        /// <summary>
+        /// Reset Products — clears products, categories, recipes, coupons, and R&D data.
+        /// </summary>
+        [HttpPost("reset-products")]
+        public async Task<IActionResult> ResetProducts()
+        {
+            try
+            {
+                await _context.Database.ExecuteSqlRawAsync(
+                    @"BEGIN;
                     DELETE FROM ""RecipeItems"";
                     DELETE FROM ""RnDRecipeIngredients"";
                     DELETE FROM ""RnDTestHistories"";
@@ -142,13 +204,13 @@ namespace backend.Controllers
                     DELETE FROM ""Assets"";
                     COMMIT;");
 
-                return Ok(new { message = "Stok berhasil di-reset. Semua materials, products, dan recipes telah dihapus." });
+                return Ok(new { message = "Produk berhasil di-reset. Semua products, categories, dan recipes telah dihapus." });
             }
             catch (System.Exception ex)
             {
                 try { await _context.Database.ExecuteSqlRawAsync(@"ROLLBACK;"); } catch { }
                 return StatusCode(500, new {
-                    error = "Gagal reset stok.",
+                    error = "Gagal reset produk.",
                     type = ex.GetType().Name,
                     message = ex.Message ?? "null",
                     inner = ex.InnerException?.Message ?? "null"

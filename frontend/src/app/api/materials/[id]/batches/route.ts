@@ -24,7 +24,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       unitPrice: Number(unitPrice),
     });
     
-    return NextResponse.json(response || { success: true });
+    return NextResponse.json(response);
   } catch (error: any) {
     console.error("BATCH UPDATE ERROR:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });

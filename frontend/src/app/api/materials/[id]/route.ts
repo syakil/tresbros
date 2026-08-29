@@ -29,7 +29,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         totalPrice: Number(body.price || 0),
         notes: body.notes || ''
       });
-      return NextResponse.json(response || { success: true });
+      return NextResponse.json(response);
     }
 
     // Default legacy PUT logic

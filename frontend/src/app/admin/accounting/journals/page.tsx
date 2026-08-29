@@ -125,7 +125,7 @@ export default function JournalsPage() {
       const desc = j.description?.toLowerCase() || '';
       if (category === 'SALES' && !desc.includes('penjualan')) return false;
       if (category === 'PURCHASE' && !desc.includes('pembelian')) return false;
-      if (category === 'ADJUSTMENT' && !desc.includes('penyesuaian')) return false;
+      if (category === 'ADJUSTMENT' && !desc.includes('penyesuaian') && !desc.includes('opname')) return false;
     }
 
     return true;
