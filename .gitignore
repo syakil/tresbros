@@ -50,3 +50,9 @@ npm-debug.*
 # Android APK
 *.apk
 *.aab
+# Android build files
+*.apk
+*.aab
+
+# Android build output
+mobile/android/app/build/
