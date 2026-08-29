@@ -1,7 +1,7 @@
 const coas = [
   { Code: "1110", Name: "Kas Kecil (Cash on Hand)", Type: "ASSET", IsActive: true },
-  { Code: "1120", Name: "Piutang Payment Gateway (Midtrans)", Type: "ASSET", IsActive: true },
-  { Code: "1130", Name: "Kas di Bank", Type: "ASSET", IsActive: true },
+  { Code: "1111", Name: "QRIS", Type: "ASSET", IsActive: true },
+  { Code: "1120", Name: "Kas di Bank", Type: "ASSET", IsActive: true },
   { Code: "1140", Name: "Persediaan Bahan Baku", Type: "ASSET", IsActive: true },
   { Code: "2110", Name: "Hutang Usaha (AP)", Type: "LIABILITY", IsActive: true },
   { Code: "2120", Name: "Hutang Pajak (PB1)", Type: "LIABILITY", IsActive: true },

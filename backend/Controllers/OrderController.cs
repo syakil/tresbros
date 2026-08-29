@@ -368,9 +368,10 @@ namespace backend.Controllers
                 }
             }
 
-            // Create Journal
-            var cashOrReceivableCode = order.PaymentMethod == "MIDTRANS" ? "1120" : "1110";
-            var cashAccount = await context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == cashOrReceivableCode) ?? new ChartOfAccount { Code = cashOrReceivableCode, Name = order.PaymentMethod == "MIDTRANS" ? "Piutang Midtrans" : "Kas Kecil", Type = "ASSET" };
+            // Create Journal - separate cash (1110) and QRIS (1111)
+            string cashAccountCode = order.PaymentMethod == "QRIS" ? "1111" : "1110";
+            string cashAccountName = order.PaymentMethod == "QRIS" ? "QRIS" : "Kas Kecil";
+            var cashAccount = await context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == cashAccountCode) ?? new ChartOfAccount { Code = cashAccountCode, Name = cashAccountName, Type = "ASSET" };
             var salesAccount = await context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "4110") ?? new ChartOfAccount { Code = "4110", Name = "Pendapatan Penjualan", Type = "REVENUE" };
             var discountAccount = await context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "4120") ?? new ChartOfAccount { Code = "4120", Name = "Diskon & Promo", Type = "REVENUE" };
             var cogsAccount = await context.ChartOfAccounts.FirstOrDefaultAsync(c => c.Code == "5110") ?? new ChartOfAccount { Code = "5110", Name = "HPP", Type = "EXPENSE" };

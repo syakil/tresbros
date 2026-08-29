@@ -18,12 +18,11 @@ export default function PosPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [couponInput, setCouponInput] = useState('');
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'MIDTRANS'>('CASH');
+  const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'QRIS'>('CASH');
   const [toast, setToast] = useState<{ message: string, type: 'error' | 'success' | 'warning' } | null>(null);
   const [lastOrderNumber, setLastOrderNumber] = useState<string>('');
   const [lastQueueNumber, setLastQueueNumber] = useState<string>('');
   const [isMounted, setIsMounted] = useState(false);
-  const [showPendingOrders, setShowPendingOrders] = useState(false);
   const [orderToCancel, setOrderToCancel] = useState<any | null>(null);
   const [isCancellingOrder, setIsCancellingOrder] = useState<boolean>(false);
   const [roundingType, setRoundingType] = useState<'NONE' | 'DOWN_100' | 'UP_100' | 'DOWN_500' | 'UP_500' | 'DOWN_1000' | 'UP_1000'>('NONE');
@@ -68,24 +67,8 @@ export default function PosPage() {
     }
   });
 
-  const pendingOrders = orders?.filter((o: any) => o.paymentMethod === 'MIDTRANS' && o.paymentStatus === 'pending' && o.status === 'TODO') || [];
-
   useEffect(() => {
     setIsMounted(true);
-    // Memuat script Snap.js secara dinamis khusus di halaman POS untuk mencegah error postMessage Next.js
-    const snapScriptUrl = "https://app.sandbox.midtrans.com/snap/snap.js";
-    const clientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || "YOUR_MIDTRANS_CLIENT_KEY";
-
-    let script = document.querySelector(`script[src="${snapScriptUrl}"]`) as HTMLScriptElement;
-    
-    if (!script) {
-      script = document.createElement("script");
-      script.src = snapScriptUrl;
-      script.setAttribute("data-client-key", clientKey);
-      script.async = true;
-      document.body.appendChild(script);
-    }
-    
     // Fetch global tax setting
     axios.get('/api/settings/TAX_ENABLED')
       .then(res => setTaxEnabled(res.data.value === 'true'))
@@ -230,40 +213,7 @@ export default function PosPage() {
         items: items
       });
 
-      if (paymentMethod === 'MIDTRANS') {
-        if (res.data.snapToken) {
-           // Tampilkan Midtrans Snap Popup tanpa menutup checkout modal dulu (mencegah DOM unmount yang bikin error)
-           (window as any).snap.pay(res.data.snapToken, {
-             onSuccess: function(result: any){
-               setShowCheckout(false);
-               showToast("Midtrans Payment Successful! Order sent to KDS.", 'success');
-               setTimeout(() => { 
-                 window.print(); 
-                 clearCart();
-               }, 500);
-             },
-             onPending: function(result: any){
-               setShowCheckout(false);
-               showToast("Order created. Waiting for your payment...", 'warning');
-               clearCart();
-             },
-             onError: function(result: any){
-               showToast("Payment failed.", 'error');
-               // Tidak menutup modal checkout agar kasir bisa coba lagi
-             },
-             onClose: function(){
-               showToast("Payment window closed.", 'warning');
-               // Tidak menutup modal checkout agar kasir bisa coba lagi/ganti metode bayar
-             }
-           });
-           return;
-        } else {
-           showToast("Failed to create Midtrans transaction. Check API Key in backend.", 'error');
-           return;
-        }
-      }
-
-      // Untuk pembayaran CASH, langsung tutup modal
+      // Langsung tutup modal - untuk CASH dan QRIS (manual) langsung success
       setShowCheckout(false);
 
       showToast("Payment Successful! Order sent to KDS.", 'success');
@@ -327,15 +277,6 @@ export default function PosPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            {pendingOrders.length > 0 && (
-              <button 
-                onClick={() => setShowPendingOrders(true)}
-                className="bg-orange-50 text-orange-600 border border-orange-200 hover:bg-orange-100 px-6 rounded-xl font-semibold transition-all text-sm flex items-center gap-2 shadow-sm"
-              >
-                <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
-                {pendingOrders.length} Pending Orders
-              </button>
-            )}
           </div>
 
           <div className="flex gap-3 overflow-x-auto pb-2 hide-scrollbar">
@@ -725,80 +666,7 @@ export default function PosPage() {
         </div>
       </div>
 
-      {/* Modal Pesanan Tertunda */}
-      {showPendingOrders && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-zinc-900/40 backdrop-blur-sm p-4">
-          <Card className="w-full max-w-2xl bg-white border-zinc-200 shadow-2xl p-0 max-h-[80vh] flex flex-col overflow-hidden">
-            <div className="flex justify-between items-center p-6 border-b border-zinc-100">
-              <h2 className="text-xl font-display font-bold text-zinc-900">Orders Waiting for Payment</h2>
-              <button onClick={() => setShowPendingOrders(false)} className="text-zinc-400 hover:text-zinc-700 bg-zinc-100 hover:bg-zinc-200 p-2 rounded-lg transition-colors">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            
-            <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-zinc-50/50 custom-scrollbar-light">
-              {pendingOrders.map((order: any) => (
-                <div key={order.id} className="bg-white border border-zinc-200 rounded-xl p-4 flex justify-between items-center shadow-sm">
-                  <div>
-                    <div className="flex items-center gap-3 mb-1">
-                      <span className="font-mono text-zinc-900 font-bold text-lg">{order.orderNumber || order.id}</span>
-                      <span className="bg-orange-50 text-orange-600 border border-orange-200 text-xs px-2.5 py-1 rounded-md font-semibold">MIDTRANS</span>
-                    </div>
-                    <div className="text-zinc-500 text-sm font-medium">{order.customerName || 'Guest'} • {new Date(order.createdAt).toLocaleTimeString('id-ID')}</div>
-                    <div className="text-blue-600 font-bold mt-2 text-lg">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(order.totalAmount)}</div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-                      onClick={() => setOrderToCancel(order)}
-                    >
-                      Cancel
-                    </Button>
-                    <Button 
-                      variant="primary" 
-                      onClick={() => {
-                        if (order.snapToken) {
-                          setShowPendingOrders(false);
-                          (window as any).snap.pay(order.snapToken, {
-                            onSuccess: function(){
-                              showToast("Payment Successful! Order sent to KDS.", 'success');
-                              setLastOrderNumber(order.orderNumber || order.id);
-                              setLastQueueNumber(order.queueNumber || '-');
-                              setTimeout(() => window.print(), 500);
-                              refetchOrders();
-                            },
-                            onPending: function(){
-                              showToast("Payment still pending...", 'warning');
-                              refetchOrders();
-                            },
-                            onError: function(){
-                              showToast("Payment failed.", 'error');
-                              refetchOrders();
-                            },
-                            onClose: function(){
-                              showToast("Payment window closed.", 'warning');
-                              refetchOrders();
-                            }
-                          });
-                        } else {
-                          showToast("Midtrans token not found.", 'error');
-                        }
-                      }}
-                    >
-                      Continue Payment
-                    </Button>
-                  </div>
-                </div>
-              ))}
-              
-              {pendingOrders.length === 0 && (
-                <div className="text-center text-zinc-500 font-medium py-12 bg-white rounded-xl border border-zinc-200 border-dashed">No pending orders.</div>
-              )}
-            </div>
-          </Card>
-        </div>
-      )}
+
 
       {/* Modal Checkout (Glassmorphism Overlay) */}
       {showCheckout && (
@@ -829,18 +697,18 @@ export default function PosPage() {
                 </button>
                 
                 <button 
-                  className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all ${paymentMethod === 'MIDTRANS' ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-zinc-200 bg-white text-zinc-700 hover:border-blue-300 hover:bg-zinc-50'}`}
-                  onClick={() => setPaymentMethod('MIDTRANS')}
+                  className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all ${paymentMethod === 'QRIS' ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-zinc-200 bg-white text-zinc-700 hover:border-blue-300 hover:bg-zinc-50'}`}
+                  onClick={() => setPaymentMethod('QRIS')}
                 >
                   <div className="flex items-center gap-3 font-semibold text-left">
                     <span className="text-xl">💳</span> 
                     <span>
-                      Midtrans <br/>
-                      <span className="text-xs font-normal opacity-80">(QRIS / Transfer / Card)</span>
+                      QRIS <br/>
+                      <span className="text-xs font-normal opacity-80">(Manual / Cashless)</span>
                     </span>
                   </div>
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${paymentMethod === 'MIDTRANS' ? 'border-blue-600' : 'border-zinc-300'}`}>
-                    {paymentMethod === 'MIDTRANS' && <div className="w-2.5 h-2.5 rounded-full bg-blue-600"></div>}
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${paymentMethod === 'QRIS' ? 'border-blue-600' : 'border-zinc-300'}`}>
+                    {paymentMethod === 'QRIS' && <div className="w-2.5 h-2.5 rounded-full bg-blue-600"></div>}
                   </div>
                 </button>
               </div>
@@ -977,6 +845,17 @@ export default function PosPage() {
                       )}
                     </div>
                   )}
+                </div>
+              )}
+
+              {paymentMethod === 'QRIS' && (
+                <div className="border-t border-zinc-100 pt-5 space-y-3 text-left">
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
+                    <p className="text-blue-800 text-sm font-medium mb-1">QRIS Payment</p>
+                    <p className="text-blue-600 text-xs">Tunjukkan kode QR ke pelanggan.</p>
+                    <p className="text-blue-600 text-xs">Setelah di-scan, tekan <strong>Process Payment</strong> di bawah.</p>
+                    <p className="text-2xl font-display font-black text-blue-700 mt-3">{formatRupiah(getTotal())}</p>
+                  </div>
                 </div>
               )}
             </div>
@@ -1215,7 +1094,7 @@ export default function PosPage() {
       
       <div className="text-center mt-4 mb-2">
         <p className="font-bold text-[14px]">*** PAID ***</p>
-        <p className="mt-1">Payment : {paymentMethod === 'CASH' ? 'Cash' : 'Midtrans'}</p>
+        <p className="mt-1">Payment : {paymentMethod === 'CASH' ? 'Cash' : 'QRIS'}</p>
         <p className="italic mt-2">Thank you for<br/>your visit!</p>
       </div>
     </div>

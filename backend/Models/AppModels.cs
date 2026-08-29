@@ -60,10 +60,6 @@ namespace backend.Models
         public string? CouponCode { get; set; }
         public double DiscountAmount { get; set; } = 0;
         public string PaymentMethod { get; set; } = "CASH";
-        
-        // Midtrans Fields
-        public string? PaymentUrl { get; set; }
-        public string? SnapToken { get; set; }
         public string PaymentStatus { get; set; } = "pending";
         public string? CashierName { get; set; }
 
@@ -205,16 +201,6 @@ namespace backend.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 
-    public class MidtransLog
-    {
-        [Key]
-        public int Id { get; set; }
-        public string OrderId { get; set; } = string.Empty;
-        public string TransactionStatus { get; set; } = string.Empty;
-        public string FraudStatus { get; set; } = string.Empty;
-        public string RawPayload { get; set; } = string.Empty;
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    }
     public class Setting
     {
         [Key]

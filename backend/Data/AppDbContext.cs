@@ -19,7 +19,6 @@ namespace backend.Data
         public DbSet<PurchaseItem> PurchaseItems { get; set; }
         public DbSet<RecipeItem> RecipeItems { get; set; }
         public DbSet<Coupon> Coupons { get; set; }
-        public DbSet<MidtransLog> MidtransLogs { get; set; }
         
         public DbSet<Setting> Settings { get; set; }
         public DbSet<ChartOfAccount> ChartOfAccounts { get; set; }

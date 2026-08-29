@@ -38,8 +38,6 @@ export const ORDER_STATUS = {
 export const PAYMENT_METHODS = {
   CASH: 'CASH',
   QRIS: 'QRIS',
-  DEBIT: 'DEBIT',
-  MIDTRANS: 'MIDTRANS',
 } as const;
 
 export const ITEM_TYPES = {

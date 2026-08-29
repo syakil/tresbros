@@ -77,7 +77,8 @@ using (var scope = app.Services.CreateScope())
         var requiredCoas = new List<backend.Models.ChartOfAccount>
         {
             new backend.Models.ChartOfAccount { Code = "1110", Name = "Kas Kecil", Type = "ASSET" },
-            new backend.Models.ChartOfAccount { Code = "1120", Name = "Bank / Piutang Midtrans", Type = "ASSET" },
+            new backend.Models.ChartOfAccount { Code = "1111", Name = "QRIS", Type = "ASSET" },
+            new backend.Models.ChartOfAccount { Code = "1120", Name = "Kas di Bank", Type = "ASSET" },
             new backend.Models.ChartOfAccount { Code = "1200", Name = "Aset Tetap (Fixed Asset)", Type = "ASSET" },
             new backend.Models.ChartOfAccount { Code = "1250", Name = "Akumulasi Penyusutan", Type = "ASSET" },
             new backend.Models.ChartOfAccount { Code = "2110", Name = "Hutang Usaha", Type = "LIABILITY" },

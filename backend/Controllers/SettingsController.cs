@@ -70,7 +70,7 @@ namespace backend.Controllers
                     "Categories",
                     "Expenses", "Incomes",
                     "Materials", "MaterialBatches",
-                    "Coupons", "MidtransLogs",
+                    "Coupons",
                     "JournalEntryLines", "JournalEntries",
                     "RnDRecipeIngredients", "RnDTestHistories", "RnDRecipes"
                 };
