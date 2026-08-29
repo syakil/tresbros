@@ -139,8 +139,9 @@ namespace backend.Controllers
             _context.Entry(order).State = EntityState.Modified;
 
             // Handle Material stock deduction when status becomes DONE or TAKEN
-            bool isNowCompleted = status == "DONE" || status == "TAKEN";
-            bool wasCompleted = oldStatus == "DONE" || oldStatus == "TAKEN";
+            // Note: CASH and QRIS are processed immediately on creation, so they are always considered "completed"
+            bool isNowCompleted = status == "DONE" || status == "TAKEN" || order.PaymentMethod == "CASH" || order.PaymentMethod == "QRIS";
+            bool wasCompleted = oldStatus == "DONE" || oldStatus == "TAKEN" || order.PaymentMethod == "CASH" || order.PaymentMethod == "QRIS";
 
             if (isNowCompleted && !wasCompleted)
             {
@@ -149,21 +150,7 @@ namespace backend.Controllers
             else if (wasCompleted && !isNowCompleted)
             {
                 // Revert stock (not reverting FIFO batches logic precisely for simplicity, just adding stock back)
-                foreach (var item in order.Items)
-                {
-                    if (item.Product?.RecipeItems != null)
-                    {
-                        foreach (var recipe in item.Product.RecipeItems)
-                        {
-                            var material = await _context.Materials.FindAsync(recipe.MaterialId);
-                            if (material != null)
-                            {
-                                material.Stock += (recipe.Quantity * item.Quantity);
-                                _context.Entry(material).State = EntityState.Modified;
-                            }
-                        }
-                    }
-                }
+                await RevertOrderStock(order, _context);
             }
 
             try
@@ -212,24 +199,11 @@ namespace backend.Controllers
             order.PaymentStatus = "refunded";
             _context.Entry(order).State = EntityState.Modified;
 
-            // 2. Revert Stock (if it was DONE or TAKEN)
-            if (oldStatus == "DONE" || oldStatus == "TAKEN")
+            // 2. Revert Stock (if it was processed)
+            bool wasProcessed = oldStatus == "DONE" || oldStatus == "TAKEN" || order.PaymentMethod == "CASH" || order.PaymentMethod == "QRIS";
+            if (wasProcessed)
             {
-                foreach (var item in order.Items)
-                {
-                    if (item.Product?.RecipeItems != null)
-                    {
-                        foreach (var recipe in item.Product.RecipeItems)
-                        {
-                            var material = await _context.Materials.FindAsync(recipe.MaterialId);
-                            if (material != null)
-                            {
-                                material.Stock += (recipe.Quantity * item.Quantity);
-                                _context.Entry(material).State = EntityState.Modified;
-                            }
-                        }
-                    }
-                }
+                await RevertOrderStock(order, _context);
             }
 
             // 3. Delete associated JournalEntry to reverse accounting impact
@@ -444,6 +418,55 @@ namespace backend.Controllers
             }
 
             context.JournalEntries.Add(journal);
+        }
+
+        private async Task RevertOrderStock(Order order, AppDbContext context)
+        {
+            foreach (var item in order.Items)
+            {
+                // 1. Revert normal product recipe
+                if (item.Product?.RecipeItems != null)
+                {
+                    foreach (var recipe in item.Product.RecipeItems)
+                    {
+                        var material = await context.Materials.FindAsync(recipe.MaterialId);
+                        if (material != null)
+                        {
+                            material.Stock += (recipe.Quantity * item.Quantity);
+                            context.Entry(material).State = EntityState.Modified;
+                        }
+                    }
+                }
+
+                // 2. Revert add-ons/toppings
+                if (!string.IsNullOrEmpty(item.Notes))
+                {
+                    var noteParts = item.Notes.Split(',')
+                        .Select(p => p.Trim())
+                        .Where(p => !string.IsNullOrEmpty(p))
+                        .ToList();
+
+                    foreach (var part in noteParts)
+                    {
+                        var addonProduct = await context.Products
+                            .Include(p => p.RecipeItems)
+                            .FirstOrDefaultAsync(p => p.Name.ToLower() == part.ToLower());
+
+                        if (addonProduct != null && addonProduct.RecipeItems != null)
+                        {
+                            foreach (var recipe in addonProduct.RecipeItems)
+                            {
+                                var material = await context.Materials.FindAsync(recipe.MaterialId);
+                                if (material != null)
+                                {
+                                    material.Stock += (recipe.Quantity * item.Quantity);
+                                    context.Entry(material).State = EntityState.Modified;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         private bool OrderExists(int id)
