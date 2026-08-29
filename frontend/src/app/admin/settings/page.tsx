@@ -83,7 +83,7 @@ const ResetCard = ({ scope, title, description, icon, confirmWord, affectedData 
                 <Trash2 className="w-5 h-5" />
               </div>
               <div className="space-y-1">
-                <h3 className="text-xl font-bold text-zinc-900 tracking-tight">Reset {title}?</h3>
+                <h3 className="text-xl font-bold text-zinc-900 tracking-tight">{title}?</h3>
                 <p className="text-sm text-zinc-500 leading-relaxed">
                   Semua data <strong className="text-zinc-800">{affectedData}</strong> akan dihapus secara <strong className="text-zinc-800">permanen</strong>.
                 </p>
