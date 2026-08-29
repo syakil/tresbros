@@ -2,7 +2,7 @@ using backend.Data;
 using backend.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Diagnostics;
+using System.Text.Json;
 
 namespace backend.Controllers
 {
@@ -76,13 +76,13 @@ namespace backend.Controllers
             }
             catch (System.Exception ex)
             {
-                Debug.WriteLine($"[RESET-JOURNALS-ERROR] Type: {ex.GetType().Name}");
-                Debug.WriteLine($"[RESET-JOURNALS-ERROR] Message: {ex.Message}");
-                Debug.WriteLine($"[RESET-JOURNALS-ERROR] Inner: {ex.InnerException?.Message}");
-                Debug.WriteLine($"[RESET-JOURNALS-ERROR] Stack: {ex.StackTrace}");
                 try { await _context.Database.ExecuteSqlRawAsync(@"ROLLBACK;"); } catch { }
-                var detailedError = $"Gagal reset jurnal. Tipe error: {ex.GetType().Name}. Message: {ex.Message}. Inner: {ex.InnerException?.Message}. Stack: {ex.StackTrace}";
-                return StatusCode(500, new { error = detailedError });
+                return StatusCode(500, new {
+                    error = "Gagal reset jurnal.",
+                    type = ex.GetType().Name,
+                    message = ex.Message ?? "null",
+                    inner = ex.InnerException?.Message ?? "null"
+                });
             }
         }
 
@@ -111,13 +111,13 @@ namespace backend.Controllers
             }
             catch (System.Exception ex)
             {
-                Debug.WriteLine($"[RESET-TRANSACTIONS-ERROR] Type: {ex.GetType().Name}");
-                Debug.WriteLine($"[RESET-TRANSACTIONS-ERROR] Message: {ex.Message}");
-                Debug.WriteLine($"[RESET-TRANSACTIONS-ERROR] Inner: {ex.InnerException?.Message}");
-                Debug.WriteLine($"[RESET-TRANSACTIONS-ERROR] Stack: {ex.StackTrace}");
                 try { await _context.Database.ExecuteSqlRawAsync(@"ROLLBACK;"); } catch { }
-                var detailedError = $"Gagal reset transaksi. Tipe error: {ex.GetType().Name}. Message: {ex.Message}. Inner: {ex.InnerException?.Message}. Stack: {ex.StackTrace}";
-                return StatusCode(500, new { error = detailedError });
+                return StatusCode(500, new {
+                    error = "Gagal reset transaksi.",
+                    type = ex.GetType().Name,
+                    message = ex.Message ?? "null",
+                    inner = ex.InnerException?.Message ?? "null"
+                });
             }
         }
 
@@ -146,13 +146,13 @@ namespace backend.Controllers
             }
             catch (System.Exception ex)
             {
-                Debug.WriteLine($"[RESET-STOCK-ERROR] Type: {ex.GetType().Name}");
-                Debug.WriteLine($"[RESET-STOCK-ERROR] Message: {ex.Message}");
-                Debug.WriteLine($"[RESET-STOCK-ERROR] Inner: {ex.InnerException?.Message}");
-                Debug.WriteLine($"[RESET-STOCK-ERROR] Stack: {ex.StackTrace}");
                 try { await _context.Database.ExecuteSqlRawAsync(@"ROLLBACK;"); } catch { }
-                var detailedError = $"Gagal reset stok. Tipe error: {ex.GetType().Name}. Message: {ex.Message}. Inner: {ex.InnerException?.Message}. Stack: {ex.StackTrace}";
-                return StatusCode(500, new { error = detailedError });
+                return StatusCode(500, new {
+                    error = "Gagal reset stok.",
+                    type = ex.GetType().Name,
+                    message = ex.Message ?? "null",
+                    inner = ex.InnerException?.Message ?? "null"
+                });
             }
         }
 
@@ -198,13 +198,13 @@ namespace backend.Controllers
             }
             catch (System.Exception ex)
             {
-                Debug.WriteLine($"[RESET-FULL-ERROR] Type: {ex.GetType().Name}");
-                Debug.WriteLine($"[RESET-FULL-ERROR] Message: {ex.Message}");
-                Debug.WriteLine($"[RESET-FULL-ERROR] Inner: {ex.InnerException?.Message}");
-                Debug.WriteLine($"[RESET-FULL-ERROR] Stack: {ex.StackTrace}");
                 try { await _context.Database.ExecuteSqlRawAsync(@"ROLLBACK;"); } catch { }
-                var detailedError = $"Gagal reset database. Tipe error: {ex.GetType().Name}. Message: {ex.Message}. Inner: {ex.InnerException?.Message}. Stack: {ex.StackTrace}";
-                return StatusCode(500, new { error = detailedError });
+                return StatusCode(500, new {
+                    error = "Gagal reset database.",
+                    type = ex.GetType().Name,
+                    message = ex.Message ?? "null",
+                    inner = ex.InnerException?.Message ?? "null"
+                });
             }
         }
     }

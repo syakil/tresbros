@@ -41,7 +41,18 @@ const ResetCard = ({ scope, title, description, icon, confirmWord, affectedData 
         setResetSuccess(false);
       }, 1500);
     } catch (error: any) {
-      const errMsg = error.response?.data?.error || error.response?.data?.message || error.message || `Gagal reset ${scope}. Coba lagi atau hubungi admin.`;
+      const data = error.response?.data;
+      let errMsg = 'Gagal reset. Coba lagi.';
+      if (data?.error) {
+        errMsg = data.error;
+        if (data.type) errMsg += `\nTipe: ${data.type}`;
+        if (data.message) errMsg += `\nMessage: ${data.message}`;
+        if (data.inner) errMsg += `\nInner: ${data.inner}`;
+      } else if (data?.message) {
+        errMsg = data.message;
+      } else {
+        errMsg = error.message || 'Gagal reset. Coba lagi.';
+      }
       setResetError(errMsg);
     } finally {
       setResetting(false);
