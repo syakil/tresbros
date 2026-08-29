@@ -662,8 +662,17 @@ namespace backend.Controllers
                 log.MaterialId = null;
             }
 
-            _context.Materials.Remove(material);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.Materials.Remove(material);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { 
+                    message = "Server Error: " + (ex.InnerException?.Message ?? ex.Message) 
+                });
+            }
 
             return NoContent();
         }
