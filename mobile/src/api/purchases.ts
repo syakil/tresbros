@@ -38,7 +38,7 @@ export const purchasesApi = {
     client.post<PurchaseResponse>('/api/purchases', data).then((r) => r.data),
 
   cancel: (id: number) =>
-    client.patch(`/api/purchases/${id}`).then((r) => r.data),
+    client.patch(`/api/purchases/${id}`, { action: 'cancel' }).then((r) => r.data),
 
   delete: (id: number) =>
     client.delete(`/api/purchases/${id}`).then((r) => r.data),

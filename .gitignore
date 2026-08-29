@@ -47,3 +47,6 @@ npm-debug.*
 *.key
 *.mobileprovision
 *.orig.*
+# Android APK
+*.apk
+*.aab
