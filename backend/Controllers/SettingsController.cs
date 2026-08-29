@@ -60,8 +60,9 @@ namespace backend.Controllers
         {
             try
             {
-                await _context.Database.ExecuteSqlRawAsync(@"TRUNCATE TABLE ""JournalEntryLines"" RESTART IDENTITY CASCADE;");
-                await _context.Database.ExecuteSqlRawAsync(@"TRUNCATE TABLE ""JournalEntries"" RESTART IDENTITY CASCADE;");
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""JournalEntryLines"";");
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""JournalEntries"";");
+                await _context.Database.ExecuteSqlRawAsync(@"UPDATE ""ChartOfAccounts"" SET ""Balance"" = 0;");
                 return Ok(new { message = "Journal entries cleared successfully." });
             }
             catch (System.Exception ex)
@@ -75,13 +76,13 @@ namespace backend.Controllers
         {
             try
             {
-                await _context.Database.ExecuteSqlRawAsync(@"TRUNCATE TABLE ""OrderItems"" RESTART IDENTITY CASCADE;");
-                await _context.Database.ExecuteSqlRawAsync(@"TRUNCATE TABLE ""Orders"" RESTART IDENTITY CASCADE;");
-                await _context.Database.ExecuteSqlRawAsync(@"TRUNCATE TABLE ""PurchaseItems"" RESTART IDENTITY CASCADE;");
-                await _context.Database.ExecuteSqlRawAsync(@"TRUNCATE TABLE ""Purchases"" RESTART IDENTITY CASCADE;");
-                await _context.Database.ExecuteSqlRawAsync(@"TRUNCATE TABLE ""Expenses"" RESTART IDENTITY CASCADE;");
-                await _context.Database.ExecuteSqlRawAsync(@"TRUNCATE TABLE ""Incomes"" RESTART IDENTITY CASCADE;");
-                // Reset ChartOfAccounts balances to 0
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""OrderItems"";");
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""Orders"";");
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""PurchaseItems"";");
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""Purchases"";");
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""Expenses"";");
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""Incomes"";");
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""ClosingPeriods"";");
                 await _context.Database.ExecuteSqlRawAsync(@"UPDATE ""ChartOfAccounts"" SET ""Balance"" = 0;");
                 return Ok(new { message = "Transactions cleared successfully." });
             }
@@ -96,15 +97,15 @@ namespace backend.Controllers
         {
             try
             {
-                await _context.Database.ExecuteSqlRawAsync(@"TRUNCATE TABLE ""MaterialBatches"" RESTART IDENTITY CASCADE;");
-                await _context.Database.ExecuteSqlRawAsync(@"TRUNCATE TABLE ""Materials"" RESTART IDENTITY CASCADE;");
-                await _context.Database.ExecuteSqlRawAsync(@"TRUNCATE TABLE ""RecipeItems"" RESTART IDENTITY CASCADE;");
-                await _context.Database.ExecuteSqlRawAsync(@"TRUNCATE TABLE ""Products"" RESTART IDENTITY CASCADE;");
-                await _context.Database.ExecuteSqlRawAsync(@"TRUNCATE TABLE ""Categories"" RESTART IDENTITY CASCADE;");
-                await _context.Database.ExecuteSqlRawAsync(@"TRUNCATE TABLE ""Coupons"" RESTART IDENTITY CASCADE;");
-                await _context.Database.ExecuteSqlRawAsync(@"TRUNCATE TABLE ""RnDRecipeIngredients"" RESTART IDENTITY CASCADE;");
-                await _context.Database.ExecuteSqlRawAsync(@"TRUNCATE TABLE ""RnDTestHistories"" RESTART IDENTITY CASCADE;");
-                await _context.Database.ExecuteSqlRawAsync(@"TRUNCATE TABLE ""RnDRecipes"" RESTART IDENTITY CASCADE;");
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""MaterialBatches"";");
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""Materials"";");
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""RecipeItems"";");
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""Products"";");
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""Categories"";");
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""Coupons"";");
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""RnDRecipeIngredients"";");
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""RnDTestHistories"";");
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""RnDRecipes"";");
                 return Ok(new { message = "Stock and products cleared successfully." });
             }
             catch (System.Exception ex)
@@ -118,30 +119,28 @@ namespace backend.Controllers
         {
             try
             {
-                using var transaction = await _context.Database.BeginTransactionAsync();
-
-                var tablesToTruncate = new List<string>
-                {
-                    "OrderItems", "Orders",
-                    "PurchaseItems", "Purchases",
-                    "RecipeItems", "Products",
-                    "Categories",
-                    "Expenses", "Incomes",
-                    "Materials", "MaterialBatches",
-                    "Coupons",
-                    "JournalEntryLines", "JournalEntries",
-                    "RnDRecipeIngredients", "RnDTestHistories", "RnDRecipes"
-                };
-
-                foreach (var table in tablesToTruncate)
-                {
-                    await _context.Database.ExecuteSqlRawAsync($"TRUNCATE TABLE \"{table}\" RESTART IDENTITY CASCADE;");
-                }
+                // Delete in correct order (child tables first to respect FK constraints)
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""OrderItems"";");
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""Orders"";");
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""ClosingPeriods"";");
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""PurchaseItems"";");
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""Purchases"";");
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""Expenses"";");
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""Incomes"";");
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""JournalEntryLines"";");
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""JournalEntries"";");
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""RecipeItems"";");
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""Products"";");
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""Materials"";");
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""MaterialBatches"";");
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""Categories"";");
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""Coupons"";");
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""RnDRecipeIngredients"";");
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""RnDTestHistories"";");
+                await _context.Database.ExecuteSqlRawAsync(@"DELETE FROM ""RnDRecipes"";");
 
                 // Reset ChartOfAccounts balances to 0
-                await _context.Database.ExecuteSqlRawAsync("UPDATE \"ChartOfAccounts\" SET \"Balance\" = 0;");
-
-                await transaction.CommitAsync();
+                await _context.Database.ExecuteSqlRawAsync(@"UPDATE ""ChartOfAccounts"" SET ""Balance"" = 0;");
 
                 return Ok(new { message = "Database reset successfully." });
             }
